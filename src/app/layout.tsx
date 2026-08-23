@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import Link from 'next/link';
+import { TextSize } from '@/components/TextSize';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               सुनवाई <span className="font-normal text-muted">Sunvai</span>
             </Link>
             <p className="text-sm text-muted">An independent civic tool. Not a government service.</p>
+            <div className="ml-auto"><TextSize /></div>
           </div>
         </header>
 
@@ -36,6 +38,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/how-this-works" className="underline">How this works · what is mocked</Link>
             <Link href="/numbers" className="underline">The numbers</Link>
             <Link href="/verify" className="underline">Verify a receipt</Link>
+            <Link href="/dept" className="underline">Department view (scaffolding)</Link>
           </nav>
         </footer>
       </body>

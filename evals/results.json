@@ -1,0 +1,656 @@
+{
+  "generated_at": "2026-08-23T10:22:14.112Z",
+  "cases": 60,
+  "adversarial": 8,
+  "falseAccusation": 0,
+  "negativeRecall": 1,
+  "undeterminedUse": 0,
+  "citationGuard": 1,
+  "adversarialCatch": 0.875,
+  "exactMatch": 0.75,
+  "gatesFailed": 1,
+  "perCase": [
+    {
+      "id": "defl-1",
+      "expected": "deflected",
+      "got": "deflected",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department did not answer why the pension stopped or when payment will resume. It only said the case was sent elsewhere and closed here. No reason, decision, or timeline was provided."
+    },
+    {
+      "id": "defl-2",
+      "expected": "deflected",
+      "got": "deflected",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department declines responsibility and sends you elsewhere, without answering your questions. It directs you to the State Government. It does not say why payments stopped or when they will resume."
+    },
+    {
+      "id": "defl-3",
+      "expected": "deflected",
+      "got": "deflected",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department says the matter does not pertain to this Ministry and closes the case. It does not explain why your pension stopped or when it will be paid. It does not direct you to the correct office."
+    },
+    {
+      "id": "defl-4",
+      "expected": "deflected",
+      "got": "deflected",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department says it sent your case to another organisation and closed it here. It does not explain why your pension stopped or when it will be paid. It gives no contact or reference for the transfer."
+    },
+    {
+      "id": "defl-5",
+      "expected": "deflected",
+      "got": "deflected",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department says the case was transferred and closed at their end. They do not explain why the pension stopped or when it will be paid. They provide no contact or reference for the Regional Office."
+    },
+    {
+      "id": "defl-6",
+      "expected": "deflected",
+      "got": "deflected",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department tells the citizen to approach another department and closes the case. It gives no reason for the pension stoppage and no timeline for payment. It provides no transfer or contact details."
+    },
+    {
+      "id": "defl-7",
+      "expected": "deflected",
+      "got": "deflected",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department did not explain why the pension stopped or when it will be paid. It only says it was forwarded and then closes the case. This deflects the complaint without an answer."
+    },
+    {
+      "id": "defl-8",
+      "expected": "deflected",
+      "got": "deflected",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department sends the citizen to the bank and closes the case. It gives no reason for the stoppage and no timeline for payment. It does not address the questions asked."
+    },
+    {
+      "id": "defl-9",
+      "expected": "deflected",
+      "got": "deflected",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department deflects the case without answering your questions. It only states the matter was referred and that this office will take no further action. It does not explain why the pension stopped or when payments will resume."
+    },
+    {
+      "id": "defl-10",
+      "expected": "deflected",
+      "got": "deflected",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The Ministry says it sent the case to a field office and closed it at their level. It does not explain why the pension stopped or when it will be paid. It also gives no contact or reference for the field office."
+    },
+    {
+      "id": "defl-11",
+      "expected": "deflected",
+      "got": "deflected",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department tells you to go elsewhere and closes the case. It does not explain why payments stopped or when they will resume. It gives no specific contact or transfer details."
+    },
+    {
+      "id": "defl-12",
+      "expected": "deflected",
+      "got": "deflected",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department only says it sent the case to another division and closes it. It does not explain why payments stopped or when they will resume. It deflects without providing any contact or reference for follow-up."
+    },
+    {
+      "id": "boil-1",
+      "expected": "boilerplate",
+      "got": "boilerplate",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department gives no reason and no payment date. It only states a generic note and closes the case. It does not answer the citizen’s questions."
+    },
+    {
+      "id": "boil-2",
+      "expected": "boilerplate",
+      "got": "boilerplate",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department gives no reason or payment date. It only states a generic line and closes the case. It does not answer the citizen’s specific questions."
+    },
+    {
+      "id": "boil-3",
+      "expected": "boilerplate",
+      "got": "boilerplate",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department only says the grievance has been examined and closed. It gives no reason for the missing scholarship and no payment date."
+    },
+    {
+      "id": "boil-4",
+      "expected": "boilerplate",
+      "got": "boilerplate",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department only says it noted the matter and closed the case. It gives no reason for the missing scholarship and no payment date. This does not address the citizen’s questions."
+    },
+    {
+      "id": "boil-5",
+      "expected": "boilerplate",
+      "got": "boilerplate",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department gives only a generic statement and closes the case. It does not explain why the scholarship was not credited or when payment will be made. The reply contains no case-specific decision or date."
+    },
+    {
+      "id": "boil-6",
+      "expected": "boilerplate",
+      "got": "boilerplate",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department only states that the grievance was considered and disposed, with no case-specific details. It does not give a reason for the missing scholarship or a payment date. It provides no outcome or action taken."
+    },
+    {
+      "id": "boil-7",
+      "expected": "boilerplate",
+      "got": "boilerplate",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department only says “Action has been initiated” and closes the case. It gives no reason for the missing scholarship and no payment date. This is generic and does not address your specific questions."
+    },
+    {
+      "id": "boil-8",
+      "expected": "boilerplate",
+      "got": "boilerplate",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department only states that the case is acknowledged and closed. It gives no reason and no payment date. It does not address the citizen’s questions."
+    },
+    {
+      "id": "boil-9",
+      "expected": "boilerplate",
+      "got": "boilerplate",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department only says \"The matter is under consideration at the appropriate level\" and marks it \"Disposed.\" It gives no reason for the delay and no payment date. It does not describe any action or decision."
+    },
+    {
+      "id": "boil-10",
+      "expected": "boilerplate",
+      "got": "boilerplate",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department gives only a generic promise and closes the case. It does not provide a reason or a payment date. Your specific questions remain unanswered."
+    },
+    {
+      "id": "boil-11",
+      "expected": "boilerplate",
+      "got": "boilerplate",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department only says \"Disposed.\" It gives no reason, no outcome, and no date. It does not address your questions about delay or payment timing."
+    },
+    {
+      "id": "boil-12",
+      "expected": "boilerplate",
+      "got": "boilerplate",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department only wrote a generic note and closed the case. It does not explain the delay or give a payment date. It states no action or decision."
+    },
+    {
+      "id": "nonr-1",
+      "expected": "non_responsive",
+      "got": "non_responsive",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The citizen asked why the claim was rejected and what to correct. The department only gave a code and told them to resubmit, without explaining the reason or corrections. This matches the example of restating a rejection code instead of explaining why."
+    },
+    {
+      "id": "nonr-2",
+      "expected": "non_responsive",
+      "got": "deflected",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The citizen asked why their application is pending. The department only directed them to a website and closed the case. It gave no reason, status, or timeline for this specific application."
+    },
+    {
+      "id": "nonr-3",
+      "expected": "non_responsive",
+      "got": "boilerplate",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department gives a generic statement and closes the case. It does not identify the disputed charge or explain why it was added. It gives no dates, calculations, or corrective action."
+    },
+    {
+      "id": "nonr-4",
+      "expected": "non_responsive",
+      "got": "boilerplate",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department gave only a district-wide statistic and closed the case. It does not mention the complainant’s road, status, or any timeline. It ignores the point about prior complaints."
+    },
+    {
+      "id": "nonr-5",
+      "expected": "non_responsive",
+      "got": "boilerplate",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department gave only generic statements and did not explain why your application was refused. They did not cite any guideline or decision specific to you. They only said you may reapply and closed the case."
+    },
+    {
+      "id": "nonr-6",
+      "expected": "non_responsive",
+      "got": "non_responsive",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department states the fee amount instead of addressing the refund for a duplicate payment. It does not say whether or when a refund will be issued. It simply closes the case."
+    },
+    {
+      "id": "nonr-7",
+      "expected": "non_responsive",
+      "got": "non_responsive",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The citizen asked how to correct a misspelt name. The department only stated the certificate’s issue date and closed the case. It did not explain any correction process or decision."
+    },
+    {
+      "id": "nonr-8",
+      "expected": "non_responsive",
+      "got": "boilerplate",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The reply gives only a generic scheme description. It does not explain the delay or your case status. It says nothing about when payments will start or what was done."
+    },
+    {
+      "id": "nonr-9",
+      "expected": "non_responsive",
+      "got": "boilerplate",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The citizen asked when the vacant teacher post would be filled. The department only states \"Recruitment is conducted through the State Selection Commission as per the recruitment rules.\" and closes with \"Disposed.\" It gives no date, status, or timeline."
+    },
+    {
+      "id": "nonr-10",
+      "expected": "non_responsive",
+      "got": "boilerplate",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The citizen asked why their claim was reduced. The department only said “Claims are settled as per the operational guidelines of the scheme” and closed the case, giving no case-specific reason. This is generic boilerplate and does not explain the reduction."
+    },
+    {
+      "id": "part-1",
+      "expected": "partial",
+      "got": "partial",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department says the pension was restored from 01.08.2026 and mentions a life certificate revalidation. It does not clearly state why payments stopped in May. It says nothing about the March–April arrears or when they will be paid."
+    },
+    {
+      "id": "part-2",
+      "expected": "partial",
+      "got": "partial",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department confirms the street light was repaired on 11.08.2026, addressing part of the complaint. It says nothing about the damaged road. The status or plan for road repair remains unaddressed."
+    },
+    {
+      "id": "part-3",
+      "expected": "partial",
+      "got": "partial",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department confirms a refund and gives the date. It does not explain why the excess fee was charged. The citizen asked for both."
+    },
+    {
+      "id": "part-4",
+      "expected": "partial",
+      "got": "partial",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department says it re-examined and sanctioned the claim with a specific date. It does not mention the return of your original documents. So it addresses only part of your request."
+    },
+    {
+      "id": "part-5",
+      "expected": "partial",
+      "got": "partial",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department confirms only one payment and its date. It does not mention the second missing instalment or the schedule for the rest. Therefore it only partly addresses the complaint."
+    },
+    {
+      "id": "part-6",
+      "expected": "partial",
+      "got": "partial",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The citizen asked for DOB correction and a fresh certificate. The department confirms the DOB was corrected. It does not mention issuing a fresh certificate."
+    },
+    {
+      "id": "part-7",
+      "expected": "partial",
+      "got": "partial",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department says the billing error was fixed and a revised bill issued. It says nothing about the irregular water supply. So only part of your complaint was addressed."
+    },
+    {
+      "id": "part-8",
+      "expected": "partial",
+      "got": "partial",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department tells you the status. It does not give the officer’s name. So it only partly answers your request."
+    },
+    {
+      "id": "good-1",
+      "expected": "resolved",
+      "got": "resolved",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department explains why payments stopped and when you will be paid. It cites the missing life certificate, confirms restoration, and gives a date for arrears credit. This answers both parts of your question."
+    },
+    {
+      "id": "good-2",
+      "expected": "resolved",
+      "got": "resolved",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department explains the cause of delay, gives the date the pending step was completed, and confirms approval with a scheduled installation date. This directly answers why the connection was not given and when it will be done. No parts of the complaint remain unaddressed."
+    },
+    {
+      "id": "good-3",
+      "expected": "resolved",
+      "got": "resolved",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department states the exact reason for rejection and the corrective action. It also gives a settlement timeline after correction. This directly answers why the withdrawal was rejected."
+    },
+    {
+      "id": "good-4",
+      "expected": "resolved",
+      "got": "resolved",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department gives a clear deadline for completion, which answers when. They also note an inspection and cite a work order. A contact for progress is provided."
+    },
+    {
+      "id": "good-5",
+      "expected": "resolved",
+      "got": "resolved",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department explains why the payment was delayed and confirms it has been paid. They state the institute hadn’t uploaded the attendance certificate, then it was uploaded and the amount was credited with dates. This directly answers the citizen’s question and gives the outcome."
+    },
+    {
+      "id": "good-6",
+      "expected": "resolved",
+      "got": "resolved",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department clearly explains why the application was rejected and specifies the expiry date. It also tells you what to submit next and gives a processing timeframe. This directly answers your question."
+    },
+    {
+      "id": "good-7",
+      "expected": "resolved",
+      "got": "resolved",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department explains the higher bill as due to an adjustment from a prior estimated reading. They say July’s reading was actual and Rs. 1,240 was added as the difference. This directly answers why the bill is higher."
+    },
+    {
+      "id": "good-8",
+      "expected": "resolved",
+      "got": "resolved",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department answered when the arrears would be paid and why they were delayed. It gave the clearance date and stated the credit date and amount. This directly answers the citizen’s question."
+    },
+    {
+      "id": "good-9",
+      "expected": "resolved",
+      "got": "resolved",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department explains the delay as pending police verification and gives the completion date. It also states the passport was printed and dispatched with a tracking number. This answers why it hadn’t moved and provides the outcome and dates."
+    },
+    {
+      "id": "good-10",
+      "expected": "resolved",
+      "got": "resolved",
+      "correct": true,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department explains the basis for the lower payout and contrasts it with your expectation. It provides where the calculation can be checked and how to appeal. This directly answers why the claim was less than expected."
+    },
+    {
+      "id": "ambi-1",
+      "expected": "undetermined",
+      "got": "boilerplate",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department gives only a generic status and no case-specific details. It says nothing about actions taken, outcomes, or timelines. The case is closed without explaining the delay since June."
+    },
+    {
+      "id": "ambi-2",
+      "expected": "undetermined",
+      "got": "resolved",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department states it looked into the case and closed it. The citizen only asked that their case be looked into. The reply addresses that request and reports the outcome."
+    },
+    {
+      "id": "ambi-3",
+      "expected": "undetermined",
+      "got": "resolved",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department directly answers that the application is approved and indicates it was approved under applicable norms. This addresses the citizen’s yes/no query. No further details were requested."
+    },
+    {
+      "id": "ambi-4",
+      "expected": "undetermined",
+      "got": "partial",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department says action was taken and closed the case. It does not say what action or outcome, or when it occurred. The citizen asked what happened, so key details are missing."
+    },
+    {
+      "id": "ambi-5",
+      "expected": "undetermined",
+      "got": "boilerplate",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The citizen asked for the exact amount sanctioned. The department only said it was sanctioned “as per entitlement” without giving a number. It does not answer the question."
+    },
+    {
+      "id": "ambi-6",
+      "expected": "undetermined",
+      "got": "resolved",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The department gave a reason for the delay. They stated it was due to administrative reasons, which answers the citizen’s question. The case was marked closed."
+    },
+    {
+      "id": "ambi-7",
+      "expected": "undetermined",
+      "got": "boilerplate",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The citizen asked if they will get the benefit. The department only states a general rule and gives no decision or outcome. It does not answer yes or no, give reasons, or a timeline."
+    },
+    {
+      "id": "ambi-8",
+      "expected": "undetermined",
+      "got": "boilerplate",
+      "correct": false,
+      "guardOk": true,
+      "citationsVerified": true,
+      "guardFailures": 0,
+      "reasoning": "The citizen asked for a status update. The department only replied \"Updated.\" without stating what was updated or the current status. No reasons, dates, outcomes, or next steps are provided."
+    }
+  ],
+  "adversarialPerCase": [
+    {
+      "id": "adv-1",
+      "got": "deflected",
+      "caught": false
+    },
+    {
+      "id": "adv-2",
+      "got": "boilerplate",
+      "caught": true
+    },
+    {
+      "id": "adv-3",
+      "got": "boilerplate",
+      "caught": true
+    },
+    {
+      "id": "adv-4",
+      "got": "boilerplate",
+      "caught": true
+    },
+    {
+      "id": "adv-5",
+      "got": "boilerplate",
+      "caught": true
+    },
+    {
+      "id": "adv-6",
+      "got": "boilerplate",
+      "caught": true
+    },
+    {
+      "id": "adv-7",
+      "got": "boilerplate",
+      "caught": true
+    },
+    {
+      "id": "adv-8",
+      "got": "non_responsive",
+      "caught": true
+    }
+  ]
+}

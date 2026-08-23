@@ -1,0 +1,482 @@
+[
+  {
+    "id": "defl-1",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "My pension has not been paid for three months and no reason has been given. I want to know why it stopped and when it will be paid.",
+    "reply": "The matter has been forwarded to the concerned department for necessary action. The grievance is closed at this level.",
+    "note": ""
+  },
+  {
+    "id": "defl-2",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "My pension has not been paid for three months and no reason has been given. I want to know why it stopped and when it will be paid.",
+    "reply": "This office is not the competent authority in the matter. You may approach the State Government.",
+    "note": ""
+  },
+  {
+    "id": "defl-3",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "My pension has not been paid for three months and no reason has been given. I want to know why it stopped and when it will be paid.",
+    "reply": "The subject matter does not pertain to this Ministry. Grievance disposed.",
+    "note": ""
+  },
+  {
+    "id": "defl-4",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "My pension has not been paid for three months and no reason has been given. I want to know why it stopped and when it will be paid.",
+    "reply": "Your representation has been sent to the concerned subordinate organisation. Case closed here.",
+    "note": ""
+  },
+  {
+    "id": "defl-5",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "My pension has not been paid for three months and no reason has been given. I want to know why it stopped and when it will be paid.",
+    "reply": "The grievance has been transferred to the Regional Office. It stands disposed at this end.",
+    "note": ""
+  },
+  {
+    "id": "defl-6",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "My pension has not been paid for three months and no reason has been given. I want to know why it stopped and when it will be paid.",
+    "reply": "The matter relates to the State Public Works Department. You are advised to take it up with them. Disposed.",
+    "note": ""
+  },
+  {
+    "id": "defl-7",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "My pension has not been paid for three months and no reason has been given. I want to know why it stopped and when it will be paid.",
+    "reply": "Forwarded to the concerned disbursing authority for such action as deemed appropriate. Closed.",
+    "note": ""
+  },
+  {
+    "id": "defl-8",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "My pension has not been paid for three months and no reason has been given. I want to know why it stopped and when it will be paid.",
+    "reply": "The issue pertains to the bank concerned. Please contact your branch. The grievance is accordingly closed.",
+    "note": ""
+  },
+  {
+    "id": "defl-9",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "My pension has not been paid for three months and no reason has been given. I want to know why it stopped and when it will be paid.",
+    "reply": "Referred to the appropriate authority. No further action lies with this office.",
+    "note": ""
+  },
+  {
+    "id": "defl-10",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "My pension has not been paid for three months and no reason has been given. I want to know why it stopped and when it will be paid.",
+    "reply": "The complaint has been marked to the field office. Grievance closed at Ministry level.",
+    "note": ""
+  },
+  {
+    "id": "defl-11",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "My pension has not been paid for three months and no reason has been given. I want to know why it stopped and when it will be paid.",
+    "reply": "This is a State subject. The grievance is disposed with the advice to approach the State authorities.",
+    "note": ""
+  },
+  {
+    "id": "defl-12",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "My pension has not been paid for three months and no reason has been given. I want to know why it stopped and when it will be paid.",
+    "reply": "Sent to the concerned division. Closing the grievance in the portal.",
+    "note": ""
+  },
+  {
+    "id": "boil-1",
+    "label": "boilerplate",
+    "lang": "en",
+    "complaint": "My scholarship for this year has not been credited even though I applied in June. I want to know the reason and the date I will be paid.",
+    "reply": "Noted for future action. The grievance is disposed.",
+    "note": ""
+  },
+  {
+    "id": "boil-2",
+    "label": "boilerplate",
+    "lang": "en",
+    "complaint": "My scholarship for this year has not been credited even though I applied in June. I want to know the reason and the date I will be paid.",
+    "reply": "Appropriate action is being taken in the matter. Grievance closed.",
+    "note": ""
+  },
+  {
+    "id": "boil-3",
+    "label": "boilerplate",
+    "lang": "en",
+    "complaint": "My scholarship for this year has not been credited even though I applied in June. I want to know the reason and the date I will be paid.",
+    "reply": "Your grievance has been examined and is closed.",
+    "note": ""
+  },
+  {
+    "id": "boil-4",
+    "label": "boilerplate",
+    "lang": "en",
+    "complaint": "My scholarship for this year has not been credited even though I applied in June. I want to know the reason and the date I will be paid.",
+    "reply": "The matter has been noted. Case disposed.",
+    "note": ""
+  },
+  {
+    "id": "boil-5",
+    "label": "boilerplate",
+    "lang": "en",
+    "complaint": "My scholarship for this year has not been credited even though I applied in June. I want to know the reason and the date I will be paid.",
+    "reply": "Necessary action as per rules is being taken. Closed.",
+    "note": ""
+  },
+  {
+    "id": "boil-6",
+    "label": "boilerplate",
+    "lang": "en",
+    "complaint": "My scholarship for this year has not been credited even though I applied in June. I want to know the reason and the date I will be paid.",
+    "reply": "The grievance has been considered. It is hereby disposed of.",
+    "note": ""
+  },
+  {
+    "id": "boil-7",
+    "label": "boilerplate",
+    "lang": "en",
+    "complaint": "My scholarship for this year has not been credited even though I applied in June. I want to know the reason and the date I will be paid.",
+    "reply": "Action has been initiated. The grievance stands closed.",
+    "note": ""
+  },
+  {
+    "id": "boil-8",
+    "label": "boilerplate",
+    "lang": "en",
+    "complaint": "My scholarship for this year has not been credited even though I applied in June. I want to know the reason and the date I will be paid.",
+    "reply": "The representation is acknowledged and closed.",
+    "note": ""
+  },
+  {
+    "id": "boil-9",
+    "label": "boilerplate",
+    "lang": "en",
+    "complaint": "My scholarship for this year has not been credited even though I applied in June. I want to know the reason and the date I will be paid.",
+    "reply": "The matter is under consideration at the appropriate level. Disposed.",
+    "note": ""
+  },
+  {
+    "id": "boil-10",
+    "label": "boilerplate",
+    "lang": "en",
+    "complaint": "My scholarship for this year has not been credited even though I applied in June. I want to know the reason and the date I will be paid.",
+    "reply": "Suitable action will be taken in due course. Grievance closed.",
+    "note": ""
+  },
+  {
+    "id": "boil-11",
+    "label": "boilerplate",
+    "lang": "en",
+    "complaint": "My scholarship for this year has not been credited even though I applied in June. I want to know the reason and the date I will be paid.",
+    "reply": "Disposed.",
+    "note": ""
+  },
+  {
+    "id": "boil-12",
+    "label": "boilerplate",
+    "lang": "en",
+    "complaint": "My scholarship for this year has not been credited even though I applied in June. I want to know the reason and the date I will be paid.",
+    "reply": "Closed with remarks: noted.",
+    "note": ""
+  },
+  {
+    "id": "nonr-1",
+    "label": "non_responsive",
+    "lang": "en",
+    "complaint": "Why was my PF claim rejected and what do I need to correct?",
+    "reply": "Claim ID HYD/2026/0088341 was rejected under rejection reason code 32. The member may submit a fresh claim through the Member e-Sewa portal. Closed.",
+    "note": ""
+  },
+  {
+    "id": "nonr-2",
+    "label": "non_responsive",
+    "lang": "en",
+    "complaint": "Why has my ration card application been pending for four months?",
+    "reply": "The prescribed procedure for ration card applications is available on the departmental website. Applicants are advised to refer to it. Disposed.",
+    "note": ""
+  },
+  {
+    "id": "nonr-3",
+    "label": "non_responsive",
+    "lang": "en",
+    "complaint": "My electricity bill shows a charge I never incurred. Why was it added?",
+    "reply": "Bills are generated as per the applicable tariff order notified by the Commission. Grievance closed.",
+    "note": ""
+  },
+  {
+    "id": "nonr-4",
+    "label": "non_responsive",
+    "lang": "en",
+    "complaint": "When will my road be repaired? I have complained three times.",
+    "reply": "A total of 412 kilometres of road was resurfaced in the district during the last financial year. Grievance disposed.",
+    "note": ""
+  },
+  {
+    "id": "nonr-5",
+    "label": "non_responsive",
+    "lang": "en",
+    "complaint": "Why was my disability certificate application refused?",
+    "reply": "Certificates are issued in accordance with the guidelines. The applicant may reapply. Closed.",
+    "note": ""
+  },
+  {
+    "id": "nonr-6",
+    "label": "non_responsive",
+    "lang": "en",
+    "complaint": "I paid the fee twice by mistake. When will the extra amount be refunded?",
+    "reply": "The fee for this service is Rs. 500 as per the notification dated 12.03.2025. The grievance is closed.",
+    "note": ""
+  },
+  {
+    "id": "nonr-7",
+    "label": "non_responsive",
+    "lang": "en",
+    "complaint": "My name is spelled wrong on the certificate. How do I get it corrected?",
+    "reply": "The certificate was issued on 04.06.2026 based on the application submitted. Grievance disposed.",
+    "note": ""
+  },
+  {
+    "id": "nonr-8",
+    "label": "non_responsive",
+    "lang": "en",
+    "complaint": "Why has my widow pension not started six months after approval?",
+    "reply": "The scheme provides for a monthly pension of Rs. 1,000 to eligible widows. Closed.",
+    "note": ""
+  },
+  {
+    "id": "nonr-9",
+    "label": "non_responsive",
+    "lang": "en",
+    "complaint": "The teacher post in our school has been vacant for a year. When will it be filled?",
+    "reply": "Recruitment is conducted through the State Selection Commission as per the recruitment rules. Disposed.",
+    "note": ""
+  },
+  {
+    "id": "nonr-10",
+    "label": "non_responsive",
+    "lang": "en",
+    "complaint": "Why was my crop insurance claim reduced?",
+    "reply": "Claims are settled as per the operational guidelines of the scheme. The grievance is closed.",
+    "note": ""
+  },
+  {
+    "id": "part-1",
+    "label": "partial",
+    "lang": "en",
+    "complaint": "My pension stopped in May and the arrears for March and April were never paid. Tell me why it stopped and when I get the arrears.",
+    "reply": "Your pension has been restored with effect from 01.08.2026 following revalidation of your life certificate. The grievance is closed.",
+    "note": ""
+  },
+  {
+    "id": "part-2",
+    "label": "partial",
+    "lang": "en",
+    "complaint": "The road is damaged and the street light has been out for two months. Please fix both.",
+    "reply": "The street light on the said stretch was repaired on 11.08.2026. Grievance disposed.",
+    "note": ""
+  },
+  {
+    "id": "part-3",
+    "label": "partial",
+    "lang": "en",
+    "complaint": "I want a refund of the excess fee and an explanation of why it was charged.",
+    "reply": "An amount of Rs. 500 has been refunded to your account on 09.08.2026. Closed.",
+    "note": ""
+  },
+  {
+    "id": "part-4",
+    "label": "partial",
+    "lang": "en",
+    "complaint": "My claim was rejected and my documents were not returned. Please reconsider and return the originals.",
+    "reply": "The claim has been re-examined and sanctioned on 14.08.2026. The grievance is disposed.",
+    "note": ""
+  },
+  {
+    "id": "part-5",
+    "label": "partial",
+    "lang": "en",
+    "complaint": "Two of my four instalments are missing. Please pay both and confirm the schedule for the rest.",
+    "reply": "The instalment for June 2026 has been released on 02.08.2026. Grievance closed.",
+    "note": ""
+  },
+  {
+    "id": "part-6",
+    "label": "partial",
+    "lang": "en",
+    "complaint": "Please correct my date of birth in the record and issue a fresh certificate.",
+    "reply": "The date of birth in the service record has been corrected as requested. Closed.",
+    "note": ""
+  },
+  {
+    "id": "part-7",
+    "label": "partial",
+    "lang": "en",
+    "complaint": "The water supply is irregular and the bill is wrong. Fix the supply and correct the bill.",
+    "reply": "The billing error has been rectified and a revised bill issued. Grievance disposed.",
+    "note": ""
+  },
+  {
+    "id": "part-8",
+    "label": "partial",
+    "lang": "en",
+    "complaint": "I need the status of my application and the name of the officer handling it.",
+    "reply": "Your application is under process at the Regional Office. Closed.",
+    "note": ""
+  },
+  {
+    "id": "good-1",
+    "label": "resolved",
+    "lang": "en",
+    "complaint": "Why did my pension stop in May and when will I be paid?",
+    "reply": "Your pension was stopped because the life certificate due in November 2025 was not received. It was submitted on 08.08.2026 and the pension has been restored. Arrears of Rs. 18,400 for May to July will be credited by 05.09.2026.",
+    "note": ""
+  },
+  {
+    "id": "good-2",
+    "label": "resolved",
+    "lang": "en",
+    "complaint": "Why has my water connection not been given after two months?",
+    "reply": "Your application no. WC/2026/4471 was held up because the plot verification report was pending from the ward office. That report was received on 14.08.2026 and the connection has been sanctioned. Work is scheduled for 29.08.2026.",
+    "note": ""
+  },
+  {
+    "id": "good-3",
+    "label": "resolved",
+    "lang": "en",
+    "complaint": "Why was my PF withdrawal rejected?",
+    "reply": "The claim was rejected because the bank account number in your KYC did not match the cancelled cheque you uploaded. Update the account number in Member e-Sewa and refile; claims filed with matching KYC are settled within 20 days.",
+    "note": ""
+  },
+  {
+    "id": "good-4",
+    "label": "resolved",
+    "lang": "en",
+    "complaint": "When will the potholes on our stretch be repaired?",
+    "reply": "The stretch was inspected on 09.08.2026. Work order PWD/PN/2026/1174 has been issued and the contractor has been directed to complete repairs by 31.08.2026. You may contact the sub-division office for progress.",
+    "note": ""
+  },
+  {
+    "id": "good-5",
+    "label": "resolved",
+    "lang": "en",
+    "complaint": "My scholarship has not been credited. Why?",
+    "reply": "Your scholarship was withheld because the institute had not uploaded the attendance certificate. It was uploaded on 03.08.2026 and the amount of Rs. 12,000 was credited to your account on 16.08.2026.",
+    "note": ""
+  },
+  {
+    "id": "good-6",
+    "label": "resolved",
+    "lang": "en",
+    "complaint": "Why was my ration card application rejected?",
+    "reply": "The application was rejected because the income certificate attached had expired in March 2026. Submit a current income certificate and the application will be processed within 15 days.",
+    "note": ""
+  },
+  {
+    "id": "good-7",
+    "label": "resolved",
+    "lang": "en",
+    "complaint": "Why is my electricity bill higher this month?",
+    "reply": "The meter reading for June was estimated because access to the meter was not available. The July reading was actual, so the difference of Rs. 1,240 was adjusted in this bill. The adjustment detail is printed on page 2.",
+    "note": ""
+  },
+  {
+    "id": "good-8",
+    "label": "resolved",
+    "lang": "en",
+    "complaint": "When will my pending salary arrears be paid?",
+    "reply": "The arrears were held because the revised pay fixation was awaiting audit clearance. Clearance was received on 12.08.2026 and Rs. 46,300 was credited on 20.08.2026.",
+    "note": ""
+  },
+  {
+    "id": "good-9",
+    "label": "resolved",
+    "lang": "en",
+    "complaint": "Why has my passport application not moved for a month?",
+    "reply": "The application was held pending police verification, which was completed on 10.08.2026. The passport was printed on 18.08.2026 and dispatched by Speed Post, consignment EK123456789IN.",
+    "note": ""
+  },
+  {
+    "id": "good-10",
+    "label": "resolved",
+    "lang": "en",
+    "complaint": "Why was my crop insurance claim less than expected?",
+    "reply": "The claim was calculated on the yield data for your revenue circle, which recorded a 32 percent shortfall rather than the 50 percent you reported. The working is at annexure A. If you dispute the yield data you may appeal within 30 days.",
+    "note": ""
+  },
+  {
+    "id": "ambi-1",
+    "label": "undetermined",
+    "lang": "en",
+    "complaint": "My file is with the office since June. What is happening?",
+    "reply": "The matter is at an advanced stage of processing. Closed.",
+    "note": "genuinely ambiguous"
+  },
+  {
+    "id": "ambi-2",
+    "label": "undetermined",
+    "lang": "en",
+    "complaint": "Please look into my case.",
+    "reply": "The case has been looked into and closed.",
+    "note": "genuinely ambiguous"
+  },
+  {
+    "id": "ambi-3",
+    "label": "undetermined",
+    "lang": "en",
+    "complaint": "Is my application approved?",
+    "reply": "Approved as per norms.",
+    "note": "genuinely ambiguous"
+  },
+  {
+    "id": "ambi-4",
+    "label": "undetermined",
+    "lang": "en",
+    "complaint": "What happened to my complaint about the officer?",
+    "reply": "Action has been taken as per the applicable service rules. Details cannot be shared. Closed.",
+    "note": "genuinely ambiguous"
+  },
+  {
+    "id": "ambi-5",
+    "label": "undetermined",
+    "lang": "en",
+    "complaint": "Please tell me the amount sanctioned.",
+    "reply": "The amount has been sanctioned as per entitlement.",
+    "note": "genuinely ambiguous"
+  },
+  {
+    "id": "ambi-6",
+    "label": "undetermined",
+    "lang": "en",
+    "complaint": "Why is there a delay?",
+    "reply": "The delay occurred due to administrative reasons. Regretted. Closed.",
+    "note": "genuinely ambiguous"
+  },
+  {
+    "id": "ambi-7",
+    "label": "undetermined",
+    "lang": "en",
+    "complaint": "Will I get the benefit or not?",
+    "reply": "Eligibility will be determined as per the scheme guidelines in force.",
+    "note": "genuinely ambiguous"
+  },
+  {
+    "id": "ambi-8",
+    "label": "undetermined",
+    "lang": "en",
+    "complaint": "Kindly update me.",
+    "reply": "Updated.",
+    "note": "genuinely ambiguous"
+  }
+]

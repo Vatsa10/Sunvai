@@ -46,6 +46,7 @@ const LIMITATIONS = [
   'We do not know whether appeals succeed. No production data exists, and nothing here should be read as implying they do.',
   'Deleting a case would still leave its ledger events behind — hashes, not content. Right-to-erasure and tamper-evidence pull against each other, and we have not resolved it.',
   'Voice intake is not our contribution. DARPG shipped Samadhan Didi on 30 May 2026 with twenty-two languages. We built intake for journey completeness, not as a differentiator.',
+  'Our auditor almost never says "I do not know". Across eight deliberately ambiguous cases in our eval set it used the `undetermined` verdict zero times — in practice that verdict is reached only when the citation guard stops us, not because the model chose to withhold. It also errs generous, because we told it to: on a tie it favours the department. That makes a "resolved" verdict from us a weaker signal than it looks, which is one more reason the published number comes from citizens instead.',
 ];
 
 export default function HowThisWorksPage() {
@@ -74,6 +75,33 @@ export default function HowThisWorksPage() {
             <li key={l}>{l}</li>
           ))}
         </ol>
+      </section>
+
+      <section className="space-y-3 rounded border border-rule p-6">
+        <h2 className="text-xl font-semibold">How often it is right, measured</h2>
+        <p className="text-muted">
+          Sixty closure replies, labelled by hand <em>before</em> the prompt was tuned against them, plus eight
+          written by us specifically to beat our own auditor.
+        </p>
+        <dl className="mt-2 divide-y divide-rule border-y border-rule">
+          {[
+            ['False accusation rate', '0.0%', 'A genuinely good reply judged negative. The number we care most about keeping low.'],
+            ['Deflection and boilerplate caught', '100.0%', 'Of replies we labelled as deflected or boilerplate.'],
+            ['Citation guard pass rate', '100.0%', 'Every quoted span appeared verbatim in the reply.'],
+            ['Adversarial replies caught', '87.5%', 'Case-specific, confident, correctly structured, and empty. One in eight got past us.'],
+            ['Ambiguous cases left undetermined', '0.0%', 'A gate we FAIL, at a threshold of 60%. See limitation 9 above.'],
+          ].map(([k, v, why]) => (
+            <div key={k} className="grid gap-1 py-3 sm:grid-cols-[16rem_5rem_1fr] sm:gap-4">
+              <dt className="font-semibold">{k}</dt>
+              <dd className="font-semibold tabular-nums">{v}</dd>
+              <dd className="text-muted">{why}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="text-sm text-muted">
+          The failing gate is left failing. We could have relabelled the ambiguous set until it went green;
+          the reasoning is written up in <code>evals/README.md</code>, which ships with the code.
+        </p>
       </section>
 
       <section className="space-y-3">

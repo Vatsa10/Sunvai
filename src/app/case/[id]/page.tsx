@@ -4,6 +4,7 @@ import { getCase, getTimeline, daysUntil } from '@/lib/cases';
 import { verdictCopy } from '@/lib/verdicts';
 import { translateJargon } from '@/lib/jargon';
 import { QuotedReply } from '@/components/QuotedReply';
+import { ReadAloud } from '@/components/ReadAloud';
 import { MockBadge, MockNote } from '@/components/MockBadge';
 import { confirmResolution, prepareAppeal, sendAppeal } from '@/actions/case-actions';
 import { t, SHIPPED_LANGS, type ShippedLang } from '@/lib/i18n/strings';
@@ -120,6 +121,7 @@ export default async function CasePage({
           <p className="text-sm text-muted">
             Marked text is what our audit quoted — copied out of their reply, word for word.
           </p>
+          <ReadAloud text={c.reply.body} lang={c.reply.lang} label="Read their reply aloud" />
         </section>
       )}
 
@@ -143,6 +145,12 @@ export default async function CasePage({
               </ul>
             </div>
           )}
+
+          <ReadAloud
+            text={`${v.headline} ${c.audit.reasoning}`}
+            lang={lang}
+            label="Listen to this"
+          />
 
           <details open={sp.how === '1'} className="border-t border-current/20 pt-3">
             <summary className="cursor-pointer font-semibold text-ink">{s.seeHow}</summary>
@@ -181,6 +189,7 @@ export default async function CasePage({
         <section className="space-y-3 rounded border-2 border-ink p-5">
           <h2 className="text-xl font-semibold">{s.didItWork}</h2>
           <p className="text-muted">{s.didItWorkSub}</p>
+          <ReadAloud text={`${s.didItWork} ${s.didItWorkSub}`} lang={lang} label={s.readAloud} />
 
           {c.confirmation ? (
             <div className="space-y-3">
@@ -268,6 +277,14 @@ export default async function CasePage({
                     </h4>
                     <p className="mt-1 whitespace-pre-wrap font-serif">{c.appeal.bodyCitizenLang}</p>
                   </div>
+                </div>
+
+                <div className="mt-4">
+                  <ReadAloud
+                    text={c.appeal.bodyCitizenLang}
+                    lang={c.narrativeLang}
+                    label="Hear what will be sent"
+                  />
                 </div>
 
                 <label className="mt-4 flex items-start gap-3">

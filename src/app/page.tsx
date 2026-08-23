@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { adapter } from '@/lib/adapters';
 import { LANG_NAMES, SHIPPED_LANGS, t, type ShippedLang } from '@/lib/i18n/strings';
 import { MockNote } from '@/components/MockBadge';
+import { TryTheAuditor } from '@/components/TryTheAuditor';
+import { one } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +24,12 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
   const sp = await searchParams;
   const lang = (SHIPPED_LANGS as readonly string[]).includes(sp.lang ?? '') ? (sp.lang as ShippedLang) : 'hi';
   const s = t(lang);
+
+  const errors = await one<{ too_soft: string; too_harsh: string; total_compared: string }>(
+    'select * from our_error_rate',
+  );
+  const wrong = Number(errors?.too_soft ?? 0) + Number(errors?.too_harsh ?? 0);
+  const compared = Number(errors?.total_compared ?? 0);
 
   async function open(formData: FormData) {
     'use server';
@@ -108,6 +116,26 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* Try it on something we did not choose. Three cases we picked invite one fair
+          objection, and this is the answer to it. */}
+      <section className="rounded border-2 border-ink p-5">
+        <TryTheAuditor />
+      </section>
+
+      {/* Our own error rate, on the front page rather than in a footnote. */}
+      <section className="rounded border border-rule p-5">
+        <h2 className="text-lg font-semibold">We are wrong about {compared ? ((wrong / compared) * 100).toFixed(1) : '—'}% of the time</h2>
+        <p className="mt-1 text-muted">
+          Every time our verdict disagreed with what the citizen told us, we counted it — both when we were
+          too harsh and when we were too soft. That is {wrong.toLocaleString('en-IN')} out of{' '}
+          {compared.toLocaleString('en-IN')} cases.{' '}
+          <Link href="/numbers" className="underline">See the breakdown</Link>.
+        </p>
+        <p className="mt-1 text-muted">
+          One of the three cases above is one we get wrong on purpose. It is left in.
+        </p>
       </section>
 
       <MockNote>

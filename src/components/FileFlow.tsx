@@ -4,7 +4,7 @@ import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { advanceIntake, routeAndDraft, fileGrievance, type RoutedDraft } from '@/actions/file-actions';
 import type { Lang } from '@/lib/adapters/types';
-import type { IntakeFacts } from '@/lib/agents/schemas';
+import type { IntakeFacts, DocumentResult } from '@/lib/agents/schemas';
 
 type Turn = { question: string | null; answer: string };
 type Stage = 'speaking' | 'routing' | 'consent' | 'filing';
@@ -34,8 +34,34 @@ export function FileFlow({ lang }: { lang: Lang }) {
   const [error, setError] = useState<string | null>(null);
   const [recording, setRecording] = useState(false);
 
+  const [doc, setDoc] = useState<DocumentResult | null>(null);
+  const [docName, setDocName] = useState<string | null>(null);
+
   const recorder = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
+
+  /**
+   * Check a photographed document BEFORE filing, not three weeks later when the case is
+   * rejected because the number at the bottom was cut off. The photo is never stored.
+   */
+  async function checkDocument(file: File) {
+    setBusy('Looking at your photo…');
+    setDocName(file.name);
+    setDoc(null);
+    try {
+      const form = new FormData();
+      form.append('image', file);
+      form.append('lang', lang);
+      const res = await fetch('/api/document', { method: 'POST', body: form });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? 'could not read that photo');
+      setDoc(data as DocumentResult);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'We could not read that photo.');
+    } finally {
+      setBusy(null);
+    }
+  }
 
   async function startRecording() {
     setError(null);
@@ -204,6 +230,49 @@ export function FileFlow({ lang }: { lang: Lang }) {
           >
             Continue
           </button>
+
+          <div className="rounded border border-rule p-4">
+            <h3 className="font-semibold">Have a letter or a receipt about this?</h3>
+            <p className="mt-1 text-muted">
+              Take a photo and we will tell you now whether it can actually be read. We do not keep the photo.
+            </p>
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void checkDocument(f);
+              }}
+              className="mt-3 block w-full text-base"
+            />
+
+            {doc && (
+              <div
+                className={`mt-3 rounded border-2 p-3 ${doc.readable ? 'border-good text-good' : 'border-warn text-warn'}`}
+              >
+                <p className="font-semibold">
+                  <span aria-hidden>{doc.readable ? '✔ ' : '▲ '}</span>
+                  {doc.readable ? 'We can read this.' : 'This one will not be readable.'}
+                  {docName && <span className="font-normal text-muted"> — {docName}</span>}
+                </p>
+                {doc.retakeInstruction && <p className="mt-1 text-ink">{doc.retakeInstruction}</p>}
+                {doc.missingRegions.length > 0 && (
+                  <p className="mt-1 text-sm text-ink">Cut off or unclear: {doc.missingRegions.join(', ')}</p>
+                )}
+                {Object.keys(doc.extracted).length > 0 && (
+                  <dl className="mt-2 space-y-1 text-sm text-ink">
+                    {Object.entries(doc.extracted).map(([k, v]) => (
+                      <div key={k} className="flex flex-wrap gap-x-2">
+                        <dt className="font-semibold">{k.replace(/_/g, ' ')}:</dt>
+                        <dd>{v}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
+              </div>
+            )}
+          </div>
 
           {narrative && (
             <details className="rounded border border-rule p-4">

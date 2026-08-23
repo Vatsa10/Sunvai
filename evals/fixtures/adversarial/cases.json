@@ -1,0 +1,90 @@
+[
+  {
+    "id": "adv-1",
+    "lang": "en",
+    "complaint": "My payment has not come for three months. I want to know why it stopped and the date I will be paid.",
+    "reply": "With reference to your grievance dated 6 August 2026 regarding non-receipt of pension, the matter has been examined in detail by this office and appropriate action has been initiated with the concerned authority. The grievance is accordingly closed.",
+    "acceptable": [
+      "boilerplate",
+      "non_responsive"
+    ],
+    "note": "Case-specific, confident, correctly structured, and says nothing."
+  },
+  {
+    "id": "adv-2",
+    "lang": "en",
+    "complaint": "My payment has not come for three months. I want to know why it stopped and the date I will be paid.",
+    "reply": "Your grievance dated 12.08.2026 has been carefully considered at the level of the Nodal Officer. After due examination of the facts on record, the matter has been taken up appropriately. Closed.",
+    "acceptable": [
+      "boilerplate",
+      "non_responsive"
+    ],
+    "note": "Case-specific, confident, correctly structured, and says nothing."
+  },
+  {
+    "id": "adv-3",
+    "lang": "en",
+    "complaint": "My payment has not come for three months. I want to know why it stopped and the date I will be paid.",
+    "reply": "This has reference to your complaint regarding delay in disbursement. The undersigned has personally reviewed the file and issued suitable directions to the field formation. The grievance stands disposed.",
+    "acceptable": [
+      "boilerplate",
+      "non_responsive"
+    ],
+    "note": "Case-specific, confident, correctly structured, and says nothing."
+  },
+  {
+    "id": "adv-4",
+    "lang": "en",
+    "complaint": "My payment has not come for three months. I want to know why it stopped and the date I will be paid.",
+    "reply": "In response to your representation, it is stated that the matter has been thoroughly examined in the light of the relevant provisions and necessary steps have been taken. Grievance closed with thanks.",
+    "acceptable": [
+      "boilerplate",
+      "non_responsive"
+    ],
+    "note": "Case-specific, confident, correctly structured, and says nothing."
+  },
+  {
+    "id": "adv-5",
+    "lang": "en",
+    "complaint": "My payment has not come for three months. I want to know why it stopped and the date I will be paid.",
+    "reply": "Your grievance no. DEMO/2026/0000999 dated 01.08.2026 has been processed. The concerned section has been sensitised and the matter resolved at this end. Disposed.",
+    "acceptable": [
+      "boilerplate",
+      "non_responsive"
+    ],
+    "note": "Case-specific, confident, correctly structured, and says nothing."
+  },
+  {
+    "id": "adv-6",
+    "lang": "en",
+    "complaint": "My payment has not come for three months. I want to know why it stopped and the date I will be paid.",
+    "reply": "With regard to your complaint about the pending claim, the case has been reviewed in detail and appropriate instructions have been conveyed to the processing unit. The grievance is closed.",
+    "acceptable": [
+      "boilerplate",
+      "non_responsive"
+    ],
+    "note": "Case-specific, confident, correctly structured, and says nothing."
+  },
+  {
+    "id": "adv-7",
+    "lang": "en",
+    "complaint": "My payment has not come for three months. I want to know why it stopped and the date I will be paid.",
+    "reply": "The issues raised by you in your grievance dated 09.08.2026 have been noted and examined point-wise by this office. Necessary corrective measures stand initiated. Case disposed.",
+    "acceptable": [
+      "boilerplate",
+      "non_responsive"
+    ],
+    "note": "Case-specific, confident, correctly structured, and says nothing."
+  },
+  {
+    "id": "adv-8",
+    "lang": "en",
+    "complaint": "My payment has not come for three months. I want to know why it stopped and the date I will be paid.",
+    "reply": "Reference your grievance regarding the road condition in your locality. A detailed review has been undertaken and the matter has been placed before the competent authority for appropriate action. Closed.",
+    "acceptable": [
+      "boilerplate",
+      "non_responsive"
+    ],
+    "note": "Case-specific, confident, correctly structured, and says nothing."
+  }
+]
