@@ -1,0 +1,94 @@
+# Build What Moves India — Sunvai
+
+**Hackathon:** [Build What Moves India](https://buildwhatmovesindia.com/brief)
+**Submission deadline:** 28 August 2026, 20:00 IST
+
+---
+
+## Sunvai — सुनवाई
+
+> *a hearing* — both senses: being listened to, and being given a hearing.
+
+India's grievance portal, CPGRAMS, has spent two years fixing its **front door**: 22
+languages, 5 lakh Common Service Centres, a 21-day clock, and an AI voice chatbot
+(*Samadhan Didi*, launched 30 May 2026). Filing a grievance is now genuinely easy.
+
+**What happens after you file is still broken.** Departments are measured on *disposal*,
+so they dispose — closing cases with *"matter forwarded to concerned department"* and
+marking them resolved. In May 2026 roughly 2.6 lakh grievances were closed while the
+feedback call centre reached about 79,000 people; the rest were never asked whether
+anything changed. And the appeal that would hold someone accountable unlocks only if you
+rate the closure **"Poor"** — a question most citizens are never asked.
+
+**Sunvai is the accountability layer that begins the moment your grievance is closed.**
+
+It audits the department's reply against what you actually asked, asks you whether your
+problem was really fixed, drafts your appeal when it wasn't, groups your case with everyone
+else suffering the same root cause, and records all of it in a tamper-evident ledger you
+can verify in your own browser.
+
+> **CPGRAMS measures disposal. Sunvai measures resolution.**
+
+---
+
+## This repository
+
+### 📁 [`round-table/`](round-table/) — the design corpus
+
+33 interconnected documents: mission, evidence, competitive landscape, product journey,
+architecture, agent specifications, prompts, evals, build order and submission plan.
+
+**Written to be read by LLM agents building the product**, not only by humans — every doc
+is self-contained enough to load alone and cross-linked so an agent can follow a thread
+without loading everything.
+
+**Start here → [`round-table/README.md`](round-table/README.md)**
+
+Suggested reading order for anyone picking this up cold:
+
+| # | Document | Why |
+|---|---|---|
+| 1 | [Mission](round-table/00-mission/01-mission.md) | The thesis and the north star metric |
+| 2 | [The Problem](round-table/00-mission/02-the-problem.md) | Seven failure modes, with citations |
+| 3 | [Competitive Landscape](round-table/00-mission/03-competitive-landscape.md) | **What already exists — read before proposing any feature** |
+| 4 | [Non-Goals](round-table/00-mission/05-non-goals.md) | What we deliberately refuse to build |
+| 5 | [Citizen Journey](round-table/01-product/01-citizen-journey.md) | The journey we must demo end to end |
+| 6 | [System Overview](round-table/02-architecture/01-system-overview.md) | How the pieces fit |
+| 7 | [Closure Auditor](round-table/03-agents/05-agent-closure-auditor.md) | **The core agent** |
+| 8 | [Build Order](round-table/04-build/04-build-order.md) | What to build, in what order, what to cut |
+
+### 📄 `Builder brief - Build What Moves India.pdf`
+
+The hackathon brief, for reference. Constraints extracted in
+[`round-table/00-mission/04-hackathon-brief.md`](round-table/00-mission/04-hackathon-brief.md).
+
+---
+
+## Status
+
+| | |
+|---|---|
+| Design | ✅ Complete |
+| Implementation | ⬜ Not started |
+| Stack (planned) | Next.js · Supabase Postgres · OpenAI · built with Codex |
+
+---
+
+## Working rules
+
+1. **Read the [competitive landscape](round-table/00-mission/03-competitive-landscape.md)
+   before proposing any feature.** If the government already shipped it, it is table stakes,
+   not a differentiator.
+2. **Never touch a live government system.** Not by API, not by scraping. This is
+   disqualifying under the brief.
+3. **All data is synthetic.** No real Aadhaar, PAN, phone numbers, OTPs or payment details —
+   including in fixtures.
+4. **Every mock must be labelled in the UI.** Honesty is a scored judging criterion.
+5. **If it is not in the ledger, it did not happen.**
+6. **The agent never acts invisibly.** Nothing is filed without the citizen seeing the exact
+   text in their own language and consenting.
+
+---
+
+*An independent civic project. Not a government service. Not affiliated with or endorsed by
+any government body.*

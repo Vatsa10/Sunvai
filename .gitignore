@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# builds
+.next/
+out/
+build/
+dist/
+
+# env
+.env
+.env*.local
+
+# vercel / supabase
+.vercel
+.supabase/
+
+# logs
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# os
+.DS_Store
+Thumbs.db
+
+# editors
+.idea/
+.vscode/
+*.swp
