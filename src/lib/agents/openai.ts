@@ -7,14 +7,16 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ZodSchema } from 'zod';
 
+// Overridable by env so a model swap never needs a code change (and so the eval harness can
+// pin a cheaper tier without editing agents).
 export const MODELS = {
-  reasoning: 'gpt-5',        // closure audit, appeals
-  fast: 'gpt-5-mini',        // routing, drafting, cluster confirmation
-  conversational: 'gpt-5-mini',
-  vision: 'gpt-5-mini',
-  embedding: 'text-embedding-3-small',
-  transcribe: 'gpt-4o-transcribe',
-  tts: 'gpt-4o-mini-tts',
+  reasoning: process.env.MODEL_REASONING ?? 'gpt-5',        // closure audit, appeals
+  fast: process.env.MODEL_FAST ?? 'gpt-5-mini',             // routing, drafting, clustering
+  conversational: process.env.MODEL_CONVERSATIONAL ?? 'gpt-5-mini',
+  vision: process.env.MODEL_VISION ?? 'gpt-5-mini',
+  embedding: process.env.MODEL_EMBEDDING ?? 'text-embedding-3-small',
+  transcribe: process.env.MODEL_TRANSCRIBE ?? 'gpt-4o-transcribe',
+  tts: process.env.MODEL_TTS ?? 'gpt-4o-mini-tts',
 } as const;
 
 let client: OpenAI | null = null;
@@ -74,7 +76,9 @@ export async function structuredCall<T>({
 
     const completion = await openai().chat.completions.create({
       model,
-      temperature,
+      // Reasoning models reject any temperature but the default; every other agent here
+      // wants 0. Sending it conditionally keeps both true without a per-agent special case.
+      ...(supportsTemperature(model) ? { temperature } : {}),
       response_format: { type: 'json_object' },
       messages,
     });
@@ -86,6 +90,10 @@ export async function structuredCall<T>({
   }
 
   throw new Error(`agent output failed its contract twice: ${lastError}`);
+}
+
+function supportsTemperature(model: string): boolean {
+  return !/^(gpt-5|o[134])/.test(model);
 }
 
 function safeJson(raw: string): unknown {
