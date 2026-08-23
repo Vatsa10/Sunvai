@@ -50,7 +50,9 @@ create or replace function ledger_append(
   p_payload      jsonb
 ) returns events
 language plpgsql security definer
-set search_path = public
+-- Supabase installs pgcrypto into the `extensions` schema, so digest() is not on the
+-- default path for a SECURITY DEFINER function.
+set search_path = public, extensions
 as $$
 declare
   v_prev text;
@@ -73,7 +75,7 @@ begin
       p_type || E'\n' ||
       to_char(v_at at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS.MS"Z"') || E'\n' ||
       jsonb_canonical(p_payload)
-    , 'sha256'), 'hex');
+    , 'sha256'::text), 'hex');
 
   insert into events (seq, grievance_id, citizen_id, type, payload, occurred_at, prev_hash, hash)
   values (v_seq, p_grievance_id, p_citizen_id, p_type, p_payload, v_at, v_prev, v_hash)
