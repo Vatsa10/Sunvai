@@ -16,7 +16,7 @@
 
 import 'dotenv/config';
 import { readFileSync } from 'node:fs';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { pool, transaction, appendEvent } from '../../src/lib/db';
 import { DEMO_CASES } from './demo-cases';
 
@@ -261,11 +261,13 @@ async function seedDemoCases(
 async function seedBackgroundCorpus(officeIds: Map<string, string>) {
   const offices = [...officeIds.values()];
   const TOTAL = 2800;
-  const rows: string[] = [];
-  const values: unknown[] = [];
   let n = 0;
 
-  type Draft = { officeId: string; closed: boolean; verdict: keyof typeof BULK_REPLIES | null; asked: boolean; resolved: boolean; filedAt: Date };
+  type Draft = {
+    id: string; officeId: string; closed: boolean;
+    verdict: keyof typeof BULK_REPLIES | null; asked: boolean; resolved: boolean;
+    filedAt: Date; closedAt: Date | null; replyId: string; body: string;
+  };
   const drafts: Draft[] = [];
 
   for (let i = 0; i < TOTAL; i++) {
@@ -283,10 +285,19 @@ async function seedBackgroundCorpus(officeIds: Map<string, string>) {
     const asked = closed && chance(0.85);
     // The metric: whether the problem actually got fixed, by their answer, not our verdict.
     const resolved = asked && chance(verdict === 'resolved' ? 0.78 : verdict === 'partial' ? 0.42 : 0.28);
+    const closedAt = closed ? new Date(filedAt.getTime() + (5 + Math.floor(rand() * 25)) * 86400_000) : null;
 
-    drafts.push({ officeId: pick(offices), closed, verdict, asked, resolved, filedAt });
+    drafts.push({
+      id: randomUUID(),
+      replyId: randomUUID(),
+      officeId: pick(offices),
+      body: verdict ? pick(BULK_REPLIES[verdict]) : '',
+      closed, verdict, asked, resolved, filedAt, closedAt,
+    });
   }
 
+  // One round trip per table, not per row. The database is in Singapore and this machine is
+  // not; 2,800 sequential inserts is half an hour of latency for rows nobody reads singly.
   await transaction(async (client) => {
     const citizen = await client.query(
       `insert into citizens (phone_hash, display_name, preferred_lang, is_demo)
@@ -295,52 +306,76 @@ async function seedBackgroundCorpus(officeIds: Map<string, string>) {
     );
     const corpusCitizen = citizen.rows[0].id as string;
 
-    for (const d of drafts) {
-      const sla = new Date(d.filedAt.getTime() + 21 * 86400_000);
-      const closedAt = d.closed ? new Date(d.filedAt.getTime() + (5 + Math.floor(rand() * 25)) * 86400_000) : null;
-      const g = await client.query(
-        `insert into grievances (citizen_id, external_ref, source_system, imported, office_id,
-                                 department_id, original_lang, narrative_original, subject, status,
-                                 filed_at, sla_due_at, closed_at)
-         values ($1,$2,'mock_cpgrams',true,$3,(select department_id from offices where id=$3),
-                 $4,$5,'Synthetic background case',$6,$7,$8,$9) returning id`,
-        [corpusCitizen, `DEMO/2026/${String(1000 + n++).padStart(7, '0')}`, d.officeId,
-         pick(LANGS), pick(NARRATIVES), d.closed ? 'closed' : 'replied',
-         d.filedAt.toISOString(), sla.toISOString(), closedAt?.toISOString() ?? null],
-      );
-      const gid = g.rows[0].id as string;
+    await client.query(
+      `insert into grievances (id, citizen_id, external_ref, source_system, imported, office_id,
+                               department_id, original_lang, narrative_original, subject, status,
+                               filed_at, sla_due_at, closed_at)
+       select u.id, $1, u.ref, 'mock_cpgrams', true, u.office_id,
+              o.department_id, u.lang, u.narrative, 'Synthetic background case', u.status,
+              u.filed_at, u.filed_at + interval '21 days', u.closed_at
+         from unnest($2::uuid[], $3::text[], $4::uuid[], $5::text[], $6::text[], $7::text[],
+                     $8::timestamptz[], $9::timestamptz[])
+              as u(id, ref, office_id, lang, narrative, status, filed_at, closed_at)
+         join offices o on o.id = u.office_id`,
+      [
+        corpusCitizen,
+        drafts.map((d) => d.id),
+        drafts.map(() => `DEMO/2026/${String(1000 + n++).padStart(7, '0')}`),
+        drafts.map((d) => d.officeId),
+        drafts.map(() => pick(LANGS)),
+        drafts.map(() => pick(NARRATIVES)),
+        drafts.map((d) => (d.closed ? 'closed' : 'replied')),
+        drafts.map((d) => d.filedAt.toISOString()),
+        drafts.map((d) => d.closedAt?.toISOString() ?? null),
+      ],
+    );
 
-      if (d.closed && d.verdict) {
-        const body = pick(BULK_REPLIES[d.verdict]);
-        const r = await client.query(
-          `insert into replies (grievance_id, body, body_lang, is_final, received_at)
-           values ($1,$2,'en',true,$3) returning id`,
-          [gid, body, closedAt!.toISOString()],
-        );
-        await client.query(
-          `insert into audits (grievance_id, reply_id, verdict, confidence, reasoning, citations,
-                               unaddressed, citations_verified, model, prompt_version)
-           values ($1,$2,$3::audit_verdict,$4,$5,$6::jsonb,'[]'::jsonb,true,$7,$8)`,
-          [gid, r.rows[0].id, d.verdict, 0.7 + rand() * 0.25,
-           'Background corpus case: verdict assigned by the seed, not by a model run.',
-           JSON.stringify([{ quote: body.slice(0, 40) }]), 'seed', 'seed'],
-        );
-      }
+    const closedDrafts = drafts.filter((d) => d.closed && d.verdict);
+    await client.query(
+      `insert into replies (id, grievance_id, body, body_lang, is_final, received_at)
+       select * from unnest($1::uuid[], $2::uuid[], $3::text[], array_fill('en'::text, array[$4::int]),
+                            array_fill(true, array[$4::int]), $5::timestamptz[])`,
+      [
+        closedDrafts.map((d) => d.replyId),
+        closedDrafts.map((d) => d.id),
+        closedDrafts.map((d) => d.body),
+        closedDrafts.length,
+        closedDrafts.map((d) => d.closedAt!.toISOString()),
+      ],
+    );
 
-      if (d.asked && closedAt) {
-        await client.query(
-          `insert into confirmations (grievance_id, citizen_id, resolved, asked_via, asked_at, answered_at)
-           values ($1,$2,$3,'web',$4,$5)`,
-          [gid, corpusCitizen, d.resolved, closedAt.toISOString(),
-           new Date(closedAt.getTime() + 86400_000).toISOString()],
-        );
-      }
-    }
+    await client.query(
+      `insert into audits (grievance_id, reply_id, verdict, confidence, reasoning, citations,
+                           unaddressed, citations_verified, model, prompt_version)
+       select u.gid, u.rid, u.verdict::audit_verdict, u.confidence,
+              'Background corpus case: verdict assigned by the seed, not by a model run.',
+              u.citations::jsonb, '[]'::jsonb, true, 'seed', 'seed'
+         from unnest($1::uuid[], $2::uuid[], $3::text[], $4::numeric[], $5::text[])
+              as u(gid, rid, verdict, confidence, citations)`,
+      [
+        closedDrafts.map((d) => d.id),
+        closedDrafts.map((d) => d.replyId),
+        closedDrafts.map((d) => d.verdict),
+        closedDrafts.map(() => (0.7 + rand() * 0.25).toFixed(2)),
+        closedDrafts.map((d) => JSON.stringify([{ quote: d.body.slice(0, 40) }])),
+      ],
+    );
+
+    const asked = drafts.filter((d) => d.asked && d.closedAt);
+    await client.query(
+      `insert into confirmations (grievance_id, citizen_id, resolved, asked_via, asked_at, answered_at)
+       select u.gid, $1, u.resolved, 'web', u.asked_at, u.asked_at + interval '1 day'
+         from unnest($2::uuid[], $3::boolean[], $4::timestamptz[]) as u(gid, resolved, asked_at)`,
+      [
+        corpusCitizen,
+        asked.map((d) => d.id),
+        asked.map((d) => d.resolved),
+        asked.map((d) => d.closedAt!.toISOString()),
+      ],
+    );
   });
 
   console.log(`background corpus: ${drafts.length}`);
-  void rows;
-  void values;
 }
 
 /**

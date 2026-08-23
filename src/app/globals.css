@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Serious, calm, high-contrast, fast. Colour is reserved for verdicts — nothing else in this
+ * product gets to be colourful, because when everything is coloured a verdict is just decoration.
+ */
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: #ffffff;
+  color: #111111;
+  font-family: ui-sans-serif, system-ui, 'Segoe UI', Roboto, 'Noto Sans', 'Noto Sans Devanagari',
+    'Noto Sans Bengali', 'Noto Sans Tamil', 'Noto Sans Telugu', sans-serif;
+  font-size: 18px; /* the floor, set once */
+  line-height: 1.6;
+}
+
+/* Text-size control: a real preference, persisted per device, not a gimmick. */
+html[data-textsize='large'] body { font-size: 21px; }
+html[data-textsize='xlarge'] body { font-size: 24px; }
+
+/* Every interactive thing clears 48px without each component remembering to. */
+button, a[role='button'], input[type='submit'] {
+  min-height: 48px;
+}
+
+:focus-visible {
+  outline: 3px solid #111111;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
