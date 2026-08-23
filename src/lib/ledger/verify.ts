@@ -30,7 +30,7 @@ export type Receipt = {
 };
 
 export type VerifyResult =
-  | { ok: true; count: number }
+  | { ok: true; count: number; linksChecked: number }
   | { ok: false; brokenAtSeq: number; reason: string };
 
 /** The exact preimage the database hashes in ledger_append(). Keep the two in step. */
@@ -54,15 +54,21 @@ export async function verifyReceipt(receipt: Receipt): Promise<VerifyResult> {
     return { ok: false, brokenAtSeq: 0, reason: 'This receipt has no events in it.' };
   }
 
-  let expectedPrev = GENESIS_HASH;
+  // A receipt is a SLICE of one shared chain — your case's entries, not everybody's. So the
+  // events in it are usually not adjacent in the chain (seq 7 might be followed by seq 20,
+  // with other people's cases in between). Two different things are therefore checkable, and
+  // conflating them would be claiming more than we can show:
+  //
+  //   1. Every entry's own hash. This catches any edit to any entry, always.
+  //   2. The link between two entries, but only where the receipt actually holds both sides
+  //      of it — that is, where the sequence numbers are adjacent.
+  //
+  // What a slice cannot prove on its own is that nothing was removed from the gaps. Saying so
+  // is on /how-this-works, next to the anchoring gap.
+  let previous: LedgerEvent | null = null;
+  let linksChecked = 0;
 
-  for (const [i, e] of receipt.events.entries()) {
-    // First event of a case chains onto whatever came before it in the global chain, so we
-    // only assert linkage between consecutive events within the receipt itself.
-    if (i > 0 && e.prev_hash !== expectedPrev) {
-      return { ok: false, brokenAtSeq: e.seq, reason: 'One step does not follow from the one before it.' };
-    }
-
+  for (const e of receipt.events) {
     let recomputed: string;
     try {
       recomputed = await sha256Hex(preimage(e));
@@ -74,13 +80,19 @@ export async function verifyReceipt(receipt: Receipt): Promise<VerifyResult> {
       return { ok: false, brokenAtSeq: e.seq, reason: 'This step has been changed since it was recorded.' };
     }
 
-    expectedPrev = e.hash;
+    if (previous && e.seq === previous.seq + 1) {
+      if (e.prev_hash !== previous.hash) {
+        return { ok: false, brokenAtSeq: e.seq, reason: 'One step does not follow from the one before it.' };
+      }
+      linksChecked++;
+    }
+
+    previous = e;
   }
 
-  if (receipt.head_hash !== expectedPrev) {
-    const last = receipt.events[receipt.events.length - 1]!;
-    return { ok: false, brokenAtSeq: last.seq, reason: 'Steps have been removed from the end of this record.' };
+  if (previous && receipt.head_hash !== previous.hash) {
+    return { ok: false, brokenAtSeq: previous.seq, reason: 'Steps have been removed from the end of this record.' };
   }
 
-  return { ok: true, count: receipt.events.length };
+  return { ok: true, count: receipt.events.length, linksChecked };
 }

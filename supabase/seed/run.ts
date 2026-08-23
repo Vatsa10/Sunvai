@@ -397,9 +397,9 @@ async function seedClusters(officeIds: Map<string, string>) {
   const treasury = officeIds.get('Treasury Office, Muzaffarpur')!;
 
   const specs = [
-    { label: 'Pension disbursement stoppage · Muzaffarpur · May–Aug 2026', office: treasury, size: 46, public: true },
-    { label: 'PF claim rejection without stated reason · Hyderabad · Jun–Aug 2026', office: officeIds.get('EPFO Regional Office, Hyderabad')!, size: 31, public: true },
-    { label: 'Monsoon road damage unrepaired · Pune Rural · Jul–Aug 2026', office: officeIds.get('PWD Sub-Division, Pune (Rural)')!, size: 18, public: true },
+    { label: 'Pension disbursement stoppage · Muzaffarpur · May–Aug 2026', office: treasury, size: 46, public: true, include: 'DEMO/2026/0000472' },
+    { label: 'PF claim rejection without stated reason · Hyderabad · Jun–Aug 2026', office: officeIds.get('EPFO Regional Office, Hyderabad')!, size: 31, public: true, include: 'DEMO/2026/0000518' },
+    { label: 'Monsoon road damage unrepaired · Pune Rural · Jul–Aug 2026', office: officeIds.get('PWD Sub-Division, Pune (Rural)')!, size: 18, public: true, include: 'DEMO/2026/0000631' },
     { label: 'Delayed scheme payments · Ranchi · Aug 2026', office: officeIds.get('Block Development Office, Ranchi')!, size: 4, public: false },
     { label: 'Refund not credited · CPC Bengaluru · Aug 2026', office: officeIds.get('CPC Bengaluru')!, size: 3, public: false },
     { label: 'Hospital billing dispute · Bhopal · Aug 2026', office: officeIds.get('District Hospital, Bhopal')!, size: 4, public: false },
@@ -413,9 +413,14 @@ async function seedClusters(officeIds: Map<string, string>) {
     );
     const clusterId = rows[0].id as string;
 
+    // The demo case belongs in its own cluster, whatever its filing date — a citizen finding
+    // "46 others" only lands if their case is one of the 46.
     const members = await pool().query(
-      `select id from grievances where office_id = $1 order by filed_at limit $2`,
-      [s.office, s.size],
+      `select id from grievances
+        where office_id = $1
+        order by (external_ref = coalesce($3, '')) desc, filed_at
+        limit $2`,
+      [s.office, s.size, 'include' in s ? (s as { include: string }).include : null],
     );
     for (const m of members.rows) {
       await pool().query(

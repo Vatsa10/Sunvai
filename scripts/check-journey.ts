@@ -26,6 +26,21 @@ function form(entries: Record<string, string>): FormData {
   return f;
 }
 
+/**
+ * Put the case back to "just closed" so this can be run repeatedly. The ledger is deliberately
+ * NOT reset — it cannot be, there is no delete path — so a second run leaves the earlier run's
+ * events in place. That is the append-only property doing its job, not getting in the way.
+ */
+async function resetCase() {
+  const existing = await getCase(REF);
+  if (!existing) throw new Error('run `pnpm seed` first');
+  await query(`delete from appeals where grievance_id = $1`, [existing.id]);
+  await query(`delete from confirmations where grievance_id = $1`, [existing.id]);
+  await query(`update grievances set status = 'closed' where id = $1`, [existing.id]);
+}
+
+await resetCase();
+
 step(1, 'The case opens, closed, with a real bureaucratic reply');
 let c = await getCase(REF);
 assert.ok(c, 'case not found — run `pnpm seed`');
