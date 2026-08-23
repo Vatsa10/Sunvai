@@ -174,5 +174,4 @@ export class MockCPGRAMSAdapter implements GrievanceSystemAdapter {
   }
 }
 
-/** One instance, one place to swap when an official integration exists. */
-export const adapter: GrievanceSystemAdapter = new MockCPGRAMSAdapter();
+// Selection lives in ./index.ts. Nothing outside this folder imports this file by name.

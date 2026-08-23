@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { adapter } from '@/lib/adapters/mock-cpgrams';
+import { adapter } from '@/lib/adapters';
 
 export const metadata = { title: 'How this works — Sunvai' };
 
@@ -29,7 +29,7 @@ const MOCKED = [
 ];
 
 const UNBUILT = [
-  ['CPGRAMSOfficialAdapter', 'The production path. Blocked on an access agreement with DARPG, not on engineering.'],
+  ['The official adapter', 'The production path. Blocked on an access agreement with DARPG, not on engineering.'],
   ['StatePortalAdapter, EPFOAdapter', 'Real files implementing the interface, every method throwing NotImplementedError. Adding a system is one file.'],
   ['WhatsApp and IVR channels', 'Interfaces only. WhatsApp needs Meta business verification; IVR needs a telecom number.'],
   ['BhashiniLanguageProvider', 'In production this runs on Bhashini rather than duplicating it. We make no claim to handle Indian languages better than they do.'],

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
-import { adapter } from '@/lib/adapters/mock-cpgrams';
+import { adapter } from '@/lib/adapters';
 import { LANG_NAMES, SHIPPED_LANGS, t, type ShippedLang } from '@/lib/i18n/strings';
 import { MockNote } from '@/components/MockBadge';
 

@@ -1,4 +1,4 @@
-import { adapter } from '@/lib/adapters/mock-cpgrams';
+import { adapter } from '@/lib/adapters';
 
 /**
  * The mock badge renders from adapter.isMock, never from a hardcoded flag. Nobody can ship a

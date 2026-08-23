@@ -1,0 +1,134 @@
+{
+  "DEMO/2026/0000472": {
+    "result": {
+      "verdict": "deflected",
+      "confidence": 0.9,
+      "reasoning": "The citizen asked why the pension stopped and when it will be paid. The department only says it forwarded the matter and closed the case. It gives no reason, result, date, or payment timeline.",
+      "citations": [
+        {
+          "quote": "The matter has been forwarded to the concerned disbursing authority."
+        },
+        {
+          "quote": "The grievance is accordingly closed at this level."
+        }
+      ],
+      "unaddressed": [
+        "does not say why the pension payments were stopped",
+        "does not say when payments will resume or when arrears will be credited",
+        "does not confirm the status of pending months’ payments",
+        "does not name the receiving office or give a reference/contact for the transfer"
+      ],
+      "injection_suspected": false
+    },
+    "spans": [
+      {
+        "quote": "The matter has been forwarded to the concerned disbursing authority.",
+        "start": 0,
+        "end": 68
+      },
+      {
+        "quote": "The grievance is accordingly closed at this level.",
+        "start": 69,
+        "end": 119
+      }
+    ],
+    "citationsVerified": true,
+    "guardFailures": 0,
+    "model": "gpt-5",
+    "promptVersion": "closure-auditor.v1",
+    "expected": {
+      "verdict": "deflected",
+      "citizenSaysResolved": false,
+      "note": "Sent elsewhere and closed here. No reason, no owner, no date."
+    }
+  },
+  "DEMO/2026/0000518": {
+    "result": {
+      "verdict": "non_responsive",
+      "confidence": 0.86,
+      "reasoning": "The citizen asked why the claim was rejected and what to correct. The department only repeated a code and told them to refile, without explaining the code or needed corrections. It does not answer the citizen’s actual questions.",
+      "citations": [
+        {
+          "quote": "Claim ID HYD/2026/0088341 was rejected under rejection reason code 32."
+        },
+        {
+          "quote": "The member may submit a fresh claim through the Member e-Sewa portal."
+        },
+        {
+          "quote": "The grievance is closed."
+        }
+      ],
+      "unaddressed": [
+        "does not explain why the claim was rejected in plain terms (what rejection reason code 32 means)",
+        "does not specify what exactly needs to be corrected or which document/field caused rejection",
+        "does not state what documents or evidence are required for a successful refiling",
+        "does not indicate if previous submissions had any specific deficiency to fix"
+      ],
+      "injection_suspected": false
+    },
+    "spans": [
+      {
+        "quote": "Claim ID HYD/2026/0088341 was rejected under rejection reason code 32.",
+        "start": 71,
+        "end": 141
+      },
+      {
+        "quote": "The member may submit a fresh claim through the Member e-Sewa portal.",
+        "start": 142,
+        "end": 211
+      },
+      {
+        "quote": "The grievance is closed.",
+        "start": 212,
+        "end": 236
+      }
+    ],
+    "citationsVerified": true,
+    "guardFailures": 0,
+    "model": "gpt-5",
+    "promptVersion": "closure-auditor.v1",
+    "expected": {
+      "verdict": "non_responsive",
+      "citizenSaysResolved": false,
+      "note": "Restates the rejection code he already had. He asked what code 32 means and what to fix."
+    }
+  },
+  "DEMO/2026/0000631": {
+    "result": {
+      "verdict": "resolved",
+      "confidence": 0.9,
+      "reasoning": "The department says the site was inspected and a work order issued with a clear completion target date. This tells you what action was taken and when repairs are expected. It answers your question about when the road will be repaired.",
+      "citations": [
+        {
+          "quote": "The matter was inspected by the Sub-Divisional Officer on 09.08.2026."
+        },
+        {
+          "quote": "Work order No. PWD/PN/2026/1174 for pothole repair on the said stretch has been issued to the executing agency with a completion target of 31.08.2026."
+        }
+      ],
+      "unaddressed": [],
+      "injection_suspected": false
+    },
+    "spans": [
+      {
+        "quote": "The matter was inspected by the Sub-Divisional Officer on 09.08.2026.",
+        "start": 0,
+        "end": 69
+      },
+      {
+        "quote": "Work order No. PWD/PN/2026/1174 for pothole repair on the said stretch has been issued to the executing agency with a completion target of 31.08.2026.",
+        "start": 70,
+        "end": 220
+      }
+    ],
+    "citationsVerified": true,
+    "guardFailures": 0,
+    "model": "gpt-5",
+    "promptVersion": "closure-auditor.v1",
+    "expected": {
+      "verdict": "resolved",
+      "citizenSaysResolved": false,
+      "note": "A work order is not a repaired road. Our auditor accepts it; Meera says nothing has been done."
+    }
+  }
+}

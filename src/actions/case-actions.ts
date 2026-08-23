@@ -13,7 +13,7 @@ import { transaction, appendEvent, one } from '@/lib/db';
 import { getCase } from '@/lib/cases';
 import { draftAppeal, mayDraftAppeal } from '@/lib/agents/appeal';
 import type { AuditResult } from '@/lib/agents/schemas';
-import { adapter } from '@/lib/adapters/mock-cpgrams';
+import { adapter } from '@/lib/adapters';
 import type { Lang } from '@/lib/adapters/types';
 
 /**

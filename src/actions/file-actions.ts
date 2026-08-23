@@ -9,7 +9,7 @@ import { transaction, appendEvent, one } from '@/lib/db';
 import { intake, type Turn } from '@/lib/agents/intake';
 import { route, needsCitizenChoice } from '@/lib/agents/router';
 import { draft, checkNumbersInSource } from '@/lib/agents/drafter';
-import { adapter } from '@/lib/adapters/mock-cpgrams';
+import { adapter } from '@/lib/adapters';
 import type { IntakeFacts } from '@/lib/agents/schemas';
 import type { Lang } from '@/lib/adapters/types';
 
@@ -162,10 +162,10 @@ export async function fileGrievance(args: {
       `insert into grievances (citizen_id, consent_recorded, external_ref, source_system, imported,
                                department_id, office_id, original_lang, narrative_original,
                                narrative_formal, subject, status, filed_at, sla_due_at)
-       values ($1, true, $2, 'mock_cpgrams', false, $3, $4, $5, $6, $7, $8, 'filed', now(),
-               now() + ($9 || ' days')::interval)
+       values ($1, true, $2, $3, false, $4, $5, $6, $7, $8, $9, 'filed', now(),
+               now() + ($10 || ' days')::interval)
        returning id`,
-      [citizenId, filed.ref, args.departmentId, args.officeId, args.lang, args.narrative,
+      [citizenId, filed.ref, adapter.id, args.departmentId, args.officeId, args.lang, args.narrative,
        args.formalText, args.subject, sla.replyDays],
     );
     const gid = g.rows[0].id as string;
