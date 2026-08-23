@@ -1,0 +1,95 @@
+/**
+ * The end-to-end journey check, run against the real database and a real model.
+ *
+ * This is the acceptance test from the corpus, in code: open a closed case, answer the
+ * question, get an appeal drafted from the audit's own citations, consent, send, download the
+ * receipt, verify it — and confirm that a tampered receipt is rejected.
+ *
+ *   pnpm tsx scripts/check-journey.ts
+ */
+
+import 'dotenv/config';
+import assert from 'node:assert/strict';
+import { getCase } from '../src/lib/cases';
+import { buildReceipt } from '../src/lib/ledger/receipt';
+import { verifyReceipt } from '../src/lib/ledger/verify';
+import { confirmResolution, prepareAppeal, sendAppeal } from '../src/actions/case-actions';
+import { checkCitations } from '../src/lib/agents/citation-guard';
+import { pool, query } from '../src/lib/db';
+
+const REF = 'DEMO/2026/0000472'; // Kamla
+const step = (n: number, s: string) => console.log(`\n${n}. ${s}`);
+
+function form(entries: Record<string, string>): FormData {
+  const f = new FormData();
+  for (const [k, v] of Object.entries(entries)) f.append(k, v);
+  return f;
+}
+
+step(1, 'The case opens, closed, with a real bureaucratic reply');
+let c = await getCase(REF);
+assert.ok(c, 'case not found — run `pnpm seed`');
+assert.equal(c.status, 'closed');
+assert.ok(c.reply, 'no department reply');
+console.log(`   ${c.ref} — ${c.rawStatus} — "${c.reply!.body.slice(0, 60)}…"`);
+
+step(2, 'The audit quotes their reply verbatim');
+assert.ok(c.audit, 'no audit');
+assert.equal(c.audit!.verdict, 'deflected');
+const guard = checkCitations(c.reply!.body, c.audit!.citations);
+assert.equal(guard.ok, true, 'a citation does not appear verbatim in the reply');
+console.log(`   ${c.audit!.verdict}, ${c.audit!.citations.length} citations, all verbatim`);
+
+step(3, 'She answers the question nobody asks — and says no');
+await confirmResolution(form({ ref: REF, resolved: 'no' }));
+c = await getCase(REF);
+assert.equal(c!.confirmation?.resolved, false);
+console.log('   confirmation recorded: not resolved');
+
+step(4, 'The appeal writes itself, citing the specific inadequacy');
+await prepareAppeal(form({ ref: REF }));
+c = await getCase(REF);
+assert.ok(c!.appeal, 'no appeal drafted');
+assert.equal(c!.appeal!.status, 'drafted', 'an appeal must never be sent without consent');
+assert.ok(c!.appeal!.grounds.length >= 1, 'a generic appeal with no grounds is refused by design');
+assert.ok(c!.appeal!.bodyCitizenLang.length > 50, 'no back-translation for the consent gate');
+console.log(`   drafted, ${c!.appeal!.grounds.length} grounds:`);
+for (const g of c!.appeal!.grounds) console.log(`     - ${g}`);
+
+step(5, 'Nothing is sent without consent');
+await assert.rejects(() => sendAppeal(form({ ref: REF, consent: 'off' })), /consent/);
+console.log('   refused without the box ticked');
+
+step(6, 'With consent, it goes');
+await sendAppeal(form({ ref: REF, consent: 'on' }));
+c = await getCase(REF);
+assert.equal(c!.appeal!.status, 'sent');
+console.log('   appeal sent');
+
+step(7, 'The receipt verifies in the browser');
+const receipt = await buildReceipt(c!.id, c!.ref);
+assert.ok(receipt);
+const clean = await verifyReceipt(receipt!);
+assert.equal(clean.ok, true, 'a receipt we just issued does not verify');
+console.log(`   VERIFIED — ${receipt!.events.length} events`);
+console.log(`   ${receipt!.events.map((e) => e.type).join(' → ')}`);
+
+step(8, 'A tampered receipt is rejected');
+const tampered = structuredClone(receipt!);
+tampered.events[2]!.payload = { ...(tampered.events[2]!.payload as object), tampered: 'yes' };
+const dirty = await verifyReceipt(tampered);
+assert.equal(dirty.ok, false, 'the verifier accepted an edited receipt — it is a decoration');
+console.log(`   rejected at seq ${(dirty as { brokenAtSeq: number }).brokenAtSeq}`);
+
+step(9, 'Her answer moved the public number, and our disagreement was counted');
+const [headline] = await query<{ true_resolution_pct: string }>('select * from headline_numbers');
+const [errors] = await query<{ too_soft: string; too_harsh: string }>('select * from our_error_rate');
+console.log(`   true resolution ${headline!.true_resolution_pct}% · too soft ${errors!.too_soft} · too harsh ${errors!.too_harsh}`);
+
+step(10, 'The cluster shows counts, and no identities');
+assert.ok(c!.cluster, 'no cluster');
+assert.ok(c!.cluster!.members >= 5, 'a public cluster must clear the visibility gate');
+console.log(`   ${c!.cluster!.members} others, ${c!.cluster!.closedUnresolved} closed unresolved`);
+
+console.log('\nJOURNEY OK');
+await pool().end();

@@ -49,6 +49,7 @@ export async function transaction<T>(fn: (c: PoolClient) => Promise<T>): Promise
   const client = await pool().connect();
   try {
     await client.query('begin');
+    await client.query(`set local statement_timeout = '300s'`);
     const out = await fn(client);
     await client.query('commit');
     return out;

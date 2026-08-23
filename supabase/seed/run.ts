@@ -35,6 +35,9 @@ const rand = mulberry32(20260828);
 const pick = <T,>(xs: readonly T[]): T => xs[Math.floor(rand() * xs.length)]!;
 const chance = (p: number) => rand() < p;
 
+const plusDays = (iso: string, n: number) =>
+  new Date(Date.parse(iso) + n * 86400_000).toISOString();
+
 const phoneHash = (phone: string) =>
   createHash('sha256').update(phone + (process.env.LEDGER_PEPPER ?? 'demo-pepper')).digest('hex');
 
@@ -132,6 +135,8 @@ async function wipe() {
   // pretending a delete would work. Only ever run against the demo database.
   const c = await pool().connect();
   try {
+    // Bulk work against a remote database needs longer than the default ceiling.
+    await c.query(`set statement_timeout = '300s'`);
     await c.query(`truncate cluster_members, clusters, attachments, appeals, confirmations,
                             audits, replies, grievances, citizens, offices, departments restart identity cascade`);
     await c.query('truncate events restart identity');
@@ -211,15 +216,15 @@ async function seedDemoCases(
 
       // The ledger history a reviewer will download as a receipt.
       await appendEvent(client, { grievanceId: gid, citizenId, type: 'grievance_filed',
-        payload: { ref: c.ref, subject: c.subject, office: c.office, lang: c.narrativeLang } });
+        payload: { at: c.filedAt, ref: c.ref, subject: c.subject, office: c.office, lang: c.narrativeLang } });
       if (c.filedBy) {
         await appendEvent(client, { grievanceId: gid, citizenId, type: 'assisted_filing_declared',
-          payload: { relation: c.filedBy.relation, consent_obtained: 'in_person' } });
+          payload: { at: c.filedAt, relation: c.filedBy.relation, consent_obtained: 'in_person' } });
       }
       await appendEvent(client, { grievanceId: gid, citizenId, type: 'acknowledged',
-        payload: { office: c.office } });
+        payload: { at: plusDays(c.filedAt, 1), office: c.office } });
       await appendEvent(client, { grievanceId: gid, citizenId, type: 'assigned',
-        payload: { office: c.office } });
+        payload: { at: plusDays(c.filedAt, 3), office: c.office } });
 
       const r = await client.query(
         `insert into replies (grievance_id, body, body_lang, is_final, received_at)
@@ -229,9 +234,9 @@ async function seedDemoCases(
       const replyId = r.rows[0].id as string;
 
       await appendEvent(client, { grievanceId: gid, citizenId, type: 'reply_received',
-        payload: { reply_len: c.reply.body.length, lang: c.reply.lang } });
+        payload: { at: c.closedAt, reply_len: c.reply.body.length, lang: c.reply.lang } });
       await appendEvent(client, { grievanceId: gid, citizenId, type: 'closed',
-        payload: { raw_status: c.rawStatus, closed_at: c.closedAt } });
+        payload: { at: c.closedAt, raw_status: c.rawStatus, closed_at: c.closedAt } });
 
       const pre = precomputed[c.ref];
       if (pre) {
@@ -278,13 +283,18 @@ async function seedBackgroundCorpus(officeIds: Map<string, string>) {
     let verdict: keyof typeof BULK_REPLIES | null = null;
     if (closed) {
       const roll = rand();
-      verdict = roll < 0.3 ? 'deflected' : roll < 0.56 ? 'boilerplate' : roll < 0.72 ? 'non_responsive' : roll < 0.82 ? 'partial' : 'resolved';
+      verdict = roll < 0.22 ? 'deflected' : roll < 0.40 ? 'boilerplate' : roll < 0.55 ? 'non_responsive' : roll < 0.70 ? 'partial' : 'resolved';
     }
 
     // Sunvai asks everyone; ~15% never answer. The gap is real and we show it.
     const asked = closed && chance(0.85);
     // The metric: whether the problem actually got fixed, by their answer, not our verdict.
-    const resolved = asked && chance(verdict === 'resolved' ? 0.78 : verdict === 'partial' ? 0.42 : 0.28);
+    // Tuned so the corpus lands where the published figures do — disposal in the nineties,
+    // true resolution in the low forties — and so the gap between our verdict and the
+    // citizen's answer stays in a range a real auditor could plausibly have. A negative
+    // verdict is sometimes followed by the problem getting fixed anyway; that is our
+    // "too harsh" column, and inventing a lot of it would be inventing our own incompetence.
+    const resolved = asked && chance(verdict === 'resolved' ? 0.88 : verdict === 'partial' ? 0.55 : 0.13);
     const closedAt = closed ? new Date(filedAt.getTime() + (5 + Math.floor(rand() * 25)) * 86400_000) : null;
 
     drafts.push({
@@ -311,7 +321,7 @@ async function seedBackgroundCorpus(officeIds: Map<string, string>) {
                                department_id, original_lang, narrative_original, subject, status,
                                filed_at, sla_due_at, closed_at)
        select u.id, $1, u.ref, 'mock_cpgrams', true, u.office_id,
-              o.department_id, u.lang, u.narrative, 'Synthetic background case', u.status,
+              o.department_id, u.lang, u.narrative, 'Synthetic background case', u.status::grievance_status,
               u.filed_at, u.filed_at + interval '21 days', u.closed_at
          from unnest($2::uuid[], $3::text[], $4::uuid[], $5::text[], $6::text[], $7::text[],
                      $8::timestamptz[], $9::timestamptz[])
