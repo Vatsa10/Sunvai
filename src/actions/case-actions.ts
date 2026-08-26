@@ -11,7 +11,7 @@
 import { revalidatePath } from 'next/cache';
 import { transaction, appendEvent, one } from '@/lib/db';
 import { getCase } from '@/lib/cases';
-import { draftAppeal, mayDraftAppeal } from '@/lib/agents/appeal';
+import { appealWindow, draftAppeal, mayDraftAppeal } from '@/lib/agents/appeal';
 import type { AuditResult } from '@/lib/agents/schemas';
 import { adapter } from '@/lib/adapters';
 import type { Lang } from '@/lib/adapters/types';
@@ -79,7 +79,13 @@ export async function prepareAppeal(formData: FormData) {
   if (!c || !c.reply || !c.audit) throw new Error('nothing to appeal yet');
 
   const citizenSaysUnresolved = c.confirmation ? !c.confirmation.resolved : false;
-  if (!mayDraftAppeal({ verdict: c.audit.verdict, citizenSaysUnresolved })) {
+  // The same gate the page applies, applied again here. The page decides what to show; this
+  // decides what may exist. A time-barred appeal must not be creatable by replaying the form.
+  const closedAt = c.closedAt ?? c.reply.receivedAt;
+  if (!mayDraftAppeal({ verdict: c.audit.verdict, citizenSaysUnresolved, closedAt })) {
+    if (!appealWindow(closedAt).open) {
+      throw new Error('the 30-day appeal window on this closure has passed');
+    }
     throw new Error('this closure does not meet the grounds for an appeal');
   }
   if (c.appeal) return; // already drafted; drafting twice would be two records of one intent
@@ -96,7 +102,7 @@ export async function prepareAppeal(formData: FormData) {
     },
     citizenSaysUnresolved,
     filed_at: c.filedAt,
-    closed_at: c.closedAt ?? c.reply.receivedAt,
+    closed_at: closedAt,
     sla_days: sla.replyDays,
     officialLang: 'en' as Lang,
     citizenLang: c.narrativeLang,

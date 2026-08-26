@@ -21,12 +21,52 @@ export const APPEAL_PROMPT_VERSION = 'appeal.v1';
 const INADEQUATE = new Set(['deflected', 'boilerplate', 'non_responsive', 'partial']);
 
 /**
- * Two independent triggers, and the citizen's answer overrides our verdict. If they say the
- * problem is not fixed, they get an appeal even where our auditor was satisfied — which is
- * exactly the case we get wrong on purpose.
+ * An appeal against a closure has to be filed within 30 days of that closure. Our whole
+ * premise is reaching people who found out late, so a large share of the people we help are
+ * already outside it. Offering them a live appeal button is not optimism, it is a month of
+ * someone's life spent waiting for a reply that no one is required to send.
  */
-export function mayDraftAppeal(args: { verdict: string; citizenSaysUnresolved: boolean }): boolean {
+export const APPEAL_WINDOW_DAYS = 30;
+
+export type AppealWindow = {
+  /** Whole days left to file. Negative once the window has closed. */
+  daysLeft: number;
+  open: boolean;
+  /** The last date on which an appeal can be filed, ISO. */
+  closesAt: string;
+};
+
+/** Pure arithmetic, no clock of its own, so it can be tested at any date. */
+export function appealWindow(closedAt: string, now: Date = new Date()): AppealWindow {
+  const closesAtMs = Date.parse(closedAt) + APPEAL_WINDOW_DAYS * 86_400_000;
+  const daysLeft = Math.ceil((closesAtMs - now.getTime()) / 86_400_000);
+  return { daysLeft, open: daysLeft >= 0, closesAt: new Date(closesAtMs).toISOString() };
+}
+
+/**
+ * Two independent triggers, and the citizen's answer overrides our verdict. If they say the
+ * problem is not fixed, they have grounds even where our auditor was satisfied — which is
+ * exactly the case we get wrong on purpose. Grounds only; says nothing about time.
+ */
+export function hasAppealGrounds(args: { verdict: string; citizenSaysUnresolved: boolean }): boolean {
   return args.citizenSaysUnresolved || INADEQUATE.has(args.verdict);
+}
+
+/**
+ * Grounds, and then one veto that overrides them: the 30-day window. Being right does not
+ * revive a lapsed window. `closedAt` is required rather than optional on purpose — an omitted
+ * date would mean "no gate", and a gate that can be forgotten is not a gate. Where the closure
+ * date is genuinely unknown, pass null: we do not offer a live appeal on a clock we cannot see.
+ */
+export function mayDraftAppeal(args: {
+  verdict: string;
+  citizenSaysUnresolved: boolean;
+  closedAt: string | null;
+  now?: Date;
+}): boolean {
+  if (!hasAppealGrounds(args)) return false;
+  if (!args.closedAt) return false;
+  return appealWindow(args.closedAt, args.now).open;
 }
 
 export type AppealInput = {

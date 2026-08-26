@@ -216,11 +216,13 @@ async function seedDemoCases(
         `insert into grievances (citizen_id, filed_by_citizen_id, filed_by_relation, consent_recorded,
                                  external_ref, source_system, imported, department_id, office_id,
                                  original_lang, narrative_original, subject, status,
-                                 filed_at, sla_due_at, closed_at)
-         values ($1,$2,$3,true,$4,'mock_cpgrams',true,$5,$6,$7,$8,$9,'closed',$10,$11,$12)
+                                 filed_at, sla_due_at, closed_at,
+                                 next_step_heading, next_step_body)
+         values ($1,$2,$3,true,$4,'mock_cpgrams',true,$5,$6,$7,$8,$9,'closed',$10,$11,$12,$13,$14)
          returning id`,
         [citizenId, filedById, c.filedBy?.relation ?? null, c.ref, deptId, officeId,
-         c.narrativeLang, c.narrative, c.subject, c.filedAt, slaDue, c.closedAt],
+         c.narrativeLang, c.narrative, c.subject, c.filedAt, slaDue, c.closedAt,
+         c.nextStep?.heading ?? null, c.nextStep?.body ?? null],
       );
       const gid = g.rows[0].id as string;
 

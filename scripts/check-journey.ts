@@ -15,6 +15,7 @@ import { buildReceipt } from '../src/lib/ledger/receipt';
 import { verifyReceipt } from '../src/lib/ledger/verify';
 import { confirmResolution, prepareAppeal, sendAppeal } from '../src/actions/case-actions';
 import { checkCitations } from '../src/lib/agents/citation-guard';
+import { APPEAL_WINDOW_DAYS, appealWindow, mayDraftAppeal } from '../src/lib/agents/appeal';
 import { pool, query } from '../src/lib/db';
 
 const REF = 'DEMO/2026/0000472'; // Kamla
@@ -105,6 +106,59 @@ step(10, 'The cluster shows counts, and no identities');
 assert.ok(c!.cluster, 'no cluster');
 assert.ok(c!.cluster!.members >= 5, 'a public cluster must clear the visibility gate');
 console.log(`   ${c!.cluster!.members} others, ${c!.cluster!.closedUnresolved} closed unresolved`);
+
+step(11, 'A case closed more than 30 days ago does not present a live appeal');
+{
+  // Pure arithmetic against a fixed clock, so this asserts the same thing in any month.
+  const now = new Date('2026-08-26T00:00:00.000Z');
+  const inTime = '2026-08-20T00:00:00.000Z'; // 6 days before `now`
+  const lapsed = '2026-06-01T00:00:00.000Z'; // 86 days before `now`
+  const lastDay = new Date(now.getTime() - APPEAL_WINDOW_DAYS * 86_400_000).toISOString();
+
+  assert.equal(appealWindow(inTime, now).open, true);
+  assert.equal(appealWindow(lapsed, now).open, false);
+  assert.equal(appealWindow(lastDay, now).open, true, 'the last day of the window is still inside it');
+
+  // Grounds, and in time: an appeal.
+  assert.equal(
+    mayDraftAppeal({ verdict: 'deflected', citizenSaysUnresolved: false, closedAt: inTime, now }),
+    true,
+  );
+  // The same grounds, out of time: no appeal. Being right does not revive a lapsed window.
+  assert.equal(
+    mayDraftAppeal({ verdict: 'deflected', citizenSaysUnresolved: false, closedAt: lapsed, now }),
+    false,
+    'a time-barred closure must not present a live appeal',
+  );
+  // Nor does the citizen's own override, which beats our verdict but not the calendar.
+  assert.equal(
+    mayDraftAppeal({ verdict: 'resolved', citizenSaysUnresolved: true, closedAt: lapsed, now }),
+    false,
+    'the citizen override must not reopen a closed appeal window',
+  );
+  assert.equal(
+    mayDraftAppeal({ verdict: 'resolved', citizenSaysUnresolved: true, closedAt: inTime, now }),
+    true,
+  );
+  // No grounds is still no appeal, and a lawful transfer is still not grounds.
+  assert.equal(
+    mayDraftAppeal({ verdict: 'transferred_lawfully', citizenSaysUnresolved: false, closedAt: inTime, now }),
+    false,
+  );
+  // An unknown closure date is not an open window.
+  assert.equal(
+    mayDraftAppeal({ verdict: 'deflected', citizenSaysUnresolved: true, closedAt: null, now }),
+    false,
+  );
+  console.log(
+    `   ${APPEAL_WINDOW_DAYS}-day window enforced — in time: appeal; ${-appealWindow(lapsed, now).daysLeft} days late: none`,
+  );
+}
+
+step(12, 'The case names a forum that can actually act');
+assert.ok(c!.nextStep, 'no next step seeded — a verdict with no next step is half a product');
+assert.ok(c!.nextStep!.body.length > 100, 'the next step must be actionable, not a slogan');
+console.log(`   ${c!.nextStep!.heading}`);
 
 console.log('\nJOURNEY OK');
 await pool().end();
