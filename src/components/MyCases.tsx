@@ -16,6 +16,11 @@ import { t, type ShippedLang } from '@/lib/i18n/strings';
  * When there is nothing stored it renders nothing at all — no empty box, no placeholder. An
  * empty state here would be a permanent piece of furniture on the most important screen,
  * explaining a feature to someone who has not used it yet.
+ *
+ * Note for anyone changing this: rendering the box sends every stored reference to the server,
+ * one per row, because that is how a row learns whether it still opens. The privacy line under
+ * the heading (`myCasesPrivacy`) says so out loud. If the hydration below ever changes, that
+ * string has to change with it — a reviewer with the network tab open is the audience.
  */
 
 type Row = SavedCase & { state: 'checking' | 'open' | 'unavailable' };

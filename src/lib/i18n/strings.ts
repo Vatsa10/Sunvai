@@ -39,8 +39,12 @@ type Dict = {
   /** The on-device case list, under Door A. */
   myCases: string;
   /**
-   * Load-bearing. A list kept in the browser is only acceptable if we say exactly what it is,
-   * and this is the sentence that says it.
+   * Load-bearing, and the one sentence on this feature that has to survive someone opening the
+   * network tab. The list itself never leaves the device — that part is true and is why a
+   * client-side store is acceptable at all. But rendering the box sends every reference in it
+   * to us, because each row is checked against the case lookup, and a citizen reads this line
+   * as being about the box in front of them. So the check is stated in its own sentence rather
+   * than buried in a clause after a comma.
    */
   myCasesPrivacy: string;
   /** One stored reference we could not open just now. Muted, not removed. */
@@ -135,7 +139,7 @@ const en: Dict = {
     'Our system is not answering right now. Your number is probably fine — please try again in a minute.',
   myCases: 'Cases you opened on this phone',
   myCasesPrivacy:
-    'Saved only on this phone. Nothing is sent anywhere, and we cannot see this list.',
+    'This list is saved only on this phone — we never store it. To show whether each case still opens, we check its number with our server.',
   caseUnavailable: 'We could not open this one right now.',
   realRefHeading: 'That looks like a real registration number. We cannot open it.',
   realRefBody:
@@ -255,7 +259,7 @@ const hi: Dict = {
     'हमारा सिस्टम अभी जवाब नहीं दे रहा। आपका नंबर शायद सही है — कृपया एक मिनट बाद फिर कोशिश कीजिए।',
   myCases: 'इस फ़ोन पर खोली गई शिकायतें',
   myCasesPrivacy:
-    'यह सिर्फ़ इसी फ़ोन में सहेजा गया है। कहीं कुछ नहीं भेजा जाता, और यह सूची हम नहीं देख सकते।',
+    'यह सूची सिर्फ़ इसी फ़ोन में सहेजी जाती है — हम इसे कभी अपने पास नहीं रखते। हर शिकायत अभी खुलती है या नहीं, यह दिखाने के लिए हम उसका नंबर अपने सर्वर से जाँचते हैं।',
   caseUnavailable: 'यह अभी नहीं खुल पाई।',
   realRefHeading: 'यह असली पंजीकरण नंबर लगता है। हम इसे नहीं खोल सकते।',
   realRefBody:
@@ -375,7 +379,7 @@ const mr: Dict = {
     'आमची यंत्रणा सध्या उत्तर देत नाही. तुमचा क्रमांक बहुधा बरोबर आहे — कृपया एका मिनिटाने पुन्हा पाहा.',
   myCases: 'या फोनवर उघडलेल्या तक्रारी',
   myCasesPrivacy:
-    'हे फक्त याच फोनमध्ये जतन केलं आहे. कुठेही काही पाठवलं जात नाही, आणि ही यादी आम्हाला दिसत नाही.',
+    'ही यादी फक्त याच फोनमध्ये जतन होते — आम्ही ती कधीच आमच्याकडे ठेवत नाही. प्रत्येक तक्रार अजून उघडते का हे दाखवण्यासाठी आम्ही तिचा क्रमांक आमच्या सर्व्हरकडे तपासतो.',
   caseUnavailable: 'ही सध्या उघडता आली नाही.',
   realRefHeading: 'हा खरा नोंदणी क्रमांक दिसतो. आम्ही तो उघडू शकत नाही.',
   realRefBody:
