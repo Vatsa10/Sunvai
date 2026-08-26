@@ -6,13 +6,13 @@
 
 ---
 
-## Submission text — 242 words (including the title line)
+## Submission text — 248 words (including the title line)
 
 > **Sunvai — the accountability layer for public grievances**
 >
 > India's grievance portal, CPGRAMS, has spent two years fixing its front door. Filing is
 > now easy: 22 languages, 5 lakh service centres, and an AI voice chatbot, Samadhan Didi,
-> launched May 2026. That problem is solved.
+> launched May 2026. That is solved.
 >
 > What happens after you file is not. Departments are measured on *disposal*, so they
 > dispose — closing cases with "matter forwarded to concerned department" and marking them
@@ -29,7 +29,8 @@
 > verify in your own browser.
 >
 > CPGRAMS publishes a disposal rate. We publish a true resolution rate — from citizens, not
-> from our AI — alongside our own error rate.
+> from our AI — beside our auditor's accuracy on 74 replies labelled before the prompt
+> was written. The demo corpus is synthetic and labelled so: disposal 94.0%, resolution 39.4%.
 >
 > The government fixed the front door. This is the back half.
 

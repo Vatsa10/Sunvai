@@ -4,7 +4,7 @@ import { adapter } from '@/lib/adapters';
 import { LANG_NAMES, SHIPPED_LANGS, t, type ShippedLang } from '@/lib/i18n/strings';
 import { MockNote } from '@/components/MockBadge';
 import { TryTheAuditor } from '@/components/TryTheAuditor';
-import { one } from '@/lib/db';
+import { evalResults, pct } from '@/lib/eval-results';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,11 +25,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
   const lang = (SHIPPED_LANGS as readonly string[]).includes(sp.lang ?? '') ? (sp.lang as ShippedLang) : 'hi';
   const s = t(lang);
 
-  const errors = await one<{ too_soft: string; too_harsh: string; total_compared: string }>(
-    'select * from our_error_rate',
-  );
-  const wrong = Number(errors?.too_soft ?? 0) + Number(errors?.too_harsh ?? 0);
-  const compared = Number(errors?.total_compared ?? 0);
+  // The only accuracy claim on this page, and it is read from the eval file rather than
+  // computed from the seeded corpus. If the eval has not been run, the section does not render.
+  const evals = evalResults();
 
   async function open(formData: FormData) {
     'use server';
@@ -124,19 +122,31 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
         <TryTheAuditor />
       </section>
 
-      {/* Our own error rate, on the front page rather than in a footnote. */}
-      <section className="rounded border border-rule p-5">
-        <h2 className="text-lg font-semibold">We are wrong about {compared ? ((wrong / compared) * 100).toFixed(1) : '—'}% of the time</h2>
-        <p className="mt-1 text-muted">
-          Every time our verdict disagreed with what the citizen told us, we counted it — both when we were
-          too harsh and when we were too soft. That is {wrong.toLocaleString('en-IN')} out of{' '}
-          {compared.toLocaleString('en-IN')} cases.{' '}
-          <Link href="/numbers" className="underline">See the breakdown</Link>.
-        </p>
-        <p className="mt-1 text-muted">
-          One of the three cases above is one we get wrong on purpose. It is left in.
-        </p>
-      </section>
+      {/* How well the auditor actually does, measured on hand-labelled cases. Every figure here
+          comes from evals/results.json. If that file is missing this section renders nothing —
+          a fabricated fallback is the one thing this page must never do. */}
+      {evals && (
+        <section className="rounded border border-rule p-5">
+          <h2 className="text-lg font-semibold">
+            We tested this on {evals.cases} closure replies we labelled before we wrote the prompt.
+          </h2>
+          <p className="mt-1 text-muted">
+            {evals.falseAccusation === 0
+              ? 'It never accused a department that had actually answered.'
+              : `It wrongly accused a department that had actually answered ${pct(evals.falseAccusation)} of the time.`}{' '}
+            It caught {pct(evals.adversarialCatch)} of replies we wrote specifically to fool it.{' '}
+            {evals.gatesFailed === 1
+              ? 'There is one test it fails, and we left it failing.'
+              : evals.gatesFailed === 0
+                ? 'It passes every gate we set for it.'
+                : `There are ${evals.gatesFailed} tests it fails, and we left them failing.`}{' '}
+            <Link href="/how-this-works" className="underline">See every number, and what it fails</Link>.
+          </p>
+          <p className="mt-1 text-muted">
+            One of the three cases above is one we get wrong on purpose. It is left in.
+          </p>
+        </section>
+      )}
 
       <MockNote>
         There is no login here, and nothing to sign up for. Every case, citizen and department

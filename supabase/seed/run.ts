@@ -96,6 +96,16 @@ const BULK_REPLIES = {
   partial: [
     'The delay is regretted. The matter regarding the remaining amount is under examination. Grievance closed.',
   ],
+  // Mandated transfers. CPGRAMS is *required* to move State subjects, sub judice matters, RTI
+  // matters and service matters to the competent authority; doing so is correct procedure, not
+  // evasion, and the corpus has to contain some or /numbers under-represents a verdict the
+  // auditor can now return. These name the receiving authority and carry a transfer reference —
+  // that is what separates them from the `deflected` texts above.
+  transferred_lawfully: [
+    'This matter falls within the jurisdiction of the State Government. It has been transferred to the Office of the Collector, DEMO District, under transfer reference DEMO/TR/2026/0041, and that office will reply to you directly.',
+    'The subject relates to a service matter of a government servant, which this forum does not adjudicate. The papers have been sent to the Administrative Section of the concerned cadre-controlling authority vide DEMO/TR/2026/0088.',
+    'As the request is for information, it has been transferred to the Central Public Information Officer of this Ministry under section 6(3) of the Right to Information Act, 2005, vide DEMO/TR/2026/0113.',
+  ],
   resolved: [
     'The pending amount was credited on 12.07.2026 through the treasury. Arrears for two months are included.',
     'The defect was rectified on 03.08.2026 and the connection restored the same day.',
@@ -283,7 +293,13 @@ async function seedBackgroundCorpus(officeIds: Map<string, string>) {
     let verdict: keyof typeof BULK_REPLIES | null = null;
     if (closed) {
       const roll = rand();
-      verdict = roll < 0.22 ? 'deflected' : roll < 0.40 ? 'boilerplate' : roll < 0.55 ? 'non_responsive' : roll < 0.70 ? 'partial' : 'resolved';
+      verdict =
+        roll < 0.08 ? 'transferred_lawfully'
+        : roll < 0.28 ? 'deflected'
+        : roll < 0.44 ? 'boilerplate'
+        : roll < 0.57 ? 'non_responsive'
+        : roll < 0.71 ? 'partial'
+        : 'resolved';
     }
 
     // Sunvai asks everyone; ~15% never answer. The gap is real and we show it.
@@ -294,7 +310,17 @@ async function seedBackgroundCorpus(officeIds: Map<string, string>) {
     // citizen's answer stays in a range a real auditor could plausibly have. A negative
     // verdict is sometimes followed by the problem getting fixed anyway; that is our
     // "too harsh" column, and inventing a lot of it would be inventing our own incompetence.
-    const resolved = asked && chance(verdict === 'resolved' ? 0.88 : verdict === 'partial' ? 0.55 : 0.13);
+    // A lawful transfer is correct procedure but not, by itself, a fix: the receiving office
+    // still has to act, and often does not. It sits between `partial` and the negative verdicts,
+    // and it is never counted as one of our errors — see supabase/migrations/11_real_error_rate.sql.
+    const resolved =
+      asked &&
+      chance(
+        verdict === 'resolved' ? 0.88
+        : verdict === 'partial' ? 0.55
+        : verdict === 'transferred_lawfully' ? 0.30
+        : 0.13,
+      );
     const closedAt = closed ? new Date(filedAt.getTime() + (5 + Math.floor(rand() * 25)) * 86400_000) : null;
 
     drafts.push({
@@ -436,8 +462,14 @@ async function seedClusters(officeIds: Map<string, string>) {
 async function report() {
   const { rows } = await pool().query('select * from headline_numbers');
   const err = await pool().query('select * from our_error_rate');
+  const sim = await pool().query('select * from simulated_corpus_rate');
+  const verdicts = await pool().query(
+    `select verdict, count(*)::int as n from audits where model = 'seed' group by verdict order by n desc`,
+  );
   console.log('\nheadline:', rows[0]);
-  console.log('our error rate:', err.rows[0]);
+  console.log('our error rate (real model runs only):', err.rows[0]);
+  console.log('simulated corpus rate (seeded rows, NOT a measurement):', sim.rows[0]);
+  console.log('seeded verdict mix:', verdicts.rows);
 }
 
 main().catch((e) => {

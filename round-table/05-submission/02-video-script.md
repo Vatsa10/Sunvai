@@ -117,15 +117,19 @@ authority."**
 > answer**, not ours. A department can write a perfect reply and still score zero if the
 > pension never arrived."
 
-*Screen:* `/numbers` — **Disposal 94% · True resolution 41%**
+*Screen:* `/numbers`, part two — **Disposal 94.0% · True resolution 39.4%**, under the heading
+that says these come from a synthetic corpus.
 
 > "CPGRAMS measures disposal. **We measure resolution.** That number doesn't exist in India
-> today."
+> today. These two figures come from a synthetic corpus of 2,800 cases — the page says so
+> above them, and no office named on it is real."
 
-*Cursor moves to our own error rate, beside it.*
+*Cursor scrolls up to part one: what we measured.*
 
-> "And that's our error rate — every time our auditor disagreed with a citizen. We publish
-> where we were wrong. One of our three demo cases is one we get wrong, on purpose."
+> "This is the measured half. Seventy-four closure replies we labelled by hand before we wrote
+> the prompt. It never accused a department that had actually answered. It caught 87.5% of the
+> replies we wrote to fool it. One test it fails, and we left it failing. One of our three demo
+> cases is one we get wrong, on purpose."
 
 ### 1:36–1:52 — Build and architecture
 

@@ -100,7 +100,8 @@ it, the appeal was generated anyway, and the disagreement is counted in our publ
 **~2,800 synthetic grievances** across ~8 departments and ~20 offices, spanning May–August
 2026, distributed to produce a realistic and unflattering headline:
 
-> **Disposal rate 94% · True resolution rate 41%**
+> **Disposal rate 94.0% · True resolution rate 39.4%** — published only under the
+> "What we simulated" heading on `/numbers`, never beside a measured figure.
 
 Skew is intentional and varied: some offices genuinely good, some genuinely bad, a couple
 with high disposal and low resolution — the exact signature the metric is designed to expose.
