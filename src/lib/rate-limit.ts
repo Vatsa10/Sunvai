@@ -25,7 +25,16 @@ const BUCKETS = new Map<string, Bucket>();
 const MINUTE_MS = 60_000;
 const DAY_MS = 86_400_000;
 
-export const PER_MINUTE = 5;
+/**
+ * Ten, because the paste box now carries six sourced examples and the whole point of them is
+ * that one person clicks through all six to watch a single engine read a terminal string from
+ * six different systems. At five, the sixth click — on the feature designed to be clicked six
+ * times — was refused by our own guard. Ten leaves room for all six plus a few pastes of the
+ * reader's own. Loosening this costs nothing that matters: the ceiling that actually protects
+ * the key is GLOBAL_PER_DAY, which is keyed on nothing and so cannot be walked past. This one
+ * only stops a single impatient person leaning on the button.
+ */
+export const PER_MINUTE = 10;
 export const PER_DAY = 40;
 /**
  * Everyone, together, in a rolling day. Sized so the three demo cases plus a few hundred
