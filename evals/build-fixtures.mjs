@@ -135,6 +135,30 @@ const SCHOLARSHIP =
   ['Kindly update me.', 'Updated.'],
 ].forEach(([c, r], i) => add(`ambi-${i + 1}`, 'undetermined', c, r, 'genuinely ambiguous'));
 
+// ------------------------------------------------------- lawful transfer (8)
+// CPGRAMS is *required* to transfer these: State subjects, sub judice matters, RTI matters,
+// a government servant's own service matter, policy demands, requests for employment or
+// financial assistance. Each reply here names a recipient AND gives the citizen something to
+// follow. Without both it would be deflection, not a lawful transfer.
+[
+  ['The drain outside my house in Pune has been overflowing for three weeks. Nobody has come.',
+   'Sanitation in municipal limits is a State subject and does not lie with this Ministry. Your grievance has been transferred to the Pune Municipal Corporation, Solid Waste Management Department, vide transfer ref. PMC/2026/11842. You may track it on the PMC grievance portal using that reference.'],
+  ['My land acquisition compensation is still not paid. Please order the district to pay it.',
+   'The matter of compensation in your case is sub judice before the Hon’ble High Court of Bombay in Writ Petition No. 4471 of 2025. Under the portal guidelines a matter pending before a court is not entertained here. The grievance is closed with the advice that relief lies before that Court.'],
+  ['I want copies of the inspection report and the file notings on my application.',
+   'Your request is for information held on file and is properly a request under the Right to Information Act, 2005, which this grievance portal does not process. Please file it with the Central Public Information Officer of this Ministry through the RTI Online portal at rtionline.gov.in, with the prescribed fee of Rs. 10.'],
+  ['My promotion has been withheld for two years. I am an employee of this department.',
+   'This is a service matter of a government servant and is not entertained on this portal. Your representation has been forwarded to the Establishment Section of this Ministry vide ref. ESTT/2026/0912, which is the competent authority, and you may also pursue it before the Central Administrative Tribunal.'],
+  ['My PF claim has not been settled and the regional office does not respond.',
+   'Settlement of provident fund claims lies with the Employees’ Provident Fund Organisation, a subordinate organisation of this Ministry. Your grievance has been transferred to the EPFO Regional Office, Hyderabad, vide transfer ref. EPFO/HYD/2026/33127. The Regional Office will reply to you directly.'],
+  ['The pension age should be lowered from 60 to 55. Please change the rule.',
+   'Your submission is a demand for a change in policy and not a grievance capable of individual redress on this portal. It has been placed on record and forwarded to the Policy Division of this Department vide ref. POL/2026/0288 for consideration during the next review of the scheme. No individual relief lies here.'],
+  ['My house was damaged in the floods. I need financial help from the government.',
+   'Requests for financial assistance are not decided on this portal. Relief for flood damage is disbursed under the State Disaster Response Fund by the District Collector. Your application has been forwarded to the Office of the District Collector, Nashik, vide ref. REL/NSK/2026/0741, and you may contact that office for the status.'],
+  ['The primary school in our village has no teacher and the building is unsafe.',
+   'School education is administered by the State Government. Your grievance has been transferred to the Maharashtra State Grievance Redressal portal (aaplesarkar.mahaonline.gov.in) under transfer ref. MH/2026/558123, and will be handled by the Directorate of Primary Education, Pune. Please use that reference to follow it.'],
+].forEach(([c, r], i) => add(`lawf-${i + 1}`, 'transferred_lawfully', c, r, 'mandated transfer, recipient and reference named'));
+
 // ---------------------------------------------------------------- adversarial (8)
 // Written by us to beat our own auditor: case-specific, confident, correctly structured,
 // and containing no substance whatsoever.

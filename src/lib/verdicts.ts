@@ -4,7 +4,14 @@
  * in sunlight still has to be able to tell "answered" from "not answered".
  */
 
-export type VerdictKey = 'resolved' | 'partial' | 'deflected' | 'boilerplate' | 'non_responsive' | 'undetermined';
+export type VerdictKey =
+  | 'resolved'
+  | 'partial'
+  | 'deflected'
+  | 'transferred_lawfully'
+  | 'boilerplate'
+  | 'non_responsive'
+  | 'undetermined';
 
 type Copy = { icon: string; label: string; headline: string; tone: 'good' | 'warn' | 'bad' | 'muted' };
 
@@ -23,6 +30,14 @@ const COPY: Record<VerdictKey, Record<'en' | 'hi' | 'mr', Copy>> = {
     en: { icon: '✖', label: 'Passed on', headline: 'That is not an answer. They moved your file and closed it here.', tone: 'bad' },
     hi: { icon: '✖', label: 'आगे बढ़ा दिया', headline: 'यह जवाब नहीं है। फ़ाइल कहीं और भेजकर यहाँ बंद कर दी।', tone: 'bad' },
     mr: { icon: '✖', label: 'पुढे ढकललं', headline: 'हे उत्तर नाही. फाइल दुसरीकडे पाठवून इथे बंद केली.', tone: 'bad' },
+  },
+  // Not a negative verdict. A mandated transfer — a State subject, a sub judice matter, an
+  // RTI request, a service matter — is correct procedure, and saying otherwise would be a
+  // false accusation. Styled `muted`, never like `deflected`.
+  transferred_lawfully: {
+    en: { icon: '→', label: 'Sent to the right office', headline: 'This one really does belong to another office — and they told you which.', tone: 'muted' },
+    hi: { icon: '→', label: 'सही दफ्तर भेजा', headline: 'यह मामला सचमुच दूसरे दफ्तर का है — और उन्होंने बताया कि किसका।', tone: 'muted' },
+    mr: { icon: '→', label: 'योग्य कार्यालयाकडे पाठवलं', headline: 'हे प्रकरण खरोखर दुसऱ्या कार्यालयाचं आहे — आणि त्यांनी कोणत्या ते सांगितलं आहे.', tone: 'muted' },
   },
   boilerplate: {
     en: { icon: '✖', label: 'Standard text', headline: 'That is a standard sentence. It says nothing about your case.', tone: 'bad' },

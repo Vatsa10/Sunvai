@@ -14,6 +14,10 @@ import { MODELS, loadPrompt, structuredCall } from './openai';
 
 export const APPEAL_PROMPT_VERSION = 'appeal.v1';
 
+// `transferred_lawfully` is deliberately absent. A mandated transfer to the competent
+// authority is correct procedure, and appealing against it on our verdict alone would waste
+// the citizen's time and our credibility. If the citizen says the problem is not fixed, the
+// override below still gives them an appeal.
 const INADEQUATE = new Set(['deflected', 'boilerplate', 'non_responsive', 'partial']);
 
 /**
