@@ -38,6 +38,8 @@ export type CaseView = {
     verdict: string;
     confidence: number;
     reasoning: string;
+    /** Our translations of `reasoning`, language code to text. A cache, never evidence. */
+    reasoningTranslations: Record<string, string>;
     citations: { quote: string }[];
     unaddressed: string[];
     citationsVerified: boolean;
@@ -82,8 +84,8 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
 
   const audit = reply
     ? await one<Record<string, unknown>>(
-        `select id, verdict, confidence, reasoning, citations, unaddressed, citations_verified,
-                model, prompt_version
+        `select id, verdict, confidence, reasoning, reasoning_translations, citations, unaddressed,
+                citations_verified, model, prompt_version
            from audits where grievance_id = $1 order by created_at desc limit 1`,
         [g.id],
       )
@@ -148,6 +150,7 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
           verdict: audit.verdict as string,
           confidence: Number(audit.confidence),
           reasoning: audit.reasoning as string,
+          reasoningTranslations: (audit.reasoning_translations as Record<string, string>) ?? {},
           citations: (audit.citations as { quote: string }[]) ?? [],
           unaddressed: (audit.unaddressed as string[]) ?? [],
           citationsVerified: Boolean(audit.citations_verified),

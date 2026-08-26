@@ -179,5 +179,19 @@ step(14, 'A stated completion date is carried, so the page does not urge a prema
   console.log(`   appeal not advised before ${meera!.appealNotAdvisedBefore}`);
 }
 
+step(15, 'The demo cases carry their translated reasoning, so a first click never waits on a model');
+{
+  for (const [ref, lang] of [['DEMO/2026/0000472', 'hi'], ['DEMO/2026/0000631', 'mr']] as const) {
+    const [row] = await query<{ t: string | null }>(
+      `select a.reasoning_translations ->> $2 as t
+         from audits a join grievances g on g.id = a.grievance_id
+        where g.external_ref = $1 order by a.created_at desc limit 1`,
+      [ref, lang],
+    );
+    assert.ok(row?.t && row.t.length > 20, `${ref} has no stored ${lang} reasoning — run pnpm seed`);
+    console.log(`   ${ref} ${lang}: ${row!.t!.slice(0, 42)}…`);
+  }
+}
+
 console.log('\nJOURNEY OK');
 await pool().end();

@@ -108,9 +108,17 @@ export default async function CasePage({
       : null;
 
   // The verdict's explanation, in the language this page is being read in. Our sentence, so we
-  // may translate it; the department's reply above is never touched.
+  // may translate it; the department's reply above is never touched. This never awaits a model:
+  // a stored translation is used if there is one, and if there is not, the English is shown and
+  // named as English while the translation is fetched behind the render.
   const reasoning = c.audit
-    ? await readableReasoning(c.audit.id, c.audit.reasoning, 'en', lang)
+    ? readableReasoning({
+        auditId: c.audit.id,
+        reasoning: c.audit.reasoning,
+        stored: c.audit.reasoningTranslations,
+        from: 'en',
+        to: lang,
+      })
     : null;
 
   return (

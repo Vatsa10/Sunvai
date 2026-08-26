@@ -19,6 +19,7 @@ import { readFileSync } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import { pool, transaction, appendEvent } from '../../src/lib/db';
 import { DEMO_CASES } from './demo-cases';
+import { warmTranslation } from '../../src/lib/audit-reasoning';
 
 // ---------------------------------------------------------------- deterministic randomness
 
@@ -136,8 +137,40 @@ async function main() {
   await seedDemoCases(deptIds, officeIds, precomputed);
   await seedBackgroundCorpus(officeIds);
   await seedClusters(officeIds);
+  await warmDemoTranslations();
   await report();
   await pool().end();
+}
+
+/**
+ * The auditor writes its reasoning in English, and Kamla's page renders in Hindi and Meera's
+ * in Marathi. Translating that sentence during a render cost fourteen seconds of blank screen
+ * on a cold instance — so it is done here instead, once, at seed time, and stored on the audit
+ * row. A reviewer's first click on the headline case is then served from the database.
+ *
+ * Three cases, at most two calls (Arif's page is English and needs nothing). A failure here is
+ * not fatal: the page falls back to the English with an honest label, and fills the gap behind
+ * the next render.
+ */
+async function warmDemoTranslations() {
+  for (const c of DEMO_CASES) {
+    if (c.narrativeLang === 'en') continue;
+    const row = await pool().query<{ id: string; reasoning: string }>(
+      `select a.id, a.reasoning from audits a
+         join grievances g on g.id = a.grievance_id
+        where g.external_ref = $1
+        order by a.created_at desc limit 1`,
+      [c.ref],
+    );
+    const audit = row.rows[0];
+    if (!audit) continue;
+    try {
+      const done = await warmTranslation(audit.id, audit.reasoning, 'en', c.narrativeLang);
+      console.log(`warmed reasoning: ${c.ref} -> ${c.narrativeLang} ${done ? 'ok' : '(unchanged, skipped)'}`);
+    } catch (e) {
+      console.log(`warmed reasoning: ${c.ref} -> ${c.narrativeLang} FAILED (${(e as Error).message})`);
+    }
+  }
 }
 
 async function wipe() {
