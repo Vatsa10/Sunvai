@@ -34,6 +34,7 @@ Thumbs.db
 # typescript incremental build cache
 *.tsbuildinfo
 
-# A third party's separate hackathon entry, checked out here for reference only.
-# Never committed, never copied from.
+# Other people's separate hackathon entries, checked out here for reference only.
+# Never committed, never copied from, never deployed.
 Nirantar/
+CPGRAMS/
