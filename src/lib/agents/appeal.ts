@@ -105,8 +105,30 @@ export type AppealInput = {
   citizenLang: Lang;
 };
 
+// Dates in a document a citizen is asked to consent to must look like dates a person wrote.
+// These values arrive from the driver as timestamps, and interpolating one straight into a
+// template literal produced "Thu Aug 06 2026 14:42:00 GMT+0530 (India Standard Time)" inside
+// the appeal body, in both languages. That is a machine's internal state leaking into what
+// purports to be a formal representation.
+const DATE_LOCALES: Record<string, string> = { en: 'en-IN', hi: 'hi-IN', mr: 'mr-IN' };
+
+function longDate(value: string, lang: string): string {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return String(value);
+  return d.toLocaleDateString(DATE_LOCALES[lang] ?? 'en-IN', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Asia/Kolkata',
+  });
+}
+
 export async function draftAppeal(input: AppealInput): Promise<AppealResult> {
   const elapsed = Math.round((Date.parse(input.closed_at) - Date.parse(input.filed_at)) / 86_400_000);
+  const filedOfficial = longDate(input.filed_at, input.officialLang);
+  const closedOfficial = longDate(input.closed_at, input.officialLang);
+  const filedCitizen = longDate(input.filed_at, input.citizenLang);
+  const closedCitizen = longDate(input.closed_at, input.citizenLang);
 
   const user = `Registration number: ${input.ref}
 
@@ -131,7 +153,12 @@ ${input.audit.unaddressed.map((u) => `- ${u}`).join('\n') || '- (none recorded)'
 
 ${input.citizenSaysUnresolved ? 'The citizen has since told us the underlying problem still persists.' : ''}
 
-Filed ${input.filed_at}, closed ${input.closed_at} — ${elapsed} days, against a stated SLA of ${input.sla_days} days.
+Filed ${filedOfficial}, closed ${closedOfficial} — ${elapsed} days, against a stated SLA of ${input.sla_days} days.
+
+DATES. Write every date the way a person writes one. In the ${input.officialLang} text use exactly
+"${filedOfficial}" for the filing date and "${closedOfficial}" for the closure date. In the
+${input.citizenLang} text use exactly "${filedCitizen}" and "${closedCitizen}". Never output a
+timestamp, a timezone, a weekday or a time of day.
 
 Write the appeal in ${input.officialLang}, and a faithful back-translation in ${input.citizenLang}.
 

@@ -26,6 +26,8 @@ export type CaseView = {
    * generic next step is the same harm as a wrong one.
    */
   nextStep: { heading: string; body: string } | null;
+  /** Our translations of the next step, language code to [heading, body]. */
+  nextStepTranslations: Record<string, string[]>;
   /**
    * Advisory only. A date the department stated, before which an appeal is likely to be
    * dismissed as premature. It never removes the citizen's ability to appeal.
@@ -38,8 +40,10 @@ export type CaseView = {
     verdict: string;
     confidence: number;
     reasoning: string;
-    /** Our translations of `reasoning`, language code to text. A cache, never evidence. */
-    reasoningTranslations: Record<string, string>;
+    /** Our translations of `reasoning`, language code to parts. A cache, never evidence. */
+    reasoningTranslations: Record<string, string[]>;
+    /** Our translations of `unaddressed`, language code to the same bullets in order. */
+    unaddressedTranslations: Record<string, string[]>;
     citations: { quote: string }[];
     unaddressed: string[];
     citationsVerified: boolean;
@@ -63,7 +67,8 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
   const g = await one<Record<string, string | null>>(
     `select g.id, g.external_ref, g.subject, g.narrative_original, g.original_lang, g.status,
             g.filed_at, g.sla_due_at, g.closed_at, g.filed_by_relation, g.office_id,
-            g.next_step_heading, g.next_step_body, g.appeal_not_advised_before,
+            g.next_step_heading, g.next_step_body, g.next_step_translations,
+            g.appeal_not_advised_before,
             c.id as citizen_id, c.display_name, c.preferred_lang,
             o.name as office, d.short_name as department
        from grievances g
@@ -85,7 +90,7 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
   const audit = reply
     ? await one<Record<string, unknown>>(
         `select id, verdict, confidence, reasoning, reasoning_translations, citations, unaddressed,
-                citations_verified, model, prompt_version
+                unaddressed_translations, citations_verified, model, prompt_version
            from audits where grievance_id = $1 order by created_at desc limit 1`,
         [g.id],
       )
@@ -99,7 +104,7 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
 
   const appeal = await one<Record<string, unknown>>(
     `select id, status, body_formal, body_citizen_lang, grounds
-       from appeals where grievance_id = $1 order by id desc limit 1`,
+       from appeals where grievance_id = $1 order by created_at desc, id desc limit 1`,
     [g.id],
   );
 
@@ -139,6 +144,7 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
       g.next_step_heading && g.next_step_body
         ? { heading: g.next_step_heading, body: g.next_step_body }
         : null,
+    nextStepTranslations: (g.next_step_translations as unknown as Record<string, string[]>) ?? {},
     appealNotAdvisedBefore: g.appeal_not_advised_before,
     citizen: { id: g.citizen_id!, name: g.display_name!, lang: g.preferred_lang as Lang },
     reply: reply
@@ -150,7 +156,8 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
           verdict: audit.verdict as string,
           confidence: Number(audit.confidence),
           reasoning: audit.reasoning as string,
-          reasoningTranslations: (audit.reasoning_translations as Record<string, string>) ?? {},
+          reasoningTranslations: (audit.reasoning_translations as Record<string, string[]>) ?? {},
+          unaddressedTranslations: (audit.unaddressed_translations as Record<string, string[]>) ?? {},
           citations: (audit.citations as { quote: string }[]) ?? [],
           unaddressed: (audit.unaddressed as string[]) ?? [],
           citationsVerified: Boolean(audit.citations_verified),

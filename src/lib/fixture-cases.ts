@@ -78,6 +78,9 @@ function toView(d: DemoCase): CaseView {
     closedAt: d.closedAt,
     filedByRelation: d.filedBy?.relation ?? null,
     nextStep: d.nextStep ?? null,
+    // Same reason as the audit translations above: the store is in the database, and the
+    // database is what is missing on this path.
+    nextStepTranslations: {},
     appealNotAdvisedBefore: d.appealNotAdvisedBefore ?? null,
     citizen: { id: d.ref, name: d.citizen.name, lang: d.citizen.lang as Lang },
     reply: { id: `${d.ref}#reply`, body: d.reply.body, lang: d.reply.lang, receivedAt: d.closedAt },
@@ -92,6 +95,7 @@ function toView(d: DemoCase): CaseView {
           // falls back to translating at render, which is what it did before that table
           // existed.
           reasoningTranslations: {},
+          unaddressedTranslations: {},
           citations: a.result.citations ?? [],
           unaddressed: a.result.unaddressed ?? [],
           citationsVerified: a.citationsVerified,

@@ -13,7 +13,7 @@ import { MockBadge, MockNote } from '@/components/MockBadge';
 import { confirmResolution, prepareAppeal, sendAppeal } from '@/actions/case-actions';
 import { t, SHIPPED_LANGS, type ShippedLang } from '@/lib/i18n/strings';
 import { appealWindow, hasAppealGrounds, mayDraftAppeal } from '@/lib/agents/appeal';
-import { readableReasoning } from '@/lib/audit-reasoning';
+import { readTranslated } from '@/lib/translated-text';
 
 export const dynamic = 'force-dynamic';
 
@@ -107,19 +107,48 @@ export default async function CasePage({
       ? c.appealNotAdvisedBefore
       : null;
 
-  // The verdict's explanation, in the language this page is being read in. Our sentence, so we
-  // may translate it; the department's reply above is never touched. This never awaits a model:
-  // a stored translation is used if there is one, and if there is not, the English is shown and
-  // named as English while the translation is fetched behind the render.
+  // Three pieces of text of ours that were written in one language and are being read in
+  // another. None of these awaits a model: a stored translation is used if there is one, and if
+  // there is not, the original is shown, named as what it is, and not read aloud, while the
+  // translation is fetched behind the render. The department's reply is never touched.
   const reasoning = c.audit
-    ? readableReasoning({
-        auditId: c.audit.id,
-        reasoning: c.audit.reasoning,
+    ? readTranslated({
+        store: 'auditReasoning',
+        rowId: c.audit.id,
+        parts: [c.audit.reasoning],
         stored: c.audit.reasoningTranslations,
         from: 'en',
         to: lang,
       })
     : null;
+
+  // The list she would carry to a counter. English bullets inside a Hindi page read as the part
+  // she is not trusted with.
+  const unaddressed =
+    c.audit && c.audit.unaddressed.length > 0
+      ? readTranslated({
+          store: 'auditUnaddressed',
+          rowId: c.audit.id,
+          parts: c.audit.unaddressed,
+          stored: c.audit.unaddressedTranslations,
+          from: 'en',
+          to: lang,
+        })
+      : null;
+
+  // Seeded once, in the case's own language — which is the wrong language for anyone reading
+  // this case in either of the other two. This is the most actionable section on the page.
+  const nextStep = c.nextStep
+    ? readTranslated({
+        store: 'nextStep',
+        rowId: c.id,
+        parts: [c.nextStep.heading, c.nextStep.body],
+        stored: c.nextStepTranslations,
+        from: c.narrativeLang,
+        to: lang,
+      })
+    : null;
+  const nextStepSpokenLang = nextStep?.state === 'translated' ? lang : c.narrativeLang;
 
   return (
     <div className="space-y-10">
@@ -207,18 +236,21 @@ export default async function CasePage({
             <span className="text-lg font-semibold uppercase tracking-wide">{v.label}</span>
           </div>
           <p className="text-xl font-semibold leading-snug text-ink">{v.headline}</p>
-          <p className="text-ink">{reasoning!.text}</p>
+          <p className="text-ink">{reasoning!.parts[0]}</p>
           {reasoning!.state === 'translated' && <p className="text-sm text-ink/70">{s.translatedByUs}</p>}
           {reasoning!.state === 'untranslated' && <p className="text-sm text-ink/70">{s.translationFailed}</p>}
 
-          {c.audit.unaddressed.length > 0 && (
+          {unaddressed && (
             <div>
               <h3 className="font-semibold text-ink">{s.whatTheyDidNotAnswer}</h3>
               <ul className="mt-1 list-disc space-y-1 pl-5 text-ink">
-                {c.audit.unaddressed.map((u) => (
+                {unaddressed.parts.map((u) => (
                   <li key={u}>{u}</li>
                 ))}
               </ul>
+              {unaddressed.state === 'untranslated' && (
+                <p className="mt-1 text-sm text-ink/70">{s.translationFailed}</p>
+              )}
             </div>
           )}
 
@@ -228,7 +260,7 @@ export default async function CasePage({
             instead of performing an accessibility feature that does not work.
           */}
           {reasoning!.state !== 'untranslated' && (
-            <ReadAloud text={`${v.headline} ${reasoning!.text}`} lang={lang} label={s.listenToThis} />
+            <ReadAloud text={`${v.headline} ${reasoning!.parts[0]}`} lang={lang} label={s.listenToThis} />
           )}
 
           <details open={sp.how === '1'} className="border-t border-current/20 pt-3">
@@ -325,16 +357,21 @@ export default async function CasePage({
         never generated. Absent where we do not know it — a generic next step would send the
         citizen to the wrong counter with our name on it.
       */}
-      {c.nextStep && (
+      {nextStep && (
         <section className="space-y-3 rounded border-2 border-ink p-5">
           <h2 className="text-xl font-semibold">{s.whatToDoNext}</h2>
-          <p className="text-lg font-semibold">{c.nextStep.heading}</p>
-          <p className="whitespace-pre-wrap leading-relaxed">{c.nextStep.body}</p>
-          <ReadAloud
-            text={`${c.nextStep.heading} ${c.nextStep.body}`}
-            lang={c.narrativeLang}
-            label={s.readAloud}
-          />
+          <p className="text-lg font-semibold">{nextStep.parts[0]}</p>
+          <p className="whitespace-pre-wrap leading-relaxed">{nextStep.parts[1]}</p>
+          {nextStep.state === 'untranslated' ? (
+            // The original language, named. Never a voice speaking the wrong language at her.
+            <p className="text-sm text-muted">{s.translationFailed}</p>
+          ) : (
+            <ReadAloud
+              text={`${nextStep.parts[0]} ${nextStep.parts[1]}`}
+              lang={nextStepSpokenLang}
+              label={s.readAloud}
+            />
+          )}
         </section>
       )}
 
@@ -410,6 +447,13 @@ export default async function CasePage({
               {/* The consent gate: both versions at once, never one behind a toggle. */}
               <div className="rounded border-2 border-ink p-4">
                 <h3 className="text-lg font-semibold">{s.consentTitle}</h3>
+                {/*
+                  This used to say "exactly what we will send" over a button saying "Send", and
+                  the truth — that nothing reaches any office — appeared only on the screen
+                  after the click. A citizen decided to consent while believing something would
+                  be sent. The decision is made here, so it has to be true here.
+                */}
+                <p className="mt-2 text-sm font-semibold">{s.consentNothingSent}</p>
                 <div className="mt-3 grid gap-4 md:grid-cols-2">
                   <div>
                     <h4 className="text-sm font-semibold uppercase tracking-wide text-muted">
@@ -477,7 +521,12 @@ export default async function CasePage({
       {/* Counts, never who. */}
       {c.cluster && (
         <section className="rounded border border-rule p-5">
-          <h2 className="text-xl font-semibold">{s.notOnlyOne}</h2>
+          <div className="flex flex-wrap items-center gap-3">
+            <h2 className="text-xl font-semibold">{s.notOnlyOne}</h2>
+            {/* Measured or labelled simulated, never a third category. These counts come from
+                the synthetic corpus, and they say so where they are read, not on another page. */}
+            <MockBadge what={s.simulatedCounts} />
+          </div>
           <p className="mt-2 text-lg">{s.clusterLine(c.cluster.members - 1, c.cluster.closedUnresolved)}</p>
           <p className="mt-1 text-muted">{c.cluster.label}</p>
           <Link href={`/cluster/${c.cluster.id}`} className="mt-3 inline-block underline">

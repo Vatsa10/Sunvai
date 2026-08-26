@@ -75,6 +75,7 @@ type Dict = {
 
   // The case page. Every string on the screen that matters.
   simulatedCase: string;
+  simulatedCounts: string;
   filedOnBehalf: (name: string, relation: string) => string;
   whereThisStands: string;
   theirWordFor: string;
@@ -99,6 +100,7 @@ type Dict = {
   appealDaysLeft: (n: number) => string;
   grounds: string;
   consentTitle: string;
+  consentNothingSent: string;
   sentEnglish: string;
   sentYourLang: string;
   hearWhatWillBeSent: string;
@@ -167,6 +169,7 @@ const en: Dict = {
   downloadReceipt: 'Download your receipt',
 
   simulatedCase: 'Simulated case',
+  simulatedCounts: 'Simulated counts',
   filedOnBehalf: (name, relation) =>
     `Filed on ${name}’s behalf — ${relation}. Her consent is recorded in the ledger.`,
   whereThisStands: 'Where this stands',
@@ -191,19 +194,21 @@ const en: Dict = {
   numbersPageLink: 'the numbers page',
   changeMyAnswer: 'Change my answer',
   appealIntro:
-    'In the government system, this door only opens if you rate the closure “Poor” — a question most people are never asked. We write the appeal for you first, and you decide whether it goes.',
+    'In the government system, this door only opens if you rate the closure “Poor” — a question most people are never asked. We write the appeal for you first, and you decide what happens to it.',
   writeMyAppeal: 'Write my appeal',
   appealDaysLeft: (n) =>
     n === 0
       ? 'Today is the last day of the 30-day appeal window on this closure.'
       : `${n} days left of the 30-day appeal window on this closure.`,
   grounds: 'Grounds',
-  consentTitle: 'This is exactly what we will send. Nothing else.',
-  sentEnglish: 'What is sent (English)',
-  sentYourLang: 'The same thing, in your language',
-  hearWhatWillBeSent: 'Hear what will be sent',
-  consentBox: 'I have read this and I want it sent.',
-  sendMyAppeal: 'Send my appeal',
+  consentTitle: 'This is the whole appeal, word for word. Nothing is added to it.',
+  consentNothingSent:
+    'And this is a prototype with no connection to any government system. Saying yes records this appeal here and on your receipt — it does not reach any office, and no reply is owed to you. Take it to the office named under “What to do next” above.',
+  sentEnglish: 'The appeal text (English)',
+  sentYourLang: 'The same text, in your language',
+  hearWhatWillBeSent: 'Hear the appeal read out',
+  consentBox: 'I have read this and I want it recorded.',
+  sendMyAppeal: 'Record my appeal',
   recordedHeading: 'Recorded here. Not sent anywhere.',
   recordedBody:
     'Your appeal is saved on this page and in your receipt. It did not reach any government office — this tool has no connection to one. No clock has started and nobody there has to reply. Take this text to the office named under “What to do next” above, and carry your receipt with you.',
@@ -287,6 +292,7 @@ const hi: Dict = {
   downloadReceipt: 'अपनी रसीद डाउनलोड कीजिए',
 
   simulatedCase: 'नमूना मामला',
+  simulatedCounts: 'नमूना आँकड़े',
   filedOnBehalf: (name, relation) =>
     `${name} की ओर से दर्ज किया गया — ${relation}। उनकी सहमति बहीखाते में दर्ज है।`,
   whereThisStands: 'मामला अभी कहाँ है',
@@ -311,19 +317,21 @@ const hi: Dict = {
   numbersPageLink: 'आँकड़ों के पन्ने पर',
   changeMyAnswer: 'अपना जवाब बदलिए',
   appealIntro:
-    'सरकारी व्यवस्था में यह दरवाज़ा तभी खुलता है जब आप बंद करने को “खराब” रेटिंग दें — और यह सवाल ज़्यादातर लोगों से कभी पूछा ही नहीं जाता। हम अपील पहले लिख देते हैं; भेजनी है या नहीं, यह आप तय करते हैं।',
+    'सरकारी व्यवस्था में यह दरवाज़ा तभी खुलता है जब आप बंद करने को “खराब” रेटिंग दें — और यह सवाल ज़्यादातर लोगों से कभी पूछा ही नहीं जाता। हम अपील पहले लिख देते हैं; उसका क्या करना है, यह आप तय करते हैं।',
   writeMyAppeal: 'मेरी अपील लिखिए',
   appealDaysLeft: (n) =>
     n === 0
       ? 'इस बंदी के विरुद्ध अपील की तीस दिन की मियाद का आज आखिरी दिन है।'
       : `इस बंदी के विरुद्ध अपील की तीस दिन की मियाद में ${n} दिन बचे हैं।`,
   grounds: 'आधार',
-  consentTitle: 'हम बिल्कुल यही भेजेंगे। इसके अलावा कुछ नहीं।',
-  sentEnglish: 'जो भेजा जाएगा (अंग्रेज़ी में)',
-  sentYourLang: 'वही बात, आपकी भाषा में',
-  hearWhatWillBeSent: 'क्या भेजा जाएगा, सुनिए',
-  consentBox: 'मैंने यह पढ़ लिया है और मैं चाहता/चाहती हूँ कि यह भेजा जाए।',
-  sendMyAppeal: 'मेरी अपील भेजिए',
+  consentTitle: 'पूरी अपील यही है, शब्द दर शब्द। इसमें कुछ और नहीं जोड़ा जाता।',
+  consentNothingSent:
+    'और यह एक नमूना सेवा है, किसी सरकारी व्यवस्था से इसका कोई जुड़ाव नहीं है। हाँ कहने पर यह अपील यहाँ और आपकी रसीद में दर्ज हो जाएगी — यह किसी दफ्तर तक नहीं पहुँचेगी, और वहाँ किसी पर जवाब देने की ज़िम्मेदारी नहीं आएगी। ऊपर “आगे क्या कीजिए” में बताए दफ्तर में इसे ले जाइए।',
+  sentEnglish: 'अपील का पाठ (अंग्रेज़ी में)',
+  sentYourLang: 'वही पाठ, आपकी भाषा में',
+  hearWhatWillBeSent: 'अपील पढ़कर सुनिए',
+  consentBox: 'मैंने यह पढ़ लिया है और मैं चाहता/चाहती हूँ कि यह दर्ज हो।',
+  sendMyAppeal: 'मेरी अपील दर्ज कीजिए',
   recordedHeading: 'यहाँ दर्ज हो गई। कहीं भेजी नहीं गई।',
   recordedBody:
     'आपकी अपील इस पन्ने पर और आपकी रसीद में सुरक्षित है। यह किसी सरकारी दफ्तर तक नहीं पहुँची — इस सेवा का किसी सरकारी व्यवस्था से कोई जुड़ाव नहीं है। कोई समय-सीमा शुरू नहीं हुई और वहाँ किसी को जवाब देना नहीं है। ऊपर “आगे क्या कीजिए” में बताए दफ्तर में यही लिखा हुआ ले जाइए, और अपनी रसीद साथ रखिए।',
@@ -407,6 +415,7 @@ const mr: Dict = {
   downloadReceipt: 'तुमची पावती उतरवा',
 
   simulatedCase: 'नमुना प्रकरण',
+  simulatedCounts: 'नमुना आकडे',
   filedOnBehalf: (name, relation) =>
     `${name} यांच्या वतीने दाखल — ${relation}. त्यांची संमती नोंदवहीत नोंदलेली आहे.`,
   whereThisStands: 'हे प्रकरण आत्ता कुठे आहे',
@@ -431,19 +440,21 @@ const mr: Dict = {
   numbersPageLink: 'आकड्यांच्या पानावर',
   changeMyAnswer: 'माझं उत्तर बदला',
   appealIntro:
-    'सरकारी यंत्रणेत हे दार तेव्हाच उघडतं जेव्हा तुम्ही बंद करण्याला “असमाधानकारक” असं मानांकन देता — आणि हा प्रश्न बहुतेकांना कधी विचारलाच जात नाही. आम्ही अपील आधीच लिहून ठेवतो; ती पाठवायची की नाही हे तुम्ही ठरवता.',
+    'सरकारी यंत्रणेत हे दार तेव्हाच उघडतं जेव्हा तुम्ही बंद करण्याला “असमाधानकारक” असं मानांकन देता — आणि हा प्रश्न बहुतेकांना कधी विचारलाच जात नाही. आम्ही अपील आधीच लिहून ठेवतो; तिचं काय करायचं हे तुम्ही ठरवता.',
   writeMyAppeal: 'माझं अपील लिहा',
   appealDaysLeft: (n) =>
     n === 0
       ? 'या बंद करण्याविरुद्ध अपील करण्याच्या तीस दिवसांच्या मुदतीचा आज शेवटचा दिवस आहे.'
       : `या बंद करण्याविरुद्ध अपील करण्याच्या तीस दिवसांच्या मुदतीत ${n} दिवस उरले आहेत.`,
   grounds: 'आधार',
-  consentTitle: 'आम्ही नेमकं हेच पाठवू. याखेरीज काहीही नाही.',
-  sentEnglish: 'जे पाठवलं जाईल (इंग्रजीत)',
-  sentYourLang: 'तेच, तुमच्या भाषेत',
-  hearWhatWillBeSent: 'काय पाठवलं जाईल ते ऐका',
-  consentBox: 'मी हे वाचलं आहे आणि ते पाठवावं अशी माझी इच्छा आहे.',
-  sendMyAppeal: 'माझं अपील पाठवा',
+  consentTitle: 'संपूर्ण अपील हीच आहे, शब्दन् शब्द. यात आणखी काहीही जोडलं जात नाही.',
+  consentNothingSent:
+    'आणि ही एक नमुना सेवा आहे, कोणत्याही सरकारी यंत्रणेशी तिचा संबंध जोडलेला नाही. होय म्हटल्यावर हे अपील इथे आणि तुमच्या पावतीत नोंदवलं जाईल — ते कोणत्याही कार्यालयापर्यंत पोहोचणार नाही, आणि तिथे कुणावर उत्तर देण्याचं बंधन येणार नाही. वर “पुढे काय करावं” मध्ये सांगितलेल्या कार्यालयात ते घेऊन जा.',
+  sentEnglish: 'अपिलाचा मजकूर (इंग्रजीत)',
+  sentYourLang: 'तोच मजकूर, तुमच्या भाषेत',
+  hearWhatWillBeSent: 'अपील वाचून ऐका',
+  consentBox: 'मी हे वाचलं आहे आणि ते नोंदवावं अशी माझी इच्छा आहे.',
+  sendMyAppeal: 'माझं अपील नोंदवा',
   recordedHeading: 'इथे नोंदवलं. कुठेही पाठवलेलं नाही.',
   recordedBody:
     'तुमचं अपील या पानावर आणि तुमच्या पावतीत जपून ठेवलं आहे. ते कोणत्याही सरकारी कार्यालयापर्यंत पोहोचलेलं नाही — या सेवेचा कोणत्याही सरकारी यंत्रणेशी संबंध जोडलेला नाही. कोणतीही मुदत सुरू झालेली नाही आणि तिथे कुणावर उत्तर देण्याचं बंधन नाही. वर “पुढे काय करावं” मध्ये सांगितलेल्या कार्यालयात हाच मजकूर घेऊन जा, आणि पावती सोबत ठेवा.',
