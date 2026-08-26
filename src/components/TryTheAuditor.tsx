@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { auditText, type AuditPreview } from '@/actions/audit-actions';
 import { verdictCopy } from '@/lib/verdicts';
 
@@ -90,8 +90,24 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AuditPreview | null>(null);
   const [loaded, setLoaded] = useState<Example | null>(null);
+  // Real elapsed seconds since the click, and the real total once it lands. The only thing that
+  // moves during the wait is this counter, and it counts actual time — there is no progress bar,
+  // because we cannot see inside the model call and a bar that advanced on a timer would be a
+  // lie of exactly the kind this project exists to refuse.
+  const [elapsed, setElapsed] = useState(0);
+  const [took, setTook] = useState<number | null>(null);
+  const startedAt = useRef(0);
+
+  useEffect(() => {
+    if (!busy) return;
+    const id = setInterval(() => setElapsed((Date.now() - startedAt.current) / 1000), 100);
+    return () => clearInterval(id);
+  }, [busy]);
 
   async function run() {
+    startedAt.current = Date.now();
+    setElapsed(0);
+    setTook(null);
     setBusy(true);
     setError(null);
     setResult(null);
@@ -106,6 +122,7 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
       // repeating from it, so we say the one true thing we know.
       setError('That did not work. Nothing was saved, and nothing was sent anywhere.');
     } finally {
+      setTook((Date.now() - startedAt.current) / 1000);
       setBusy(false);
     }
   }
@@ -208,14 +225,65 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
         </div>
       </div>
 
-      <button
-        type="button"
-        onClick={run}
-        disabled={busy || !complaint.trim() || !reply.trim()}
-        className="min-h-touch rounded bg-ink px-6 py-3 font-semibold text-paper disabled:opacity-40"
-      >
-        {busy ? 'Reading it…' : 'Judge this reply'}
-      </button>
+      <div className="space-y-2">
+        <button
+          type="button"
+          onClick={run}
+          disabled={busy || !complaint.trim() || !reply.trim()}
+          className="min-h-touch rounded bg-ink px-6 py-3 font-semibold text-paper disabled:opacity-40"
+        >
+          {busy ? 'Reading it…' : 'Judge this reply'}
+        </button>
+
+        {/*
+          Said BEFORE the click, not after it. The wait is around ten seconds, and a reader who
+          is not told that reads a dimmed button as a broken one. It is also the most persuasive
+          thing on the page: nothing here is looked up, so the time is a reasoning model actually
+          reading this text.
+        */}
+        {!busy && (
+          <p className="text-ink">
+            This takes about <strong>eight to thirteen seconds</strong>. Nothing is looked up and nothing is
+            canned — a reasoning model reads the reply against the complaint, and then every quote it wants
+            to show you is checked character-by-character against your text before you see a verdict.
+          </p>
+        )}
+      </div>
+
+      {busy && (
+        <div className="rounded border-2 border-rule p-5 text-ink">
+          {/*
+            One announcement to a screen reader when the work starts, and one when it lands — the
+            ticking number is aria-hidden, because a live region that changes ten times a second
+            would be unusable.
+          */}
+          <p role="status" aria-live="polite" className="font-semibold">
+            Reading it. This usually takes eight to thirteen seconds.
+          </p>
+          <p aria-hidden className="mt-2 font-serif text-2xl tabular-nums">
+            {elapsed.toFixed(1)}s
+            <span className="ml-3 inline-block animate-pulse text-lg not-italic">▌</span>
+          </p>
+          {/*
+            Both of these really happen, in this order, in `audit()`: the model call, then
+            `checkCitations` against the reply body, which can send the model back once. What we
+            cannot say is which one is running right now — there is no streaming here, so the
+            client learns nothing until the whole thing returns. So they are listed as what the
+            wait consists of, not staged as though we were watching them tick by.
+          */}
+          <p className="mt-2">
+            In that time, two things happen and we cannot see which one is running: the model reads the
+            reply against the complaint, and then the citation guard checks every quote it produced against
+            your text — sending it back to try again if a quote is not exactly there.
+          </p>
+        </div>
+      )}
+
+      {took !== null && !busy && (result || error) && (
+        <p role="status" aria-live="polite" className="text-ink">
+          That took <strong>{took.toFixed(1)} seconds</strong>, measured from your click.
+        </p>
+      )}
 
       {error && (
         <p role="alert" className="rounded border-2 border-bad p-4 text-bad">
