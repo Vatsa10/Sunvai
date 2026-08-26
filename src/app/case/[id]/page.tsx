@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { getCase, getTimeline, daysUntil } from '@/lib/cases';
+import { getCase, getTimeline, daysUntil, type CaseView, type TimelineEntry } from '@/lib/cases';
+import { isDbUnavailable } from '@/lib/db';
+import { fixtureCase, fixtureTimeline } from '@/lib/fixture-cases';
+import { FixtureBanner } from '@/components/FixtureBanner';
 import { verdictCopy } from '@/lib/verdicts';
 import { translateJargon } from '@/lib/jargon';
 import { QuotedReply } from '@/components/QuotedReply';
@@ -36,7 +39,22 @@ export default async function CasePage({
   const sp = await searchParams;
   const ref = decodeURIComponent(id);
 
-  const c = await getCase(ref);
+  /*
+    The database this runs on pauses when idle, and the click that wakes it is the first click
+    a reviewer makes. Rather than show them a stack trace, we fall back to the copy of these
+    three cases committed to the repository — and say so in a banner before anything else.
+    Only an unreachable database triggers this; a broken query is still a real error, because
+    quietly serving fixtures over a bug is how a demo starts lying.
+  */
+  let c: CaseView | null = null;
+  let degraded = false;
+  try {
+    c = await getCase(ref);
+  } catch (err) {
+    if (!isDbUnavailable(err)) throw err;
+    degraded = true;
+    c = fixtureCase(ref);
+  }
   if (!c) notFound();
 
   const lang = (SHIPPED_LANGS as readonly string[]).includes(sp.lang ?? '')
@@ -47,7 +65,20 @@ export default async function CasePage({
   const s = t(lang);
   const fmt = (iso: string) => formatDate(iso, lang);
 
-  const timeline = await getTimeline(c.id);
+  let timeline: TimelineEntry[] = [];
+  if (degraded) {
+    // Dates from the seed file, not ledger entries — the ledger is in the database. The banner
+    // above has already said which of the two this is.
+    timeline = fixtureTimeline(c.ref);
+  } else {
+    try {
+      timeline = await getTimeline(c.id);
+    } catch (err) {
+      if (!isDbUnavailable(err)) throw err;
+      degraded = true;
+      timeline = fixtureTimeline(c.ref);
+    }
+  }
   const left = daysUntil(c.slaDueAt);
   const closed = Boolean(c.closedAt);
   const v = c.audit ? verdictCopy(c.audit.verdict, lang) : null;
@@ -83,6 +114,10 @@ export default async function CasePage({
 
   return (
     <div className="space-y-10">
+      {degraded && (
+        <FixtureBanner heading={s.offlineHeading} body={s.offlineBody} writes={s.offlineWrites} />
+      )}
+
       <header className="space-y-2">
         <div className="flex flex-wrap items-center gap-3">
           <span className="font-mono text-sm text-muted">{c.ref}</span>
@@ -224,7 +259,12 @@ export default async function CasePage({
           <p className="text-muted">{s.didItWorkSub}</p>
           <ReadAloud text={`${s.didItWork} ${s.didItWorkSub}`} lang={lang} label={s.readAloud} />
 
-          {c.confirmation ? (
+          {degraded ? (
+            /* Nowhere to record an answer, so we do not offer a button that would throw. The
+               resolution figure comes from confirmations and never from a verdict, which is
+               exactly why we cannot fake one here. */
+            <p className="rounded border border-warn/50 bg-warn/5 p-3 text-ink">{s.offlineWrites}</p>
+          ) : c.confirmation ? (
             <div className="space-y-3">
               <p className="text-lg font-semibold">
                 {s.youSaid} {c.confirmation.resolved ? s.yes : s.no}
@@ -291,7 +331,7 @@ export default async function CasePage({
         while it is still in time. Past thirty days there is no live appeal to offer, and saying
         so plainly costs a citizen one paragraph instead of one month.
       */}
-      {timeBarred && appealWin && (
+      {!degraded && timeBarred && appealWin && (
         <section className="space-y-3 rounded border border-rule p-5">
           <h2 className="text-xl font-semibold">{s.windowClosedHeading}</h2>
           <p>{s.windowClosedBody(fmt(appealFrom!), -appealWin.daysLeft)}</p>
@@ -303,7 +343,7 @@ export default async function CasePage({
         </section>
       )}
 
-      {closed && windowOpen && (canAppeal || c.appeal) && (
+      {!degraded && closed && windowOpen && (canAppeal || c.appeal) && (
         <section className="space-y-4 rounded border border-rule p-5">
           {/*
             Where the department gave itself a date that has not passed, this whole section is
@@ -412,7 +452,7 @@ export default async function CasePage({
         the consent gate is gone, because sending it would send it nowhere useful. The action
         refuses this too — the page must not be the only thing holding the line.
       */}
-      {closed && !windowOpen && c.appeal && c.appeal.status !== 'drafted' && (
+      {!degraded && closed && !windowOpen && c.appeal && c.appeal.status !== 'drafted' && (
         <section className="space-y-2 rounded border border-rule p-5">
           <h2 className="text-xl font-semibold">{s.appealReady}</h2>
           <p className="text-lg font-semibold">{s.recordedHeading}</p>
@@ -433,6 +473,11 @@ export default async function CasePage({
         </section>
       )}
 
+      {/* The receipt is built from ledger rows. With no database there are no rows, and an
+          offered download that cannot be produced is worse than none. */}
+      {degraded ? (
+        <p className="text-muted">{s.offlineWrites}</p>
+      ) : (
       <section className="flex flex-wrap gap-4">
         <Link
           href={`/api/receipt/${encodeURIComponent(c.ref)}`}
@@ -444,6 +489,7 @@ export default async function CasePage({
           {s.verifyReceipt}
         </Link>
       </section>
+      )}
 
       <MockNote>{s.mockNote}</MockNote>
     </div>

@@ -25,6 +25,13 @@ export function pool(): Pool {
     connectionString: connectionString(),
     max: 4,
     idleTimeoutMillis: 20_000,
+    // A paused free-tier database must fail fast, not hang. A reviewer clicking once will not
+    // wait thirty seconds for a socket to time out; they will close the tab. Five seconds is
+    // long enough for a cold pooler to wake and short enough that the fixture fallback renders
+    // while they are still looking at the screen.
+    connectionTimeoutMillis: 5_000,
+    query_timeout: 8_000,
+    statement_timeout: 8_000,
     ssl: { rejectUnauthorized: false },
   });
   return globalThis.__sunvaiPool;
@@ -83,4 +90,54 @@ export async function appendEvent(
     [args.grievanceId, args.citizenId, args.type, JSON.stringify(args.payload)],
   );
   return res.rows[0] as LedgerRow;
+}
+
+/**
+ * Is this the database being unreachable, rather than our SQL being wrong?
+ *
+ * We only fall back to committed fixtures for the first kind. A bad query must still be a loud
+ * error — silently serving fixtures over a real bug is how a demo starts lying.
+ */
+export function isDbUnavailable(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const code = (err as NodeJS.ErrnoException & { code?: string }).code ?? '';
+  if (
+    ['ECONNREFUSED', 'ENOTFOUND', 'ETIMEDOUT', 'EAI_AGAIN', 'ECONNRESET', 'EPIPE', 'ENETUNREACH'].includes(code)
+  ) {
+    return true;
+  }
+  // Postgres class 57/53: shutdown, too many connections, cannot connect now.
+  if (/^(57P0[123]|53300|08\d{3})$/.test(code)) return true;
+  const m = err.message.toLowerCase();
+  return (
+    m.includes('timeout') ||
+    m.includes('terminating connection') ||
+    m.includes('connection terminated') ||
+    m.includes('econnrefused') ||
+    m.includes('getaddrinfo') ||
+    m.includes('supabase_db_url is not set') ||
+    m.includes('server closed the connection')
+  );
+}
+
+/**
+ * A cheap "is the database awake?" probe, cached briefly so a page render costs at most one
+ * round trip and a burst of visitors costs one between them.
+ */
+let healthAt = 0;
+let healthy: boolean | null = null;
+const HEALTH_TTL_MS = 15_000;
+
+export async function dbReachable(): Promise<boolean> {
+  const now = Date.now();
+  if (healthy !== null && now - healthAt < HEALTH_TTL_MS) return healthy;
+  try {
+    await query('select 1');
+    healthy = true;
+  } catch (err) {
+    if (!isDbUnavailable(err)) throw err;
+    healthy = false;
+  }
+  healthAt = Date.now();
+  return healthy;
 }

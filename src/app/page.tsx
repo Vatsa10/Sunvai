@@ -5,6 +5,10 @@ import { LANG_NAMES, SHIPPED_LANGS, t, type ShippedLang } from '@/lib/i18n/strin
 import { MockNote } from '@/components/MockBadge';
 import { TryTheAuditor } from '@/components/TryTheAuditor';
 import { evalResults, pct } from '@/lib/eval-results';
+import { dbReachable } from '@/lib/db';
+import { fixtureCase } from '@/lib/fixture-cases';
+import { FixtureBanner } from '@/components/FixtureBanner';
+import { looksLikeLiveRef } from '@/lib/ref';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +24,11 @@ const DEMO_CHIPS = [
   { ref: 'DEMO/2026/0000631', who: 'Meera, 24', what: 'Road not repaired. A case our own auditor gets wrong.' },
 ];
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ lang?: string; notfound?: string }> }) {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string; notfound?: string }>;
+}) {
   const sp = await searchParams;
   const lang = (SHIPPED_LANGS as readonly string[]).includes(sp.lang ?? '') ? (sp.lang as ShippedLang) : 'hi';
   const s = t(lang);
@@ -29,15 +37,38 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
   // computed from the seeded corpus. If the eval has not been run, the section does not render.
   const evals = evalResults();
 
+  // Is the database awake? The free tier pauses when idle, and the first click of the day is
+  // the one that wakes it. This page does not need the database to render — the three cases
+  // below come from files in the repository — but a reviewer deserves to be told which of the
+  // two they are looking at rather than left to guess.
+  const live = await dbReachable();
+
   async function open(formData: FormData) {
     'use server';
     const ref = String(formData.get('ref') ?? '').trim();
-    const found = ref ? await adapter.fetchCase(ref) : null;
+    if (!ref) redirect(`/?lang=${lang}&notfound=1`);
+
+    // A number from a real system. We cannot open it and never will be able to without an
+    // access agreement, so we say that instead of implying they mistyped it.
+    if (looksLikeLiveRef(ref)) redirect(`/?lang=${lang}&notfound=live`);
+
+    let found: { ref: string } | null = null;
+    try {
+      found = await adapter.fetchCase(ref);
+    } catch {
+      // Database asleep or unreachable. The three committed cases are still openable, and the
+      // case page will say plainly that it is rendering the fixture copy.
+      found = fixtureCase(ref);
+    }
     redirect(found ? `/case/${encodeURIComponent(found.ref)}?lang=${lang}` : `/?lang=${lang}&notfound=1`);
   }
 
   return (
     <div className="space-y-10">
+      {!live && (
+        <FixtureBanner heading={s.offlineHeading} body={s.offlineBody} writes={s.offlineWrites} />
+      )}
+
       <nav aria-label="Language" className="flex flex-wrap gap-2">
         {SHIPPED_LANGS.map((l) => (
           <Link
@@ -79,7 +110,17 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
             </button>
           </form>
 
-          {sp.notfound && <p className="mt-3 text-bad">{s.notFound}</p>}
+          {sp.notfound === 'live' ? (
+            <div className="mt-3 rounded border-2 border-ink p-4">
+              <p className="font-semibold text-ink">{s.realRefHeading}</p>
+              <p className="mt-1 text-ink">{s.realRefBody}</p>
+              <a href="#try-the-auditor" className="mt-2 inline-block underline">
+                Go to the box
+              </a>
+            </div>
+          ) : (
+            sp.notfound && <p className="mt-3 text-bad">{s.notFound}</p>
+          )}
         </div>
 
         <div className="rounded border border-rule p-5">
@@ -118,7 +159,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
 
       {/* Try it on something we did not choose. Three cases we picked invite one fair
           objection, and this is the answer to it. */}
-      <section className="rounded border-2 border-ink p-5">
+      <section id="try-the-auditor" className="rounded border-2 border-ink p-5">
         <TryTheAuditor />
       </section>
 

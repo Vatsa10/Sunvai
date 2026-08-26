@@ -9,10 +9,12 @@
  */
 
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { transaction, appendEvent, one } from '@/lib/db';
 import { audit, type AuditInput } from '@/lib/agents/closure-auditor';
 import { adapter } from '@/lib/adapters';
 import type { AuditResult, Lang } from '@/lib/agents/schemas';
+import { checkRateLimit } from '@/lib/rate-limit';
 
 export type AuditPreview = {
   result: AuditResult;
@@ -34,6 +36,16 @@ export async function auditText(args: {
   lang?: Lang;
   replyLang?: Lang;
 }): Promise<AuditPreview> {
+  // Who is asking, as well as we can tell behind a proxy. Not identity — a throttling key. It
+  // is never stored, never logged, and never written to the ledger.
+  const h = await headers();
+  const ip =
+    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    h.get('x-real-ip')?.trim() ||
+    'unknown';
+  const gate = checkRateLimit(ip);
+  if (!gate.ok) throw new Error(gate.message);
+
   const complaint = args.complaint.trim();
   const reply = args.reply.trim();
 

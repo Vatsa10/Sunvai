@@ -31,6 +31,13 @@ type Dict = {
   refPlaceholder: string;
   open: string;
   notFound: string;
+  /** A number that looks like a real registration number. Not an error — the boundary. */
+  realRefHeading: string;
+  realRefBody: string;
+  /** The database is not answering and the page is rendering the committed fixture copy. */
+  offlineHeading: string;
+  offlineBody: string;
+  offlineWrites: string;
   theyWrote: string;
   weRead: string;
   daysLeft: (n: number) => string;
@@ -110,6 +117,14 @@ const en: Dict = {
   refPlaceholder: 'DEMO/2026/0000472',
   open: 'Open',
   notFound: 'We could not find that number. Check it, or open one of the examples below.',
+  realRefHeading: 'That looks like a real registration number. We cannot open it.',
+  realRefBody:
+    'Sunvai has no connection to the government grievance portal, and will not have one without an access agreement. Nothing here reads live cases. What does work on a real case: paste the reply the department actually sent you into the box below, and we will read it against what you asked for. Nothing is saved.',
+  offlineHeading: 'The live database is not answering.',
+  offlineBody:
+    'What you are reading is the copy committed to this repository — the same three demo cases, the same department replies, and the verdicts from the recorded model run against that text. It is not live data and we are not pretending otherwise.',
+  offlineWrites:
+    'Anything that would be written down — your answer to “did it work?”, an appeal — is switched off until the database is back, because there is nowhere to record it.',
   theyWrote: 'This is what they wrote',
   weRead: 'We read it against what you asked for',
   daysLeft: (n) => `${n} days left for them to reply`,
@@ -216,6 +231,14 @@ const hi: Dict = {
   refPlaceholder: 'DEMO/2026/0000472',
   open: 'खोलिए',
   notFound: 'यह नंबर नहीं मिला। जाँच लीजिए, या नीचे दिए उदाहरण खोलिए।',
+  realRefHeading: 'यह असली पंजीकरण नंबर लगता है। हम इसे नहीं खोल सकते।',
+  realRefBody:
+    'सुनवाई का सरकारी शिकायत पोर्टल से कोई जुड़ाव नहीं है, और बिना आधिकारिक अनुमति के होगा भी नहीं। यहाँ से कोई असली शिकायत नहीं पढ़ी जाती। जो काम करता है वह यह है: विभाग ने आपको जो जवाब भेजा, उसे नीचे वाले बक्से में चिपकाइए — हम उसे आपकी माँग के सामने रखकर पढ़ेंगे। कुछ भी सहेजा नहीं जाता।',
+  offlineHeading: 'लाइव डेटाबेस जवाब नहीं दे रहा।',
+  offlineBody:
+    'आप जो देख रहे हैं वह इस प्रोजेक्ट में सहेजी गई प्रति है — वही तीन नमूना शिकायतें, वही विभागीय जवाब, और उसी दर्ज मॉडल-रन से निकले नतीजे। यह लाइव डेटा नहीं है, और हम इसे लाइव बताने की कोशिश नहीं कर रहे।',
+  offlineWrites:
+    'जो कुछ दर्ज होना है — "क्या काम हुआ?" का आपका जवाब, अपील — वह डेटाबेस लौटने तक बंद है, क्योंकि उसे लिखने की जगह ही नहीं है।',
   theyWrote: 'उन्होंने यह लिखा',
   weRead: 'आपने जो माँगा था, उसके सामने हमने इसे पढ़ा',
   daysLeft: (n) => `जवाब देने के लिए ${n} दिन बचे हैं`,
@@ -322,6 +345,14 @@ const mr: Dict = {
   refPlaceholder: 'DEMO/2026/0000631',
   open: 'उघडा',
   notFound: 'हा क्रमांक सापडला नाही. तपासा, किंवा खालचं उदाहरण उघडा.',
+  realRefHeading: 'हा खरा नोंदणी क्रमांक दिसतो. आम्ही तो उघडू शकत नाही.',
+  realRefBody:
+    'सुनवाईचा सरकारी तक्रार पोर्टलशी काहीही संबंध नाही, आणि अधिकृत परवानगीशिवाय तो होणारही नाही. इथून कुठलीही खरी तक्रार वाचली जात नाही. जे चालतं ते हे: विभागानं तुम्हाला पाठवलेलं उत्तर खालच्या चौकटीत चिकटवा — तुम्ही काय मागितलं होतं त्यासमोर आम्ही ते वाचू. काहीही साठवलं जात नाही.',
+  offlineHeading: 'लाइव्ह डेटाबेस उत्तर देत नाही.',
+  offlineBody:
+    'तुम्ही पाहताय ती या प्रकल्पात जतन केलेली प्रत आहे — तेच तीन नमुना तक्रारी, तीच विभागाची उत्तरं, आणि त्याच नोंदवलेल्या मॉडेल-रनमधून आलेले निकाल. ही लाइव्ह माहिती नाही, आणि तसं भासवतही नाही.',
+  offlineWrites:
+    'जे नोंदवलं जाणार आहे — "काम झालं का?" चं तुमचं उत्तर, अपील — ते डेटाबेस परत येईपर्यंत बंद आहे, कारण ते लिहायला जागाच नाही.',
   theyWrote: 'त्यांनी हे लिहिलं',
   weRead: 'तुम्ही जे मागितलं होतं, त्यासमोर आम्ही हे वाचलं',
   daysLeft: (n) => `उत्तर देण्यासाठी ${n} दिवस उरले`,
