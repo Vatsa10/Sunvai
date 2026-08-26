@@ -11,23 +11,75 @@ import { verdictCopy } from '@/lib/verdicts';
  * takes any closure reply — a real one somebody received, or one written specifically to fool
  * us — and judges it on the spot, quoting from the text the reader supplied rather than ours.
  *
+ * The six chips below answer a second, unspoken objection: does this only work on CPGRAMS?
+ * They carry terminal strings observed on six different Indian public-service systems — an EPFO
+ * claim rejected `OK/OK`, an Income Tax refund that failed for `Others`, a UIDAI update
+ * `rejected due to technical reasons`. One engine reads all of them, and we integrated with
+ * none of them: the strings are text we typed into this file, nothing more.
+ *
  * Nothing here is stored. It is not a case; it is the auditor with its hands open.
  */
 
-const EXAMPLES: { label: string; complaint: string; reply: string }[] = [
+type Example = {
+  /** The system the string was observed on. Shown on the chip. */
+  system: string;
+  /** The terminal string itself, verbatim. Shown on the chip. */
+  string: string;
+  /** Where it was observed. Shown under the chips when that chip is loaded. */
+  attribution: string;
+  complaint: string;
+  reply: string;
+};
+
+const EXAMPLES: Example[] = [
   {
-    label: 'A reply written to sound thorough',
+    system: 'EPFO',
+    string: 'Claim Rejected OK/OK',
+    attribution: 'reported by members on hrcabin.com’s rejection threads, 2019–2025',
     complaint:
-      'My scholarship for the 2025-26 year has not been credited. I applied in June and the portal still shows "under process". I want to know why it has not been paid and when it will be.',
-    reply:
-      'With reference to your grievance dated 12 August 2026 regarding non-receipt of scholarship, the matter has been examined in detail by this office and appropriate action has been initiated with the concerned authority. The grievance is accordingly closed.',
+      'I applied to withdraw my PF after leaving my job in June. The claim was rejected and the reason printed on the status page is just "OK/OK". I have read it twenty times and I still do not know what is wrong with my claim or what I am supposed to fix. Please tell me what the defect is and what document you need from me.',
+    reply: 'Claim Rejected OK/OK',
   },
   {
-    label: 'A reply that genuinely answers',
+    system: 'EPFO',
+    string: 'WARNING-520461 mismatch in member ledger',
+    attribution: 'member reports, hrcabin.com / CiteHR',
     complaint:
-      'My water connection application has been pending for two months with no update. I want to know the status and when the connection will be given.',
+      'My PF transfer request has been stuck for eleven weeks. The only thing shown against it is "WARNING-520461 there is a mismatch between summary and details transactions in member ledger". I did not create any ledger and I cannot edit one. Which year of contributions does not match, and who corrects it — me, or my former employer?',
     reply:
-      'Your application no. WC/2026/4471 was held up because the plot verification report was pending from the ward office. That report was received on 14 August 2026 and your connection has been sanctioned. Work is scheduled for 29 August 2026.',
+      'WARNING-520461 there is a mismatch between summary and details transactions in member ledger',
+  },
+  {
+    system: 'Income Tax',
+    string: 'Refund failure reason: Others',
+    attribution: 'e-filing refund status, widely reported',
+    complaint:
+      'My income tax refund for AY 2025-26 has failed twice. The refund status on the e-filing portal gives the failure reason as "Others". My bank account is pre-validated and the name matches my PAN. Tell me what actually failed so I can correct it, and when the refund will be re-issued.',
+    reply: 'Refund failure reason: Others',
+  },
+  {
+    system: 'GST',
+    string: 'Cancellation reason: Others',
+    attribution: 'GST portal cancellation notices',
+    complaint:
+      'My GST registration was cancelled last week and the reason recorded in the order is "Others". I have filed every return on time and I have the acknowledgements. I run a two-person business and I cannot raise an invoice until this is sorted. What is the actual ground for cancellation, and what do I file to have it revoked?',
+    reply: 'Cancellation reason: Others',
+  },
+  {
+    system: 'UIDAI',
+    string: 'rejected due to technical reasons',
+    attribution: 'Aadhaar update status',
+    complaint:
+      'I applied to correct the spelling of my name on my Aadhaar and submitted my passport as proof. The update status now says "rejected due to technical reasons". I paid the fee and travelled to the centre twice. Was the document not accepted, or did something fail at your end? Tell me whether I need to apply again and whether I pay again.',
+    reply: 'Your update request has been rejected due to technical reasons.',
+  },
+  {
+    system: 'CPGRAMS',
+    string: 'Forwarded to the concerned office.',
+    attribution: 'pgportal.gov.in closure remarks',
+    complaint:
+      'My old-age pension has not been credited since May. I filed a grievance in July asking two things: why the payment stopped, and when the arrears will be paid. It has now been marked closed. Nobody has answered either question and no money has arrived.',
+    reply: 'The matter has been forwarded to the concerned office.',
   },
 ];
 
@@ -37,6 +89,7 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AuditPreview | null>(null);
+  const [loaded, setLoaded] = useState<Example | null>(null);
 
   async function run() {
     setBusy(true);
@@ -70,22 +123,60 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-2">
-        {EXAMPLES.map((e) => (
-          <button
-            key={e.label}
-            type="button"
-            onClick={() => {
-              setComplaint(e.complaint);
-              setReply(e.reply);
-              setResult(null);
-              setError(null);
-            }}
-            className="min-h-touch rounded border border-rule px-4 py-2 text-sm hover:border-ink"
-          >
-            {e.label}
-          </button>
-        ))}
+      <div className="space-y-3">
+        <div>
+          <h3 className="font-semibold">The same dead end, on six different systems</h3>
+          {/*
+            This paragraph is the whole point of the chips, and it sits above them rather than
+            below so nobody can read the six logos' worth of names and conclude we are wired
+            into six portals. We are not. These are strings people have pasted into public
+            forums, retyped here by hand.
+          */}
+          <p className="mt-1 text-muted">
+            These are other people’s rejection letters, pasted in here as text. Nothing is stored, and no
+            platform is contacted — we hold no connection to EPFO, the Income Tax portal, GST, UIDAI or
+            CPGRAMS, and none of these buttons reaches one. The verdict vocabulary is generic: the auditor
+            judges whether a reply answered the question, and knows nothing about any particular platform’s
+            reason codes.
+          </p>
+        </div>
+
+        <ul className="flex flex-wrap gap-2">
+          {EXAMPLES.map((e) => {
+            const isLoaded = loaded?.string === e.string;
+            return (
+              <li key={e.system + e.string}>
+                <button
+                  type="button"
+                  aria-pressed={isLoaded}
+                  onClick={() => {
+                    setComplaint(e.complaint);
+                    setReply(e.reply);
+                    setLoaded(e);
+                    setResult(null);
+                    setError(null);
+                  }}
+                  className={`flex min-h-touch w-full flex-col items-start gap-0.5 rounded border px-4 py-2 text-left hover:border-ink ${
+                    isLoaded ? 'border-ink border-2 bg-ink/5' : 'border-rule'
+                  }`}
+                >
+                  <span className="text-sm font-semibold uppercase tracking-wide">
+                    {e.system}
+                    {isLoaded && <span className="ml-2 font-normal normal-case">· loaded</span>}
+                  </span>
+                  <span className="font-serif">“{e.string}”</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+
+        {loaded && (
+          <p className="text-sm text-muted">
+            <strong>{loaded.system}</strong> — {loaded.attribution}. Retyped from public reports; the
+            complaint above it is written by us, not taken from anyone’s case.
+          </p>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
