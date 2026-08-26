@@ -10,9 +10,12 @@ export const dynamic = 'force-dynamic';
  * The pattern. Counts and offices only — never names, never narratives, never who.
  *
  * Membership is derived from the case record, and a cluster only becomes public once it clears
- * a gate applied in code: at least five cases, from at least five distinct people, spread over
- * more than forty-eight hours. Without that, one motivated person with five devices can
- * manufacture a public accusation, and we would have built a machine for doing it.
+ * a gate applied in code — see the gate in supabase/seed/run.ts, which computes it from the
+ * members rather than taking anyone's word for it: at least five cases, from at least five
+ * distinct citizen records, spread over more than forty-eight hours. Without that, one
+ * motivated person can manufacture a public accusation in an afternoon, and we would have
+ * built a machine for doing it. A same-device check belongs in that gate too; there is no
+ * device signal in this data, so the gate does not apply one and this page does not claim it.
  */
 export default async function ClusterPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -108,15 +111,23 @@ export default async function ClusterPage({ params }: { params: Promise<{ id: st
           here by name — including the officers involved.
         </p>
         <p className="text-muted">
-          This pattern became public only after clearing a fixed bar: five or more cases, from five or more
-          separate people, spread over more than two days, not originating from one device. Three of the six
-          clusters in this prototype do not clear it, and stay private.
+          This pattern became public only after clearing a fixed bar, computed in code from the cases
+          themselves: five or more cases, from five or more separate citizen records, with more than
+          two days between the first filing and the last. Three of the six clusters in this prototype
+          do not clear it, and stay private — you cannot reach their pages.
+        </p>
+        <p className="text-muted">
+          One thing the bar does not yet include: a check that the cases did not all come from a single
+          device. It is the right condition and it is not enforced here, because this synthetic corpus
+          carries no device or session signal to check. On real submissions it would sit alongside the
+          three above, and until it does we are not going to describe it as protection you have.
         </p>
       </section>
 
       <MockNote>
-        Synthetic cases, invented office names. The grouping logic and the visibility gate are real; the
-        pattern they are grouping is not. <Link href="/how-this-works" className="underline">More</Link>.
+        Synthetic cases, invented office names, and one citizen record per synthetic complainant so the
+        counts above mean what they say. The grouping logic and the visibility gate are real and run over
+        this data; the pattern they are grouping is not. <Link href="/how-this-works" className="underline">More</Link>.
       </MockNote>
     </div>
   );
