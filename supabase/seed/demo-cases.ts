@@ -29,6 +29,11 @@ export type DemoCase = {
    * Optional: a case with no known correct forum shows nothing rather than an invention.
    */
   nextStep?: { heading: string; body: string };
+  /**
+   * A date the department itself stated, before which an appeal would be dismissed as
+   * premature. Advisory: it changes what the page says, never what the citizen may do.
+   */
+  appealNotAdvisedBefore?: string;
   expected: {
     verdict: 'resolved' | 'partial' | 'deflected' | 'boilerplate' | 'non_responsive';
     citizenSaysResolved: boolean;
@@ -146,6 +151,8 @@ export const DEMO_CASES: DemoCase[] = [
         'executing agency with a completion target of 31.08.2026. The grievance is disposed accordingly.',
       lang: 'en',
     },
+    // Their own completion target. Until it passes there is nothing yet to say they failed.
+    appealNotAdvisedBefore: '2026-08-31T18:29:59.000Z',
     nextStep: {
       heading: '३१ ऑगस्टपर्यंत थांबा. त्याआधीची अपील एका ओळीत फेटाळली जाते.',
       body:

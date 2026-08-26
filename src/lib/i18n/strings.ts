@@ -84,6 +84,11 @@ type Dict = {
   windowClosedHeading: string;
   windowClosedBody: (closedOn: string, daysAgo: number) => string;
   whatToDoNext: string;
+  appealHoldHeading: (by: string) => string;
+  appealHoldBody: (by: string) => string;
+  appealAnyway: string;
+  translatedByUs: string;
+  translationFailed: string;
   notOnlyOne: string;
   clusterLine: (others: number, unresolved: number) => string;
   clusterSee: string;
@@ -162,10 +167,17 @@ const en: Dict = {
   sendMyAppeal: 'Send my appeal',
   recordedHeading: 'Recorded here. Not sent anywhere.',
   recordedBody:
-    'Your appeal is saved on this page and in your receipt. It did not reach any government office — this tool has no connection to one. No clock has started and nobody there has to reply. Take this text to the office named under “What to do next”, and carry your receipt with you.',
+    'Your appeal is saved on this page and in your receipt. It did not reach any government office — this tool has no connection to one. No clock has started and nobody there has to reply. Take this text to the office named under “What to do next” above, and carry your receipt with you.',
   windowClosedHeading: 'The 30-day appeal window on this closure has passed.',
   windowClosedBody: (closedOn, daysAgo) =>
-    `This was closed on ${closedOn}. An appeal against a closure has to go in within 30 days, and that ended ${daysAgo} days ago, so there is no live appeal to offer you. What is still open: the route under “What to do next” below, and filing the problem afresh — a new complaint starts a new clock where an appeal no longer can.`,
+    `This was closed on ${closedOn}. An appeal against a closure has to go in within 30 days, and that ended ${daysAgo} days ago, so there is no live appeal to offer you. What is still open: the route under “What to do next” above, and filing the problem afresh — a new complaint starts a new clock where an appeal no longer can.`,
+  appealHoldHeading: (by) => `An appeal before ${by} comes back in one line.`,
+  appealHoldBody: (by) =>
+    `They gave themselves until ${by}. Until that date passes there is nothing yet to say they missed it, and an appellate officer closes an early appeal as premature. Do the step above first, and keep your dated photographs. If you want to appeal now anyway, you still can — that is your call, not ours.`,
+  appealAnyway: 'I still want to appeal now',
+  translatedByUs: 'Translated by us from our auditor’s English. Their reply above is untouched.',
+  translationFailed:
+    'This is our auditor’s own explanation, in English. We could not translate it just now, so we are showing it as it was written rather than guessing at it.',
   whatToDoNext: 'What to do next',
   notOnlyOne: 'You are not the only one',
   clusterLine: (others, unresolved) =>
@@ -261,10 +273,17 @@ const hi: Dict = {
   sendMyAppeal: 'मेरी अपील भेजिए',
   recordedHeading: 'यहाँ दर्ज हो गई। कहीं भेजी नहीं गई।',
   recordedBody:
-    'आपकी अपील इस पन्ने पर और आपकी रसीद में सुरक्षित है। यह किसी सरकारी दफ्तर तक नहीं पहुँची — इस सेवा का किसी सरकारी व्यवस्था से कोई जुड़ाव नहीं है। कोई समय-सीमा शुरू नहीं हुई और वहाँ किसी को जवाब देना नहीं है। नीचे “आगे क्या कीजिए” में बताए दफ्तर में यही लिखा हुआ ले जाइए, और अपनी रसीद साथ रखिए।',
+    'आपकी अपील इस पन्ने पर और आपकी रसीद में सुरक्षित है। यह किसी सरकारी दफ्तर तक नहीं पहुँची — इस सेवा का किसी सरकारी व्यवस्था से कोई जुड़ाव नहीं है। कोई समय-सीमा शुरू नहीं हुई और वहाँ किसी को जवाब देना नहीं है। ऊपर “आगे क्या कीजिए” में बताए दफ्तर में यही लिखा हुआ ले जाइए, और अपनी रसीद साथ रखिए।',
   windowClosedHeading: 'इस बंदी के विरुद्ध अपील की तीस दिन की मियाद बीत चुकी है।',
   windowClosedBody: (closedOn, daysAgo) =>
-    `यह मामला ${closedOn} को बंद किया गया था। बंद करने के विरुद्ध अपील तीस दिन के भीतर देनी होती है, और वह मियाद ${daysAgo} दिन पहले खत्म हो गई — इसलिए यहाँ ऐसा बटन नहीं दिखाया जा रहा जो कहीं नहीं ले जाता। अब भी क्या खुला है: नीचे “आगे क्या कीजिए” में बताया रास्ता, और उसी समस्या पर नई शिकायत दर्ज करना — नई शिकायत से समय फिर से शुरू होता है, अपील से अब नहीं।`,
+    `यह मामला ${closedOn} को बंद किया गया था। बंद करने के विरुद्ध अपील तीस दिन के भीतर देनी होती है, और वह मियाद ${daysAgo} दिन पहले खत्म हो गई — इसलिए यहाँ ऐसा बटन नहीं दिखाया जा रहा जो कहीं नहीं ले जाता। अब भी क्या खुला है: ऊपर “आगे क्या कीजिए” में बताया रास्ता, और उसी समस्या पर नई शिकायत दर्ज करना — नई शिकायत से समय फिर से शुरू होता है, अपील से अब नहीं।`,
+  appealHoldHeading: (by) => `${by} से पहले की गई अपील एक ही लाइन में लौट आती है।`,
+  appealHoldBody: (by) =>
+    `उन्होंने खुद ${by} तक का समय लिया है। वह तारीख बीते बिना यह नहीं कहा जा सकता कि उन्होंने काम नहीं किया, और अपील अधिकारी समय से पहले की अपील को “अभी मियाद बाकी है” कहकर बंद कर देते हैं। पहले ऊपर बताया कदम उठाइए। फिर भी अभी अपील करनी हो, तो कर सकते हैं — यह फैसला आपका है, हमारा नहीं।`,
+  appealAnyway: 'फिर भी मुझे अभी अपील करनी है',
+  translatedByUs: 'यह हमारी जाँच की अंग्रेज़ी बात है, अनुवाद हमने किया है। ऊपर उनका जवाब जस का तस है।',
+  translationFailed:
+    'यह हमारी अपनी जाँच की बात है, अंग्रेज़ी में। अभी इसका अनुवाद नहीं हो सका, इसलिए अंदाज़ा लगाने के बजाय हम इसे जैसा लिखा गया वैसा ही दिखा रहे हैं।',
   whatToDoNext: 'आगे क्या कीजिए',
   notOnlyOne: 'आप अकेले नहीं हैं',
   clusterLine: (others, unresolved) =>
@@ -360,10 +379,17 @@ const mr: Dict = {
   sendMyAppeal: 'माझं अपील पाठवा',
   recordedHeading: 'इथे नोंदवलं. कुठेही पाठवलेलं नाही.',
   recordedBody:
-    'तुमचं अपील या पानावर आणि तुमच्या पावतीत जपून ठेवलं आहे. ते कोणत्याही सरकारी कार्यालयापर्यंत पोहोचलेलं नाही — या सेवेचा कोणत्याही सरकारी यंत्रणेशी संबंध जोडलेला नाही. कोणतीही मुदत सुरू झालेली नाही आणि तिथे कुणावर उत्तर देण्याचं बंधन नाही. खाली “पुढे काय करावं” मध्ये सांगितलेल्या कार्यालयात हाच मजकूर घेऊन जा, आणि पावती सोबत ठेवा.',
+    'तुमचं अपील या पानावर आणि तुमच्या पावतीत जपून ठेवलं आहे. ते कोणत्याही सरकारी कार्यालयापर्यंत पोहोचलेलं नाही — या सेवेचा कोणत्याही सरकारी यंत्रणेशी संबंध जोडलेला नाही. कोणतीही मुदत सुरू झालेली नाही आणि तिथे कुणावर उत्तर देण्याचं बंधन नाही. वर “पुढे काय करावं” मध्ये सांगितलेल्या कार्यालयात हाच मजकूर घेऊन जा, आणि पावती सोबत ठेवा.',
   windowClosedHeading: 'या बंद करण्याविरुद्ध अपील करण्याची तीस दिवसांची मुदत संपली आहे.',
   windowClosedBody: (closedOn, daysAgo) =>
-    `हे प्रकरण ${closedOn} रोजी बंद करण्यात आलं. बंद करण्याविरुद्ध अपील तीस दिवसांच्या आत करावी लागते, आणि ती मुदत ${daysAgo} दिवसांपूर्वी संपली — म्हणून कुठेच न नेणारं बटण इथे दाखवत नाही. अजून काय शिल्लक आहे: खाली “पुढे काय करावं” मध्ये दिलेला मार्ग, आणि त्याच अडचणीची नव्याने तक्रार — नव्या तक्रारीने वेळ पुन्हा सुरू होते, अपिलाने आता होणार नाही.`,
+    `हे प्रकरण ${closedOn} रोजी बंद करण्यात आलं. बंद करण्याविरुद्ध अपील तीस दिवसांच्या आत करावी लागते, आणि ती मुदत ${daysAgo} दिवसांपूर्वी संपली — म्हणून कुठेच न नेणारं बटण इथे दाखवत नाही. अजून काय शिल्लक आहे: वर “पुढे काय करावं” मध्ये दिलेला मार्ग, आणि त्याच अडचणीची नव्याने तक्रार — नव्या तक्रारीने वेळ पुन्हा सुरू होते, अपिलाने आता होणार नाही.`,
+  appealHoldHeading: (by) => `${by} च्या आधी केलेली अपील एका ओळीत परत येते.`,
+  appealHoldBody: (by) =>
+    `त्यांनी स्वतःसाठी ${by} पर्यंतची मुदत घेतली आहे. ती तारीख उलटल्याशिवाय त्यांनी काम केलं नाही असं म्हणता येत नाही, आणि अपील अधिकारी मुदतीआधीची अपील “मुदत अजून संपलेली नाही” म्हणून बंद करतात. आधी वरचं पाऊल उचला आणि तारीख दिसणारे फोटो जपून ठेवा. तरीही आत्ताच अपील करायची असेल, तर करू शकता — तो निर्णय तुमचा आहे, आमचा नाही.`,
+  appealAnyway: 'तरीही मला आत्ताच अपील करायची आहे',
+  translatedByUs: 'हे आमच्या तपासणीचं इंग्रजीतलं म्हणणं, भाषांतर आम्ही केलं आहे. वरचं त्यांचं उत्तर जसंच्या तसं आहे.',
+  translationFailed:
+    'हे आमच्याच तपासणीचं म्हणणं आहे, इंग्रजीत. आत्ता त्याचं भाषांतर होऊ शकलं नाही, म्हणून अंदाज करण्याऐवजी ते जसं लिहिलं तसंच दाखवत आहोत.',
   whatToDoNext: 'पुढे काय करावं',
   notOnlyOne: 'तुम्ही एकटे नाही',
   clusterLine: (others, unresolved) =>

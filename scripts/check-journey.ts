@@ -155,10 +155,29 @@ step(11, 'A case closed more than 30 days ago does not present a live appeal');
   );
 }
 
-step(12, 'The case names a forum that can actually act');
+step(12, 'A time-barred draft cannot be sent, even with consent');
+{
+  const backdated = '2026-01-01T00:00:00.000Z';
+  await query(`update grievances set closed_at = $2 where id = $1`, [c!.id, backdated]);
+  await query(`update appeals set status = 'drafted' where grievance_id = $1`, [c!.id]);
+  await assert.rejects(() => sendAppeal(form({ ref: REF, consent: 'on' })), /window/);
+  console.log('   consent given, window shut, refused before adapter.appeal()');
+  await query(`update grievances set closed_at = $2 where id = $1`, [c!.id, c!.closedAt]);
+  await query(`update appeals set status = 'sent' where grievance_id = $1`, [c!.id]);
+}
+
+step(13, 'The case names a forum that can actually act');
 assert.ok(c!.nextStep, 'no next step seeded — a verdict with no next step is half a product');
 assert.ok(c!.nextStep!.body.length > 100, 'the next step must be actionable, not a slogan');
 console.log(`   ${c!.nextStep!.heading}`);
+
+step(14, 'A stated completion date is carried, so the page does not urge a premature appeal');
+{
+  const meera = await getCase('DEMO/2026/0000631');
+  assert.ok(meera?.appealNotAdvisedBefore, 'Meera has a 31 Aug target and no hold date on the case');
+  assert.equal(new Date(meera!.appealNotAdvisedBefore!).getUTCMonth(), 7);
+  console.log(`   appeal not advised before ${meera!.appealNotAdvisedBefore}`);
+}
 
 console.log('\nJOURNEY OK');
 await pool().end();

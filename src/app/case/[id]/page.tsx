@@ -9,6 +9,7 @@ import { MockBadge, MockNote } from '@/components/MockBadge';
 import { confirmResolution, prepareAppeal, sendAppeal } from '@/actions/case-actions';
 import { t, SHIPPED_LANGS, type ShippedLang } from '@/lib/i18n/strings';
 import { appealWindow, hasAppealGrounds, mayDraftAppeal } from '@/lib/agents/appeal';
+import { readableReasoning } from '@/lib/audit-reasoning';
 
 export const dynamic = 'force-dynamic';
 
@@ -63,7 +64,22 @@ export default async function CasePage({
   );
   // Time-barred, with grounds, and nothing already drafted: say so instead of showing a button
   // that leads nowhere.
-  const timeBarred = closed && grounds && !canAppeal && !c.appeal && Boolean(appealWin);
+  const windowOpen = appealWin?.open ?? false;
+  // Time-barred: grounds, out of time, and nothing already sent. A draft left over from inside
+  // the window does not make the window open again, so this still says so.
+  const timeBarred = closed && grounds && Boolean(appealWin) && !windowOpen && c.appeal?.status !== 'sent';
+  // Premature rather than wrong: the department gave itself a date and it has not passed. We
+  // say what will happen, we put the useful step first, and we still let her decide.
+  const holdUntil =
+    c.appealNotAdvisedBefore && Date.parse(c.appealNotAdvisedBefore) > Date.now()
+      ? c.appealNotAdvisedBefore
+      : null;
+
+  // The verdict's explanation, in the language this page is being read in. Our sentence, so we
+  // may translate it; the department's reply above is never touched.
+  const reasoning = c.audit
+    ? await readableReasoning(c.audit.id, c.audit.reasoning, 'en', lang)
+    : null;
 
   return (
     <div className="space-y-10">
@@ -143,7 +159,9 @@ export default async function CasePage({
             <span className="text-lg font-semibold uppercase tracking-wide">{v.label}</span>
           </div>
           <p className="text-xl font-semibold leading-snug text-ink">{v.headline}</p>
-          <p className="text-ink">{c.audit.reasoning}</p>
+          <p className="text-ink">{reasoning!.text}</p>
+          {reasoning!.state === 'translated' && <p className="text-sm text-ink/70">{s.translatedByUs}</p>}
+          {reasoning!.state === 'untranslated' && <p className="text-sm text-ink/70">{s.translationFailed}</p>}
 
           {c.audit.unaddressed.length > 0 && (
             <div>
@@ -156,11 +174,14 @@ export default async function CasePage({
             </div>
           )}
 
-          <ReadAloud
-            text={`${v.headline} ${c.audit.reasoning}`}
-            lang={lang}
-            label={s.listenToThis}
-          />
+          {/*
+            Never hand English text to a Hindi voice. If we could not translate the reasoning,
+            there is nothing here worth reading aloud in this language, and we say so above
+            instead of performing an accessibility feature that does not work.
+          */}
+          {reasoning!.state !== 'untranslated' && (
+            <ReadAloud text={`${v.headline} ${reasoning!.text}`} lang={lang} label={s.listenToThis} />
+          )}
 
           <details open={sp.how === '1'} className="border-t border-current/20 pt-3">
             <summary className="cursor-pointer font-semibold text-ink">{s.seeHow}</summary>
@@ -247,6 +268,25 @@ export default async function CasePage({
       )}
 
       {/*
+        The forum. Hand-written per case by someone who knows the ladder, held in the database,
+        never generated. Absent where we do not know it — a generic next step would send the
+        citizen to the wrong counter with our name on it.
+      */}
+      {c.nextStep && (
+        <section className="space-y-3 rounded border-2 border-ink p-5">
+          <h2 className="text-xl font-semibold">{s.whatToDoNext}</h2>
+          <p className="text-lg font-semibold">{c.nextStep.heading}</p>
+          <p className="whitespace-pre-wrap leading-relaxed">{c.nextStep.body}</p>
+          <ReadAloud
+            text={`${c.nextStep.heading} ${c.nextStep.body}`}
+            lang={c.narrativeLang}
+            label={s.readAloud}
+          />
+        </section>
+      )}
+
+
+      {/*
         The appeal. Drafted before it is asked for; sent only when it is consented to — and only
         while it is still in time. Past thirty days there is no live appeal to offer, and saying
         so plainly costs a citizen one paragraph instead of one month.
@@ -263,11 +303,36 @@ export default async function CasePage({
         </section>
       )}
 
-      {closed && (canAppeal || c.appeal) && (
+      {closed && windowOpen && (canAppeal || c.appeal) && (
         <section className="space-y-4 rounded border border-rule p-5">
-          <h2 className="text-xl font-semibold">{s.appealReady}</h2>
-          {appealWin && appealWin.open && <p className="text-sm text-muted">{s.appealDaysLeft(appealWin.daysLeft)}</p>}
+          {/*
+            Where the department gave itself a date that has not passed, this whole section is
+            folded away behind the step above and opens only if she asks for it. She is told
+            what an early appeal does and then left to decide; taking the choice away would be
+            us substituting our judgement for hers on her own case.
+          */}
+          {holdUntil ? (
+            <>
+              <h2 className="text-xl font-semibold">{s.appealHoldHeading(fmt(holdUntil))}</h2>
+              <p>{s.appealHoldBody(fmt(holdUntil))}</p>
+              <ReadAloud
+                text={`${s.appealHoldHeading(fmt(holdUntil))} ${s.appealHoldBody(fmt(holdUntil))}`}
+                lang={lang}
+                label={s.readAloud}
+              />
+            </>
+          ) : (
+            <>
+              <h2 className="text-xl font-semibold">{s.appealReady}</h2>
+              {appealWin && <p className="text-sm text-muted">{s.appealDaysLeft(appealWin.daysLeft)}</p>}
+            </>
+          )}
 
+          <details open={!holdUntil} className={holdUntil ? 'border-t border-rule pt-3' : ''}>
+            <summary className={holdUntil ? 'cursor-pointer font-semibold' : 'sr-only'}>
+              {s.appealAnyway}
+            </summary>
+            <div className="mt-3 space-y-4">
           {!c.appeal ? (
             <form action={prepareAppeal} className="space-y-3">
               <input type="hidden" name="ref" value={c.ref} />
@@ -337,24 +402,22 @@ export default async function CasePage({
               <ReadAloud text={`${s.recordedHeading} ${s.recordedBody}`} lang={lang} label={s.readAloud} />
             </div>
           )}
+            </div>
+          </details>
         </section>
       )}
 
       {/*
-        The forum. Hand-written per case by someone who knows the ladder, held in the database,
-        never generated. Absent where we do not know it — a generic next step would send the
-        citizen to the wrong counter with our name on it.
+        A draft made inside the window and opened again after it: the text is still hers, but
+        the consent gate is gone, because sending it would send it nowhere useful. The action
+        refuses this too — the page must not be the only thing holding the line.
       */}
-      {c.nextStep && (
-        <section className="space-y-3 rounded border-2 border-ink p-5">
-          <h2 className="text-xl font-semibold">{s.whatToDoNext}</h2>
-          <p className="text-lg font-semibold">{c.nextStep.heading}</p>
-          <p className="whitespace-pre-wrap leading-relaxed">{c.nextStep.body}</p>
-          <ReadAloud
-            text={`${c.nextStep.heading} ${c.nextStep.body}`}
-            lang={c.narrativeLang}
-            label={s.readAloud}
-          />
+      {closed && !windowOpen && c.appeal && c.appeal.status !== 'drafted' && (
+        <section className="space-y-2 rounded border border-rule p-5">
+          <h2 className="text-xl font-semibold">{s.appealReady}</h2>
+          <p className="text-lg font-semibold">{s.recordedHeading}</p>
+          <p>{s.recordedBody}</p>
+          <ReadAloud text={`${s.recordedHeading} ${s.recordedBody}`} lang={lang} label={s.readAloud} />
         </section>
       )}
 

@@ -26,6 +26,11 @@ export type CaseView = {
    * generic next step is the same harm as a wrong one.
    */
   nextStep: { heading: string; body: string } | null;
+  /**
+   * Advisory only. A date the department stated, before which an appeal is likely to be
+   * dismissed as premature. It never removes the citizen's ability to appeal.
+   */
+  appealNotAdvisedBefore: string | null;
   citizen: { id: string; name: string; lang: Lang };
   reply: { id: string; body: string; lang: Lang; receivedAt: string } | null;
   audit: {
@@ -56,7 +61,7 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
   const g = await one<Record<string, string | null>>(
     `select g.id, g.external_ref, g.subject, g.narrative_original, g.original_lang, g.status,
             g.filed_at, g.sla_due_at, g.closed_at, g.filed_by_relation, g.office_id,
-            g.next_step_heading, g.next_step_body,
+            g.next_step_heading, g.next_step_body, g.appeal_not_advised_before,
             c.id as citizen_id, c.display_name, c.preferred_lang,
             o.name as office, d.short_name as department
        from grievances g
@@ -132,6 +137,7 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
       g.next_step_heading && g.next_step_body
         ? { heading: g.next_step_heading, body: g.next_step_body }
         : null,
+    appealNotAdvisedBefore: g.appeal_not_advised_before,
     citizen: { id: g.citizen_id!, name: g.display_name!, lang: g.preferred_lang as Lang },
     reply: reply
       ? { id: reply.id, body: reply.body, lang: reply.body_lang as Lang, receivedAt: reply.received_at }

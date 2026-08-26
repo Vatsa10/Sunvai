@@ -36,11 +36,34 @@ export type AppealWindow = {
   closesAt: string;
 };
 
-/** Pure arithmetic, no clock of its own, so it can be tested at any date. */
+// A deadline in days is calendar arithmetic, not millisecond arithmetic. An office counts the
+// day it closed the file and the day you walk in, in the only timezone anybody here lives in.
+// Subtracting instants and rounding gave a case closed this morning "31 days left of the
+// 30-day window", which is both wrong and the kind of wrong that makes a citizen stop
+// believing the rest of the page.
+const IST_OFFSET_MS = 5.5 * 3_600_000;
+
+/** The IST calendar day an instant falls on, as a whole number of days since the epoch. */
+function istDay(ms: number): number {
+  return Math.floor((ms + IST_OFFSET_MS) / 86_400_000);
+}
+
+/**
+ * Pure arithmetic, no clock of its own, so it can be tested at any date.
+ *
+ * Both ends are floored to IST calendar days, so `daysLeft` is a count of days the citizen can
+ * still act on, and the thirtieth day is inside the window rather than half inside it. The
+ * boundary is deliberately generous: someone is never told they are out of time a day early.
+ */
 export function appealWindow(closedAt: string, now: Date = new Date()): AppealWindow {
-  const closesAtMs = Date.parse(closedAt) + APPEAL_WINDOW_DAYS * 86_400_000;
-  const daysLeft = Math.ceil((closesAtMs - now.getTime()) / 86_400_000);
-  return { daysLeft, open: daysLeft >= 0, closesAt: new Date(closesAtMs).toISOString() };
+  const closesOnDay = istDay(Date.parse(closedAt)) + APPEAL_WINDOW_DAYS;
+  const daysLeft = closesOnDay - istDay(now.getTime());
+  return {
+    daysLeft,
+    open: daysLeft >= 0,
+    // Midnight IST at the end of the last day on which an appeal can go in.
+    closesAt: new Date((closesOnDay + 1) * 86_400_000 - IST_OFFSET_MS).toISOString(),
+  };
 }
 
 /**

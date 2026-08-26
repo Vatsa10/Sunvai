@@ -139,6 +139,15 @@ export async function sendAppeal(formData: FormData) {
   if (!c?.appeal) throw new Error('no drafted appeal');
   if (c.appeal.status !== 'drafted') return;
 
+  // The window is checked again here, not only at drafting. A draft made in time and opened
+  // again on day forty would otherwise walk straight through the consent gate and out through
+  // adapter.appeal(). Drafting is a page state; sending is the boundary, so the boundary is
+  // where the calendar has to hold.
+  const closedAt = c.closedAt ?? c.reply?.receivedAt ?? null;
+  if (!closedAt || !appealWindow(closedAt).open) {
+    throw new Error('not sent: the 30-day appeal window on this closure has passed');
+  }
+
   await transaction(async (client) => {
     await client.query(`update appeals set status = 'consented', consented_at = now() where id = $1`, [c.appeal!.id]);
     await appendEvent(client, {
