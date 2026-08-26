@@ -119,25 +119,3 @@ export function isDbUnavailable(err: unknown): boolean {
     m.includes('server closed the connection')
   );
 }
-
-/**
- * A cheap "is the database awake?" probe, cached briefly so a page render costs at most one
- * round trip and a burst of visitors costs one between them.
- */
-let healthAt = 0;
-let healthy: boolean | null = null;
-const HEALTH_TTL_MS = 15_000;
-
-export async function dbReachable(): Promise<boolean> {
-  const now = Date.now();
-  if (healthy !== null && now - healthAt < HEALTH_TTL_MS) return healthy;
-  try {
-    await query('select 1');
-    healthy = true;
-  } catch (err) {
-    if (!isDbUnavailable(err)) throw err;
-    healthy = false;
-  }
-  healthAt = Date.now();
-  return healthy;
-}

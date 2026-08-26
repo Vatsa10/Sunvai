@@ -58,13 +58,6 @@ const RAW_TO_STATUS: Record<string, string> = {
   'Closed with remarks': 'replied',
 };
 
-/** The three chips on the landing page, so that list has one source too. */
-export const FIXTURE_CHIPS = DEMO_CASES.map((c) => ({
-  ref: c.ref,
-  citizen: c.citizen.name,
-  subject: c.subject,
-}));
-
 function toView(d: DemoCase): CaseView {
   const a = precomputed()?.[d.ref] ?? null;
   return {

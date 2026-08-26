@@ -43,9 +43,15 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
     setError(null);
     setResult(null);
     try {
-      setResult(await auditText({ complaint, reply }));
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'That did not work. Nothing was saved.');
+      const outcome = await auditText({ complaint, reply });
+      // A refusal — too long, too short, or the throttle — comes back as data rather than as a
+      // thrown error, because a production build would replace a thrown message with a digest.
+      if (!outcome.ok) setError(outcome.message);
+      else setResult(outcome);
+    } catch {
+      // A genuine fault: the model call failed or the network went. There is no message worth
+      // repeating from it, so we say the one true thing we know.
+      setError('That did not work. Nothing was saved, and nothing was sent anywhere.');
     } finally {
       setBusy(false);
     }
