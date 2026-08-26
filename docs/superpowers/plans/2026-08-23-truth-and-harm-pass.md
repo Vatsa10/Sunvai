@@ -351,3 +351,85 @@ be prepared without the account owner present.
 
 **Verification:** `bash scripts/check-live-url.sh http://localhost:3111` passes against the local
 server. The actual Vercel deploy needs the account owner and is explicitly out of scope here.
+
+---
+
+# Addendum — the CPGRAMS port (added 26 Aug)
+
+A prototype by **a-kashif-ahmed** (`github.com/a-kashif-ahmed/CPGRAMS`) is checked out in this
+working tree. Its owner gave explicit permission for its use and is not entering the competition;
+the repository carries no licence file, so that permission is the basis of use and anything
+shipped from it is attributed in `CREDITS.md`.
+
+A seven-agent analysis read every slice of it and sorted each feature into additive, duplicate
+and reject. The finding: **most of it is scaffolding.** The map is a grey div with no map library;
+PulseStep's "23 similar reports · 8 evidence uploads" is hardcoded and says "Road damage"
+regardless of category; the attachment button has no handler; the "AI" router is 22 regexes with
+hardcoded confidence literals; and the header ships the Government of India emblem, which we must
+never do. What survived is small and genuinely good.
+
+**This is a rewrite, not a copy.** That app is Next 14 + Tailwind 4 with a Material-3 palette;
+ours is Next 15 App Router + Server Actions + `pg` + Tailwind 3 with an austere palette where
+colour is reserved for verdicts. Nothing crosses intact.
+
+## Task 8: The on-device case list
+
+The one genuine hole in Sunvai's own journey. Our premise is that the citizen returns **weeks
+later**, after closure — and nothing on the device remembers the case. Verified: the only
+`localStorage` key in `src/` is `sunvai:textsize`; after `fileGrievance` the reference exists only
+in the URL; Door A asks for a number nobody told the citizen to write down; the three demo chips
+are hardcoded, so a case a reviewer files themselves is unreachable the moment they navigate away.
+
+1. `localStorage` key `sunvai:cases` — a deduped ring capped at ~10 of `{ref, subject, savedAt}`,
+   newest first. Written after `fileGrievance` succeeds in `src/components/FileFlow.tsx` and on
+   mount of the case page (via a small client component — the page stays a server component).
+   Read on the landing page under Door A as a client component. Empty renders **nothing** — no
+   empty-state box.
+2. Copy in all three languages: *"Saved only on this phone. Nothing is sent anywhere, and we
+   cannot see this list."* Load-bearing: it is what makes a client-side store honest.
+3. Every access in try/catch, following `src/components/TextSize.tsx:26-42`. A private window
+   degrades to no list, never a broken page.
+4. Per-item resilient hydration — each reference fetched in its own try/catch; a dead one renders
+   a muted "could not open this one right now" row rather than blanking the list. Supabase's free
+   tier sleeps, so without this the feature is worse than nothing on the first click of the day.
+5. Split the Door A failure message so a database outage does not tell a citizen to re-check a
+   number that was correct. "Re-read your number" and "try again in a minute" are different
+   instructions.
+
+**Attribution:** `CREDITS.md` at the repo root, referenced from `/how-this-works`, naming the
+author, the repository, the permission, the absent licence, and that ours is an independent
+rewrite of one feature idea.
+
+## Task 9: Two architecture improvements worth taking
+
+Neither was in the additive list, because neither is a *missing feature* — both are places where
+his design is better than ours. Cut both before Task 8 if the clock forces a choice.
+
+**9a — Per-row edit on the consent gate.** His ReviewStep gives every row its own "Edit" that
+jumps straight back to the owning step with all state preserved. Our Door B consent gate has one
+"Change something" button that dumps the citizen back to the start of speaking. For someone who
+mis-spoke one date, that is the difference between a correction and starting again. Target:
+`src/components/FileFlow.tsx`. State already lives in one component, so this is a routing change
+inside the existing state machine, not a rewrite.
+
+**9b — Browser speech as a zero-cost fallback.** His `VoiceInput` uses the Web Speech API
+(`window.SpeechRecognition ?? webkitSpeechRecognition`), appends rather than replaces the
+transcript, and degrades with a plain message when unsupported. Ours goes to OpenAI on every
+utterance. Browser speech is free, has no round trip, and keeps working when our key is capped —
+but it is weaker on Indian languages, so it is a **fallback, never the default**: try OpenAI
+first, fall back on failure or a missing key, and say which produced the text. This directly
+serves the "works with the API key removed" requirement in `docs/DEPLOY.md`.
+
+## Rejected, with reasons — do not reintroduce
+
+The Government of India emblem and masthead (impersonation of a government body, prohibited by
+the brief, and the opposite of the move our credibility rests on) · the hardcoded confidence badge
+(we publish one accuracy claim, read from `evals/results.json`) · Civic Pulse as a page (clusters
+by string equality, status never written by any code path) · PulseStep's fabricated stats · the
+map placeholder · the 9-section landing narrative (9–10px body copy, below our 18px floor) · the
+Material-3 palette (~35 hex literals, no token file) · Unicode-glyph icons (not `aria-hidden`,
+render as CJK fallbacks on some Android) · the always-green status pill (colour carrying no
+meaning) · the 5-node progress rail (shows skipped steps as completed) · the regex router
+(first-match-wins mis-routes silently — "streetlight not working" hits the roads rule) · the
+optimistic-then-confirm pattern with a swallowed catch · the unauthenticated endpoint listing the
+20 newest grievances.
