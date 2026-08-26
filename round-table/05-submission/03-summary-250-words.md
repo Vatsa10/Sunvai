@@ -6,7 +6,7 @@
 
 ---
 
-## Submission text — 238 words (including the title line)
+## Submission text — 249 words (including the title line)
 
 > **Sunvai — the accountability layer for public grievances**
 >
@@ -58,18 +58,30 @@ landing page. One sentence, everywhere.
 
 ## Rules if this is edited
 
-- **Stay under 250.** Current: **238**, including the title line.
-  Counted as whitespace-separated tokens of the block quote below, after stripping the `> `
-  markers and dropping standalone em-dashes (` — `), which are punctuation and not words.
-  To reproduce exactly — the block quote is the lines from the title line to the closing line:
+- **Stay under 250.** Current: **249**, including the title line. One word of headroom.
+  Counted as whitespace-separated tokens of the block quote, after stripping the `> ` markers,
+  the bare `>` lines between paragraphs, and standalone em-dashes, which are punctuation
+  rather than words.
+
+  Do **not** count by line numbers. A previous edit of this file documented the range
+  `NR>=11 && NR<=34`, which silently dropped the closing sentence and certified 238 as the
+  answer — a line range is wrong the moment anyone adds a paragraph above it. Count between
+  delimiters the document already carries: the `## Submission text` heading and the `---` rule
+  that follows it, taking only the quoted lines between them.
 
   ```sh
-  awk 'NR>=11 && NR<=34' 03-summary-250-words.md | sed 's/^> //' | grep -o '[^ ][^ ]*' | grep -vx '>' | grep -vx '—' | grep -c .
+  awk '/^## Submission text/,/^---$/' 03-summary-250-words.md | grep '^>' | sed 's/^> //' | grep -o '[^ ][^ ]*' | grep -vx '>' | grep -vx '—' | grep -c .
   ```
 
-  Plain `wc -w` on the same text reports **245**, because it counts the 7 standalone em-dashes.
-  Either number is under the ceiling; quote the 238 and say how it was counted, so the next
-  person does not re-derive a third figure. Re-count after any edit — the ceiling is hard.
+  Actual output of that command against this file, as it stands:
+
+  ```
+  249
+  ```
+
+  Plain `wc -w` over the same text reports **256**, because it counts the 7 standalone
+  em-dashes as words. 249 is the figure to quote. Re-count after any edit — the ceiling is
+  hard, and there is now exactly one word of room.
 - Never remove the Samadhan Didi sentence.
 - Never remove "from citizens, not from our AI."
 - Never add "revolutionary", "seamless", "AI-powered", or "blockchain".
