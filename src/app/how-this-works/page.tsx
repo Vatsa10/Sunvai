@@ -150,13 +150,6 @@ export default function HowThisWorksPage() {
           design, so that a reviewer never meets a login wall. We would rather say that plainly than let a
           screenshot of a policy file imply more than it does.
         </p>
-        <p className="text-muted">
-          The list of cases under “Check a complaint I already filed” is stored in your browser and
-          nowhere else — nothing is sent anywhere and we cannot see it. That feature exists because
-          we studied a CPGRAMS prototype by a-kashif-ahmed, whose owner gave permission and is not
-          entering this competition; it is an independent rewrite of one idea, not copied code, and
-          the full attribution is in <code>CREDITS.md</code> at the root of this repository.
-        </p>
         <p>
           <Link href="/numbers" className="underline">
             See the numbers, including our own error rate
