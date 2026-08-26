@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { verifyReceipt, type Receipt, type VerifyResult } from '@/lib/ledger/verify';
+import { successCopy, verifyReceipt, type Receipt, type VerifyResult } from '@/lib/ledger/verify';
 
 /**
  * The verifier. Runs entirely in your browser — no network call, nothing sent back to us.
@@ -69,10 +69,10 @@ export default function VerifyPage() {
           <p className="flex items-center gap-3 text-xl font-semibold">
             <span aria-hidden>{result.ok ? '✔' : '✖'}</span>
             {result.ok
-              ? `Verified — ${result.count} steps, unaltered.`
+              ? successCopy(result).headline
               : `This record has been changed at step ${result.brokenAtSeq}.`}
           </p>
-          {!result.ok && <p className="mt-2 text-ink">{result.reason}</p>}
+          <p className="mt-2 text-ink">{result.ok ? successCopy(result).scope : result.reason}</p>
           {filename && <p className="mt-2 text-sm text-muted">{filename}</p>}
         </div>
       )}
