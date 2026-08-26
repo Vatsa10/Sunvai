@@ -280,7 +280,7 @@ One public page. Not a dashboard — **one number, and how it is built**:
 > the measured figures on the site are the eval results, and they sit in a separate section.*
 
 Broken down **by office, never by named official**. This is the north star made visible,
-and it is the number that does not exist in India today.
+and it is the number nobody publishes in India today.
 
 ---
 

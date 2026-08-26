@@ -12,8 +12,14 @@ Given **what the citizen actually complained about** and **what the department w
 they closed it**, decide whether that reply substantively addresses the complaint — and
 prove the answer by quoting the reply.
 
-This is the thing nobody has built. See
-[`../00-mission/03-competitive-landscape.md`](../00-mission/03-competitive-landscape.md#what-nobody-has-built--our-entire-surface-area).
+**This is not our idea, and we never pitch it as one.** DARPG's PIB factsheet of 9 Aug 2026
+names *"AI-enabled validation of grievance redressal to assess resolution quality and
+identify cases involving disposal through transfer or closure without effective
+resolution"* — this agent, almost word for word. What is ours is that it runs, that those
+phrases appear in no DARPG engineering spec, that pgportal.gov.in still reports version
+`7.0.01092019.0.0`, and that the verdict lands in the citizen's hands rather than the
+department's. See
+[`../00-mission/03-competitive-landscape.md`](../00-mission/03-competitive-landscape.md#the-second-near-miss-our-thesis-is-already-the-governments-stated-position).
 
 ---
 
