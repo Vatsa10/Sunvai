@@ -52,7 +52,7 @@ export type CaseView = {
   } | null;
   confirmation: { resolved: boolean; answeredAt: string } | null;
   appeal: { id: string; status: string; bodyFormal: string; bodyCitizenLang: string; grounds: string[] } | null;
-  cluster: { id: string; label: string; members: number; closedUnresolved: number } | null;
+  cluster: { id: string; label: string; members: number; saidNotFixed: number; neverAsked: number } | null;
 };
 
 const RAW_STATUS: Record<string, string> = {
@@ -109,7 +109,10 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
   );
 
   // Counts only. Never who.
-  const cluster = await one<{ id: string; label: string; members: string; closed_unresolved: string }>(
+  // Counted in three states, never two: a closure nobody answered about is not a closure the
+  // citizen said was unfixed, and rolling one into the other would build an accusation out of
+  // silence. See the same split on /cluster/[id].
+  const cluster = await one<{ id: string; label: string; members: string; said_not_fixed: string; never_asked: string }>(
     `select cl.id, cl.label,
             (select count(*) from cluster_members m where m.cluster_id = cl.id) as members,
             (select count(*) from cluster_members m
@@ -117,7 +120,13 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
                left join confirmations cf on cf.grievance_id = g2.id and cf.supersedes_id is null
               where m.cluster_id = cl.id
                 and g2.status in ('closed','appeal_closed')
-                and coalesce(cf.resolved, false) = false) as closed_unresolved
+                and cf.resolved is false) as said_not_fixed,
+            (select count(*) from cluster_members m
+               join grievances g2 on g2.id = m.grievance_id
+               left join confirmations cf on cf.grievance_id = g2.id and cf.supersedes_id is null
+              where m.cluster_id = cl.id
+                and g2.status in ('closed','appeal_closed')
+                and cf.id is null) as never_asked
        from clusters cl
        join cluster_members m on m.cluster_id = cl.id
       where m.grievance_id = $1 and cl.is_public
@@ -182,7 +191,8 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
           id: cluster.id,
           label: cluster.label,
           members: Number(cluster.members),
-          closedUnresolved: Number(cluster.closed_unresolved),
+          saidNotFixed: Number(cluster.said_not_fixed),
+          neverAsked: Number(cluster.never_asked),
         }
       : null,
   };

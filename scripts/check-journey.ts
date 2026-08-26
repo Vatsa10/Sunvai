@@ -115,7 +115,13 @@ console.log(`   true resolution ${headline!.true_resolution_pct}% · too soft ${
 step(10, 'The cluster shows counts, and no identities');
 assert.ok(c!.cluster, 'no cluster');
 assert.ok(c!.cluster!.members >= 5, 'a public cluster must clear the visibility gate');
-console.log(`   ${c!.cluster!.members} others, ${c!.cluster!.closedUnresolved} closed unresolved`);
+console.log(
+  `   ${c!.cluster!.members} others, ${c!.cluster!.saidNotFixed} closed and the citizen said still not fixed, ` +
+    `${c!.cluster!.neverAsked} closed and nobody answered`,
+);
+// Silence must never be counted as failure: the two are separate columns, never summed.
+assert.notEqual(c!.cluster!.saidNotFixed, undefined, 'cluster must report citizen-said-unfixed separately');
+assert.notEqual(c!.cluster!.neverAsked, undefined, 'cluster must report unanswered closures separately');
 
 step(11, 'A case closed more than 30 days ago does not present a live appeal');
 {

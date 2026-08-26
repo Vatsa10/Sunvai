@@ -527,7 +527,7 @@ export default async function CasePage({
                 the synthetic corpus, and they say so where they are read, not on another page. */}
             <MockBadge what={s.simulatedCounts} />
           </div>
-          <p className="mt-2 text-lg">{s.clusterLine(c.cluster.members - 1, c.cluster.closedUnresolved)}</p>
+          <p className="mt-2 text-lg">{s.clusterLine(c.cluster.members - 1, c.cluster.saidNotFixed, c.cluster.neverAsked)}</p>
           <p className="mt-1 text-muted">{c.cluster.label}</p>
           <Link href={`/cluster/${c.cluster.id}`} className="mt-3 inline-block underline">
             {s.clusterSee}

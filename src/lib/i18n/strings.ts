@@ -117,7 +117,13 @@ type Dict = {
   translatedByUs: string;
   translationFailed: string;
   notOnlyOne: string;
-  clusterLine: (others: number, unresolved: number) => string;
+  /**
+   * Three states, never two. `saidNotFixed` are closures the citizen themselves told us were
+   * still not fixed; `neverAsked` are closures nobody answered about. They are printed
+   * separately and never added together — counting silence as failure would be the same
+   * audit-as-metric inversion this product exists to refuse.
+   */
+  clusterLine: (others: number, saidNotFixed: number, neverAsked: number) => string;
   clusterSee: string;
   mockNote: string;
   events: Record<string, string>;
@@ -224,8 +230,8 @@ const en: Dict = {
     'This is our auditor’s own explanation, in English. We could not translate it just now, so we are showing it as it was written rather than guessing at it.',
   whatToDoNext: 'What to do next',
   notOnlyOne: 'You are not the only one',
-  clusterLine: (others, unresolved) =>
-    `${others} other people have complained about the same thing at the same office. ${unresolved} of those were closed without the problem being fixed.`,
+  clusterLine: (others, saidNotFixed, neverAsked) =>
+    `${others} other people have complained about the same thing at the same office. ${saidNotFixed} of them were closed and the person told us the problem was still not fixed. Another ${neverAsked} were closed and nobody answered us, so we do not know either way.`,
   clusterSee: 'See the pattern',
   mockNote:
     'This case, this citizen and this department reply are synthetic. The audit above was produced by a real model run against that text, and the ledger entries behind the receipt are real hashes of real events.',
@@ -347,8 +353,8 @@ const hi: Dict = {
     'यह हमारी अपनी जाँच की बात है, अंग्रेज़ी में। अभी इसका अनुवाद नहीं हो सका, इसलिए अंदाज़ा लगाने के बजाय हम इसे जैसा लिखा गया वैसा ही दिखा रहे हैं।',
   whatToDoNext: 'आगे क्या कीजिए',
   notOnlyOne: 'आप अकेले नहीं हैं',
-  clusterLine: (others, unresolved) =>
-    `इसी दफ्तर में इसी बात की शिकायत ${others} और लोगों ने की है। उनमें से ${unresolved} शिकायतें समस्या हल हुए बिना बंद कर दी गईं।`,
+  clusterLine: (others, saidNotFixed, neverAsked) =>
+    `इसी दफ्तर में इसी बात की शिकायत ${others} और लोगों ने की है। उनमें से ${saidNotFixed} शिकायतें बंद कर दी गईं और उन लोगों ने हमें बताया कि समस्या तब भी हल नहीं हुई थी। ${neverAsked} और शिकायतें बंद हुईं, पर उनका किसी ने जवाब नहीं दिया — इसलिए उनके बारे में हमें कुछ पता नहीं।`,
   clusterSee: 'यह सिलसिला देखिए',
   mockNote:
     'यह मामला, यह नागरिक और विभाग का यह जवाब — तीनों नमूना हैं। ऊपर की जाँच उसी लिखे पर असली मॉडल चलाकर की गई है, और रसीद के पीछे की बहीखाता प्रविष्टियाँ असली घटनाओं के असली हैश हैं।',
@@ -470,8 +476,8 @@ const mr: Dict = {
     'हे आमच्याच तपासणीचं म्हणणं आहे, इंग्रजीत. आत्ता त्याचं भाषांतर होऊ शकलं नाही, म्हणून अंदाज करण्याऐवजी ते जसं लिहिलं तसंच दाखवत आहोत.',
   whatToDoNext: 'पुढे काय करावं',
   notOnlyOne: 'तुम्ही एकटे नाही',
-  clusterLine: (others, unresolved) =>
-    `याच कार्यालयात याच गोष्टीची तक्रार आणखी ${others} लोकांनी केली आहे. त्यांपैकी ${unresolved} तक्रारी अडचण दूर न होताच बंद केल्या गेल्या.`,
+  clusterLine: (others, saidNotFixed, neverAsked) =>
+    `याच कार्यालयात याच गोष्टीची तक्रार आणखी ${others} लोकांनी केली आहे. त्यांपैकी ${saidNotFixed} तक्रारी बंद झाल्या आणि त्या लोकांनी आम्हाला सांगितलं की अडचण तेव्हाही दूर झाली नव्हती. आणखी ${neverAsked} तक्रारी बंद झाल्या, पण त्यांचं कुणीच उत्तर दिलं नाही — त्यामुळे त्यांबद्दल आम्हाला काहीच माहीत नाही.`,
   clusterSee: 'हा प्रकार पाहा',
   mockNote:
     'हे प्रकरण, हा नागरिक आणि विभागाचं हे उत्तर — तिन्ही नमुना आहेत. वरची तपासणी त्याच मजकुरावर खरा मॉडेल चालवून केली आहे, आणि पावतीमागच्या नोंदी खऱ्या घटनांचे खरे हॅश आहेत.',
