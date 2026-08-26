@@ -87,6 +87,11 @@ function toView(d: DemoCase): CaseView {
           verdict: a.result.verdict,
           confidence: a.result.confidence,
           reasoning: a.result.reasoning,
+          // No stored translations in the fixture copy: the translations table is in the
+          // database, and the database is what is missing when this path runs. The case page
+          // falls back to translating at render, which is what it did before that table
+          // existed.
+          reasoningTranslations: {},
           citations: a.result.citations ?? [],
           unaddressed: a.result.unaddressed ?? [],
           citationsVerified: a.citationsVerified,
