@@ -38,18 +38,27 @@ const UNBUILT = [
   ['Ledger sharding', 'One chain, one head, one advisory lock. Fine here; it would need to shard per department at national scale.'],
 ];
 
-const LIMITATIONS = [
-  'A hash chain proves the history was not edited. It does not prove we never wrote a false entry in the first place. With one operator and no external anchoring, we are still the root of trust.',
-  'Our auditor is wrong sometimes, and we publish how often, in both directions. One of our three demo cases is deliberately one we get wrong.',
-  '“Resolved” is self-reported by the citizen. We do not independently verify that a pension arrived. It is better than a satisfaction rating collected from a third of people — but it is not verification, and we never call it that.',
-  'We ship three languages properly, not the twenty-two CPGRAMS supports. We are also not qualified to rigorously assess our own language quality.',
-  'Routing is tested against our own taxonomy, not the real one. Real-world routing accuracy is unmeasured, and cannot be measured without touching a system we are not allowed to touch.',
-  'We do not know whether appeals succeed. No production data exists, and nothing here should be read as implying they do.',
-  'Deleting a case would still leave its ledger events behind — hashes, not content. Right-to-erasure and tamper-evidence pull against each other, and we have not resolved it.',
-  'The auditor does not check competence. It reads whether a reply is actionable, not whether the office named in it could plausibly handle the matter. In our own eval, a provident-fund claim transferred to a "Philately Division" — with a reference number attached — was scored a lawful transfer rather than deflection. Half our near-miss transfer cases leaked the same way. A department that names any office and quotes any reference number can currently buy itself a non-negative verdict from us. We found this, we are publishing it, and we have not fixed the prompt: the honest thing to ship this week is the limitation, not a patch tuned against the four cases that exposed it.',
-  'Voice intake is not our contribution. DARPG shipped Samadhan Didi on 30 May 2026 with twenty-two languages. We built intake for journey completeness, not as a differentiator.',
-  'Our auditor almost never says "I do not know". Across eight deliberately ambiguous cases in our eval set it used the `undetermined` verdict zero times — in practice that verdict is reached only when the citation guard stops us, not because the model chose to withhold. It also errs generous, because we told it to: on a tie it favours the department. That makes a "resolved" verdict from us a weaker signal than it looks, which is one more reason the published number comes from citizens instead.',
+// Limitations carry a stable id and are numbered by position at render time. Two places in
+// this file link to one by number; hard-coding those numbers meant that reordering the array
+// silently pointed the reader at the wrong limitation, which is exactly the kind of quiet
+// wrongness this page exists to not have. `limitationNo()` cannot drift.
+const LIMITATIONS: { id: string; text: string }[] = [
+  { id: 'anchoring', text: 'A hash chain proves the history was not edited. It does not prove we never wrote a false entry in the first place. With one operator and no external anchoring, we are still the root of trust.' },
+  { id: 'fallible', text: 'Our auditor is wrong sometimes, and we publish how often, in both directions. One of our three demo cases is deliberately one we get wrong.' },
+  { id: 'self_reported', text: '“Resolved” is self-reported by the citizen. We do not independently verify that a pension arrived. It is better than a satisfaction rating collected from a third of people — but it is not verification, and we never call it that.' },
+  { id: 'languages', text: 'We ship three languages properly, not the twenty-two CPGRAMS supports. We are also not qualified to rigorously assess our own language quality.' },
+  { id: 'routing', text: 'Routing is tested against our own taxonomy, not the real one. Real-world routing accuracy is unmeasured, and cannot be measured without touching a system we are not allowed to touch.' },
+  { id: 'appeals', text: 'We do not know whether appeals succeed. No production data exists, and nothing here should be read as implying they do.' },
+  { id: 'erasure', text: 'Deleting a case would still leave its ledger events behind — hashes, not content. Right-to-erasure and tamper-evidence pull against each other, and we have not resolved it.' },
+  { id: 'competence', text: 'The auditor does not check competence. It reads whether a reply is actionable, not whether the office named in it could plausibly handle the matter. In our own eval, a provident-fund claim transferred to a "Philately Division" — with a reference number attached — was scored a lawful transfer rather than deflection. Half our near-miss transfer cases leaked the same way. A department that names any office and quotes any reference number can currently buy itself a non-negative verdict from us. We found this, we are publishing it, and we have not fixed the prompt: the honest thing to ship this week is the limitation, not a patch tuned against the four cases that exposed it.' },
+  { id: 'voice', text: 'Voice intake is not our contribution. DARPG shipped Samadhan Didi on 30 May 2026 with twenty-two languages. We built intake for journey completeness, not as a differentiator.' },
+  { id: 'undetermined', text: 'Our auditor almost never says "I do not know". Across eight deliberately ambiguous cases in our eval set it used the `undetermined` verdict zero times — in practice that verdict is reached only when the citation guard stops us, not because the model chose to withhold. It also errs generous, because we told it to: on a tie it favours the department. That makes a "resolved" verdict from us a weaker signal than it looks, which is one more reason the published number comes from citizens instead.' },
 ];
+
+/** 1-based position of a limitation, looked up by id so a reorder can never mislabel a link. */
+const limitationNo = (id: string) => LIMITATIONS.findIndex((l) => l.id === id) + 1;
+
+const COUNT_WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
 
 export default function HowThisWorksPage() {
   // Read, never retyped. If the eval has not been run there is no table — not a placeholder.
@@ -74,10 +83,13 @@ export default function HowThisWorksPage() {
       <Section title="Specified, shipped in the repo, not built" rows={UNBUILT} />
 
       <section className="space-y-4 rounded border-2 border-ink p-6">
-        <h2 className="text-xl font-semibold">Ten things wrong with this, volunteered</h2>
+        <h2 className="text-xl font-semibold">
+          {(COUNT_WORD[LIMITATIONS.length] ?? String(LIMITATIONS.length)).replace(/^./, (c) => c.toUpperCase())} things
+          wrong with this, volunteered
+        </h2>
         <ol className="list-decimal space-y-3 pl-6">
           {LIMITATIONS.map((l) => (
-            <li key={l}>{l}</li>
+            <li key={l.id}>{l.text}</li>
           ))}
         </ol>
       </section>
@@ -97,11 +109,11 @@ export default function HowThisWorksPage() {
               ['Deflection and boilerplate caught', pct(evals.negativeRecall), 'Of replies we labelled as deflected or boilerplate.'],
               ['Citation guard pass rate', pct(evals.citationGuard), 'Every quoted span appeared verbatim in the reply.'],
               ['Adversarial replies caught', pct(evals.adversarialCatch), 'Case-specific, confident, correctly structured, and empty.'],
-              ['Ambiguous cases left undetermined', pct(evals.undeterminedUse), 'A gate we FAIL, at a threshold of 60%. See limitation 9 above.'],
+              ['Ambiguous cases left undetermined', pct(evals.undeterminedUse), `A gate we FAIL, at a threshold of 60%. See limitation ${limitationNo('undetermined')} above.`],
               ['Exact verdict match', pct(evals.exactMatch), 'Across all seven verdict classes.'],
               ...(evals.nearMissLeaked === undefined
                 ? []
-                : [['Near-miss transfers that leaked', pct(evals.nearMissLeaked), 'Deflections dressed as lawful transfers that we accepted. See limitation 10 above.'] as string[]]),
+                : [['Near-miss transfers that leaked', pct(evals.nearMissLeaked), `Deflections dressed as lawful transfers that we accepted. See limitation ${limitationNo('competence')} above.`] as string[]]),
             ].map(([k, v, why]) => (
               <div key={k} className="grid gap-1 py-3 sm:grid-cols-[18rem_5rem_1fr] sm:gap-4">
                 <dt className="font-semibold">{k}</dt>

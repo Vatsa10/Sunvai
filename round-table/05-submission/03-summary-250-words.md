@@ -6,7 +6,7 @@
 
 ---
 
-## Submission text — 248 words (including the title line)
+## Submission text — 238 words (including the title line)
 
 > **Sunvai — the accountability layer for public grievances**
 >
@@ -49,15 +49,27 @@ entire argument, and it is checkable. No superlatives appear anywhere.
 ask: *what stops departments writing for your model?* Answering it inside 250 words signals
 that the design is deliberate.
 
-**Publishes our own error rate.** The most credible sentence available, because nobody
-inflates their own failure rate.
+**Publishes how often our own auditor is wrong.** The most credible sentence available, because
+nobody inflates their own failure rate — and it is now a measured figure (74 hand-labelled
+replies) rather than the disagreement rate over the synthetic corpus, which measured nothing.
 
 **Ends on the positioning line**, which is the same line that closes the video and heads the
 landing page. One sentence, everywhere.
 
 ## Rules if this is edited
 
-- **Stay under 250.** Current: **242** including the title line. Re-count after any edit — the ceiling is hard.
+- **Stay under 250.** Current: **238**, including the title line.
+  Counted as whitespace-separated tokens of the block quote below, after stripping the `> `
+  markers and dropping standalone em-dashes (` — `), which are punctuation and not words.
+  To reproduce exactly — the block quote is the lines from the title line to the closing line:
+
+  ```sh
+  awk 'NR>=11 && NR<=34' 03-summary-250-words.md | sed 's/^> //' | grep -o '[^ ][^ ]*' | grep -vx '>' | grep -vx '—' | grep -c .
+  ```
+
+  Plain `wc -w` on the same text reports **245**, because it counts the 7 standalone em-dashes.
+  Either number is under the ceiling; quote the 238 and say how it was counted, so the next
+  person does not re-derive a third figure. Re-count after any edit — the ceiling is hard.
 - Never remove the Samadhan Didi sentence.
 - Never remove "from citizens, not from our AI."
 - Never add "revolutionary", "seamless", "AI-powered", or "blockchain".

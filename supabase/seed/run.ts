@@ -306,8 +306,11 @@ async function seedBackgroundCorpus(officeIds: Map<string, string>) {
     const asked = closed && chance(0.85);
     // The metric: whether the problem actually got fixed, by their answer, not our verdict.
     // Tuned so the corpus lands where the published figures do — disposal in the nineties,
-    // true resolution in the low forties — and so the gap between our verdict and the
-    // citizen's answer stays in a range a real auditor could plausibly have. A negative
+    // true resolution just under forty (94.0% and 39.4% as this seed currently stands) — and
+    // so the gap between our verdict and the citizen's answer stays in a range a real auditor
+    // could plausibly have. That gap is NOT a measurement of us and is never published as one;
+    // it lives in the `simulated_corpus_rate` view and only under the "What we simulated"
+    // heading on /numbers. A negative
     // verdict is sometimes followed by the problem getting fixed anyway; that is our
     // "too harsh" column, and inventing a lot of it would be inventing our own incompetence.
     // A lawful transfer is correct procedure but not, by itself, a fix: the receiving office

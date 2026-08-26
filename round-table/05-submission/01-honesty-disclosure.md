@@ -12,7 +12,10 @@
 
 ## What actually works
 
-Real, running code. A reviewer can do all of this.
+Real, running code. A reviewer can do all of this. "Real" here means the mechanism runs — it
+does not mean the data is real, and it does not by itself make any figure a measurement. Which
+figures are measured, and which are simulated, is set out row by row below and enforced on
+`/numbers`.
 
 | Works | Detail |
 |---|---|
@@ -20,8 +23,9 @@ Real, running code. A reviewer can do all of this.
 | **Citation guard** | Genuine string matching. Verdicts with unverifiable quotes are withheld, not published |
 | **The ledger** | Real SHA-256 hash chain, real append-only enforcement at the database level |
 | **Receipt verification** | Runs **client-side in your browser**. Tamper with a receipt and it genuinely fails |
-| **Confirmation → metric** | The true resolution rate is computed from citizen answers, live |
-| **Our error rate** | Computed from real disagreements between our verdicts and citizen answers |
+| **Confirmation → metric** | The true resolution rate is computed from citizen answers, live — never from a model verdict. In this prototype those citizens are synthetic, and `/numbers` says so above the figure |
+| **How often the auditor is right** | Measured: 74 closure replies labelled by hand *before* the prompt was written, scored by real model calls. Published in full, including the gate we fail. `evals/results.json` is the only source the site reads accuracy from |
+| **Our error rate against real citizens** | **Not measurable yet, and we no longer claim it.** It needs a real model verdict and a real citizen's answer on the same case; a prototype with synthetic citizens has none. The view now excludes seeded rows, so it reports n = 0 and `/numbers` says n = 0 rather than showing a number. An earlier build filled that gap with arithmetic over the synthetic corpus and called it "how often we are wrong" — it measured nothing, and it is gone |
 | **Appeal drafting** | Real generation, grounded in the audit's citations |
 | **Clustering** | Real embeddings, real similarity, real derived membership |
 | **RLS** | Enforced by Postgres. A citizen cannot read another's grievance |
@@ -116,7 +120,11 @@ Disclosure that lives only in a document is not disclosure.
 2. **A persistent site line:** *"An independent civic tool. Not a government service."* — in
    the citizen's language.
 3. **`/how-this-works`** — this document, in plain language, linked from every screen.
-4. **`/numbers` carries our own error rate** beside the resolution rate.
+4. **`/numbers` is split structurally into "What we measured" and "What we simulated"** — the
+   eval results and the real-run error rate (at whatever honest n exists, currently zero) come
+   first; the synthetic corpus and everything derived from it sits under a heading that says
+   so before any figure appears. A number on this site is measured or labelled simulated;
+   there is no third category.
 5. **The reasoning panel** on every verdict — the citizen can always see how we judged.
 6. **`DEMO/` prefixes** on every reference number, visible in screenshots.
 
