@@ -180,8 +180,11 @@ The day the video's "rebuild it entirely" gets answered.
 - **Video** to `05-submission/02-video-script.md`. Rehearse to 1:52. Minute two says
   *Samadhan Didi* out loud — naming what the government already shipped is the strongest
   product-thinking evidence available, and hiding it invites a judge to find it themselves.
-- **Summary at exactly 250 words** (the video's wording; the corpus draft is 242 — pad to
-  248–250). Keep the closing line verbatim.
+- **Summary at exactly 250 words** (the video's wording). Keep the closing line verbatim.
+  ~~the corpus draft is 242 — pad to 248–250~~ — **superseded.** The 242 was a miscount; so
+  were the 238, 248 and 249 that followed it. The body now stands at exactly 250, and
+  `05-submission/03-summary-250-words.md` carries the delimiter-based counting command beside
+  the figure so the next editor does not derive a sixth number.
 - Pre-computed audit fixtures committed; **verify the demo works with the OpenAI key removed.**
 - Full submission-day checklist from `04-build/04-build-order.md`, run today not tomorrow.
 

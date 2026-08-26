@@ -129,10 +129,13 @@ export default async function NumbersPage() {
           {compared > 0 ? (
             <>
               <p className="text-muted">
-                Across <strong className="tabular-nums">{compared.toLocaleString('en-IN')}</strong> cases where a
-                model verdict and a citizen&rsquo;s own yes/no both exist: we were too harsh{' '}
-                <strong className="tabular-nums">{tooHarsh.toLocaleString('en-IN')}</strong> times and too soft{' '}
-                <strong className="tabular-nums">{tooSoft.toLocaleString('en-IN')}</strong> times.
+                Across <strong className="tabular-nums">{compared.toLocaleString('en-IN')}</strong>{' '}
+                {compared === 1 ? 'case' : 'cases'} where a model verdict and a citizen&rsquo;s own yes/no both
+                exist: we were too harsh{' '}
+                <strong className="tabular-nums">{tooHarsh.toLocaleString('en-IN')}</strong>{' '}
+                {tooHarsh === 1 ? 'time' : 'times'} and too soft{' '}
+                <strong className="tabular-nums">{tooSoft.toLocaleString('en-IN')}</strong>{' '}
+                {tooSoft === 1 ? 'time' : 'times'}.
               </p>
               <p className="text-sm text-muted">
                 That is a small n, and we publish it at whatever size it is rather than padding it.
@@ -188,7 +191,10 @@ export default async function NumbersPage() {
             <p className="mt-2 text-muted">
               Of the {asked.toLocaleString('en-IN')} synthetic citizens asked, this many said the thing they
               complained about actually got fixed. Computed from their yes/no, never from a verdict.{' '}
-              <strong>No number like this exists in India today.</strong>
+              <strong>DARPG named this capability in August 2026</strong> — validating whether a closure
+              resolved anything, rather than counting that it happened. We have not found it in an engineering
+              spec or a live portal. This is what it looks like built: the figure above is over cases we
+              generated, and the method is the part that would carry over.
             </p>
           </div>
         </div>
