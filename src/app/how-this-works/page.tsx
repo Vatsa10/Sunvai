@@ -26,15 +26,19 @@ const MOCKED = [
   ['Identity and login', 'There is none. Anyone can open any demo case, by design, so a reviewer is never stuck at a sign-up wall.'],
   ['Department replies', 'Hand-written from documented closure patterns, not model-generated — a model writing the pathology we then detect would be circular.'],
   ['The /dept view', 'Scaffolding, so you can send a reply and watch an audit run. It is not a product surface and it is not what we are asking to be judged on.'],
-  ['Outreach delivery', 'Nothing is actually sent to anyone. The events are recorded as though it were.'],
 ];
 
+// Nothing in this list is a file in the repo. An earlier version of this page said some of
+// these shipped as stubs; they never did, and describing a file that does not exist on the
+// honesty page is worse than any gap it was covering. Each row now says what actually exists —
+// usually an interface — and what does not.
 const UNBUILT = [
-  ['The official adapter', 'The production path. Blocked on an access agreement with DARPG, not on engineering.'],
-  ['StatePortalAdapter, EPFOAdapter', 'Real files implementing the interface, every method throwing NotImplementedError. Adding a system is one file.'],
-  ['WhatsApp and IVR channels', 'Interfaces only. WhatsApp needs Meta business verification; IVR needs a telecom number.'],
-  ['BhashiniLanguageProvider', 'In production this runs on Bhashini rather than duplicating it. We make no claim to handle Indian languages better than they do.'],
-  ['Ledger anchoring', 'Publishing the chain head somewhere we do not control. Specified, not built — and it is the gap that matters most (see limitation 1).'],
+  ['The official adapter', 'The production path, and the only one that would touch a real system. Blocked on an access agreement with DARPG, not on engineering. Not written.'],
+  ['StatePortalAdapter, EPFOAdapter', 'Named in the design corpus (round-table/02-architecture/04-adapters.md) as how a second and third system get added. Neither exists as a file. What does exist is the interface they would implement — the GrievanceSystemAdapter contract and the NotImplementedError they would throw, both in src/lib/adapters/types.ts — and one implementation of it, the mock. So "adding a system is one file" is a claim about the shape of the code, not about code we have written.'],
+  ['WhatsApp and IVR channels', 'Not built, and not interfaced either: src/lib/adapters/channel/ is an empty directory. WhatsApp would need Meta business verification and IVR a telecom number, so neither was ever going to ship this week. The empty directory is where they would go.'],
+  ['BhashiniLanguageProvider', 'Does not exist. The LanguageProvider interface is real and shipped, with exactly one implementation — OpenAI’s — because the brief requires an OpenAI model. Running on Bhashini instead of duplicating it is the production intent, written down in the corpus and not written in code. We make no claim to handle Indian languages better than they do.'],
+  ['Outreach', 'Nothing contacts a citizen who has not come to us — no email, no SMS, no WhatsApp, and no event type recording that one was attempted. It is not stubbed and it is not simulated; there is simply nothing here.'],
+  ['Ledger anchoring', 'Publishing the chain head somewhere we do not control. Specified in the corpus, not built — and it is the gap that matters most (see limitation 1).'],
   ['Ledger sharding', 'One chain, one head, one advisory lock. Fine here; it would need to shard per department at national scale.'],
 ];
 
@@ -81,7 +85,7 @@ export default function HowThisWorksPage() {
 
       <Section title="What actually works" rows={WORKS} />
       <Section title="What is mocked, and why" rows={MOCKED} />
-      <Section title="Specified, shipped in the repo, not built" rows={UNBUILT} />
+      <Section title="Specified in the design corpus, not built" rows={UNBUILT} />
 
       <section className="space-y-4 rounded border-2 border-ink p-6">
         <h2 className="text-xl font-semibold">
