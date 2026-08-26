@@ -542,5 +542,53 @@
     "complaint": "The primary school in our village has no teacher and the building is unsafe.",
     "reply": "School education is administered by the State Government. Your grievance has been transferred to the Maharashtra State Grievance Redressal portal (aaplesarkar.mahaonline.gov.in) under transfer ref. MH/2026/558123, and will be handled by the Directorate of Primary Education, Pune. Please use that reference to follow it.",
     "note": "mandated transfer, recipient and reference named"
+  },
+  {
+    "id": "lawf-9",
+    "label": "transferred_lawfully",
+    "lang": "en",
+    "complaint": "The water pipeline on our street has been leaking for a month and nobody comes.",
+    "reply": "This is not our office. Water supply in your area is looked after by the Delhi Jal Board zonal office at Sector 12, Dwarka. We have sent your complaint across to them and it keeps the same number, 2026/DJB/8841. You can ring that office on 011-23538495 and quote it.",
+    "note": "mandated transfer, recipient and reference named"
+  },
+  {
+    "id": "lawf-10",
+    "label": "transferred_lawfully",
+    "lang": "en",
+    "complaint": "The bank rejected my loan under the scheme and will not tell me why.",
+    "reply": "A dispute with a bank about its own lending decision is not decided by this Ministry. It goes to the Banking Ombudsman under the Reserve Bank of India’s Integrated Ombudsman Scheme. You can file it yourself at cms.rbi.org.in, or by post to the Centralised Receipt and Processing Centre, Chandigarh, within one year of the bank’s reply.",
+    "note": "mandated transfer, recipient and reference named"
+  },
+  {
+    "id": "near-1",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "My widow pension has not come for four months. Please tell me why.",
+    "reply": "Your grievance has been transferred to the Directorate of Social Welfare. It stands disposed at this end.",
+    "note": "looks like a lawful transfer, leaves the citizen nowhere"
+  },
+  {
+    "id": "near-2",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "My scholarship was not credited. Who do I ask now?",
+    "reply": "The grievance has been transferred out of this office vide ref. XYZ/2026/118 and is closed here.",
+    "note": "looks like a lawful transfer, leaves the citizen nowhere"
+  },
+  {
+    "id": "near-3",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "The street light outside my house has been dead for two months.",
+    "reply": "This is a State subject. You may please approach the State Government in the matter. The grievance is disposed.",
+    "note": "looks like a lawful transfer, leaves the citizen nowhere"
+  },
+  {
+    "id": "near-4",
+    "label": "deflected",
+    "lang": "en",
+    "complaint": "Why was my provident fund withdrawal claim rejected? I need the reason.",
+    "reply": "Your grievance has been forwarded to the Department of Posts, Philately Division, vide ref. DOP/PHL/2026/2277, for necessary action. The grievance is closed at this level.",
+    "note": "looks like a lawful transfer, leaves the citizen nowhere"
   }
 ]

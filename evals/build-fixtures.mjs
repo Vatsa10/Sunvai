@@ -135,7 +135,7 @@ const SCHOLARSHIP =
   ['Kindly update me.', 'Updated.'],
 ].forEach(([c, r], i) => add(`ambi-${i + 1}`, 'undetermined', c, r, 'genuinely ambiguous'));
 
-// ------------------------------------------------------- lawful transfer (8)
+// ------------------------------------------------------ lawful transfer (10)
 // CPGRAMS is *required* to transfer these: State subjects, sub judice matters, RTI matters,
 // a government servant's own service matter, policy demands, requests for employment or
 // financial assistance. Each reply here names a recipient AND gives the citizen something to
@@ -157,7 +157,32 @@ const SCHOLARSHIP =
    'Requests for financial assistance are not decided on this portal. Relief for flood damage is disbursed under the State Disaster Response Fund by the District Collector. Your application has been forwarded to the Office of the District Collector, Nashik, vide ref. REL/NSK/2026/0741, and you may contact that office for the status.'],
   ['The primary school in our village has no teacher and the building is unsafe.',
    'School education is administered by the State Government. Your grievance has been transferred to the Maharashtra State Grievance Redressal portal (aaplesarkar.mahaonline.gov.in) under transfer ref. MH/2026/558123, and will be handled by the Directorate of Primary Education, Pune. Please use that reference to follow it.'],
+  // The last two carry no "vide ref." construction. If the verdict only fires on that phrase it
+  // is pattern-matching, and these two are where that would show.
+  ['The water pipeline on our street has been leaking for a month and nobody comes.',
+   'This is not our office. Water supply in your area is looked after by the Delhi Jal Board zonal office at Sector 12, Dwarka. We have sent your complaint across to them and it keeps the same number, 2026/DJB/8841. You can ring that office on 011-23538495 and quote it.'],
+  ['The bank rejected my loan under the scheme and will not tell me why.',
+   'A dispute with a bank about its own lending decision is not decided by this Ministry. It goes to the Banking Ombudsman under the Reserve Bank of India’s Integrated Ombudsman Scheme. You can file it yourself at cms.rbi.org.in, or by post to the Centralised Receipt and Processing Centre, Chandigarh, within one year of the bank’s reply.'],
 ].forEach(([c, r], i) => add(`lawf-${i + 1}`, 'transferred_lawfully', c, r, 'mandated transfer, recipient and reference named'));
+
+// --------------------------------------------------- near-miss deflections (4)
+// The boundary, not the centre. Each of these has the SHAPE of a lawful transfer and fails the
+// only test that matters to the citizen: can they act on what they were told? Labelled by that
+// rule, before running anything, and not by what we expected the model to say.
+[
+  // (a) A named recipient, and nothing whatsoever to follow it with.
+  ['My widow pension has not come for four months. Please tell me why.',
+   'Your grievance has been transferred to the Directorate of Social Welfare. It stands disposed at this end.'],
+  // (b) A reference number, and no idea who has it.
+  ['My scholarship was not credited. Who do I ask now?',
+   'The grievance has been transferred out of this office vide ref. XYZ/2026/118 and is closed here.'],
+  // (c) A correct-sounding jurisdiction claim with neither a recipient nor a route.
+  ['The street light outside my house has been dead for two months.',
+   'This is a State subject. You may please approach the State Government in the matter. The grievance is disposed.'],
+  // (d) A named office, a reference — and an office that plainly cannot decide this subject.
+  ['Why was my provident fund withdrawal claim rejected? I need the reason.',
+   'Your grievance has been forwarded to the Department of Posts, Philately Division, vide ref. DOP/PHL/2026/2277, for necessary action. The grievance is closed at this level.'],
+].forEach(([c, r], i) => add(`near-${i + 1}`, 'deflected', c, r, 'looks like a lawful transfer, leaves the citizen nowhere'));
 
 // ---------------------------------------------------------------- adversarial (8)
 // Written by us to beat our own auditor: case-specific, confident, correctly structured,
