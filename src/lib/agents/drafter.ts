@@ -44,6 +44,22 @@ Return JSON only:
 }
 
 /**
+ * Devanagari digits are digits.
+ *
+ * Hindi and Marathi are two of the three languages we claim to ship properly, and a citizen
+ * speaking either of them may say a date or an amount as १२, २०२६ or ५,०००. An ASCII-only
+ * guard does not see those, which means the one check standing between a citizen and a number
+ * we invented switches itself off in exactly the languages we said we served. Normalising to
+ * one form before comparing is smaller than widening every comparison.
+ */
+const DEVANAGARI_ZERO = 0x0966;
+const DIGIT = '0-9०-९';
+
+function toAsciiDigits(text: string): string {
+  return text.replace(/[०-९]/g, (d) => String(d.charCodeAt(0) - DEVANAGARI_ZERO));
+}
+
+/**
  * Every number in the draft must be traceable to something the citizen said. Runs before the
  * consent gate renders, and a failure stops the flow rather than annotating it.
  */
@@ -51,21 +67,23 @@ export function checkNumbersInSource(
   draftText: string,
   source: { narrative: string; facts: IntakeFacts },
 ): { ok: true } | { ok: false; invented: string[] } {
-  const haystack = [
-    source.narrative,
-    JSON.stringify(source.facts),
-  ]
-    .join(' ')
-    .toLowerCase();
+  // Both sides are normalised to ASCII digits, so २०२६ in the draft is checked against 2026 in
+  // what she said, and against २०२६, and either counts as having been said.
+  const haystack = toAsciiDigits([source.narrative, JSON.stringify(source.facts)].join(' ')).toLowerCase();
 
   // Digit runs of two or more: years, amounts, claim numbers. Single digits are usually prose
   // ("two months"), and chasing them produces noise that trains people to ignore the guard.
-  const numbers = [...draftText.matchAll(/\d[\d,./-]{1,}/g)].map((m) => m[0]);
+  // Matched against the draft as written, so the number we quote back to her in the error is
+  // in the script she is reading rather than transliterated into one she may not use.
+  const numbers = [...draftText.matchAll(new RegExp(`[${DIGIT}][${DIGIT},./-]{1,}`, 'g'))].map(
+    (m) => m[0],
+  );
 
   const invented = [...new Set(numbers)].filter((n) => {
-    const bare = n.replace(/[^0-9]/g, '');
+    const ascii = toAsciiDigits(n);
+    const bare = ascii.replace(/[^0-9]/g, '');
     if (bare.length < 2) return false;
-    if (haystack.includes(n.toLowerCase())) return false;
+    if (haystack.includes(ascii.toLowerCase())) return false;
     // Same digits, different punctuation — 06.08.2026 against 6 August 2026 is not invention.
     return !haystack.replace(/[^0-9a-z]/g, '').includes(bare);
   });

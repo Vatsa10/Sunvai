@@ -29,6 +29,11 @@ export function FileFlow({ lang }: { lang: Lang }) {
   const [narrative, setNarrative] = useState('');
   const [facts, setFacts] = useState<IntakeFacts>({});
   const [drafted, setDrafted] = useState<RoutedDraft | null>(null);
+  // Whether the draft on screen is the one the citizen chose over ours. It travels to the
+  // ledger: a citizen disagreeing with our router is a fact about our router, and the product
+  // claims that if it is not in the ledger it did not happen. Hardcoding false here made that
+  // event fire for nobody, ever.
+  const [overridden, setOverridden] = useState(false);
   const [name, setName] = useState('');
   const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -134,6 +139,9 @@ export function FileFlow({ lang }: { lang: Lang }) {
   }
 
   async function doRoute(n: string, f: IntakeFacts, forceDepartmentId?: string, forceOfficeId?: string | null) {
+    // Set from the argument rather than flipped to true, so re-routing from the top of the
+    // flow clears it and only a forced department counts as an override.
+    setOverridden(Boolean(forceDepartmentId));
     setBusy('Working out who this goes to, and writing it up…');
     try {
       const result = await routeAndDraft({ narrative: n, facts: f, lang, forceDepartmentId, forceOfficeId });
@@ -163,7 +171,7 @@ export function FileFlow({ lang }: { lang: Lang }) {
         subject: drafted.subject,
         consented: consent,
         routerReasoning: drafted.reasoning,
-        routerOverridden: false,
+        routerOverridden: overridden,
       });
       // Remembered on this device before we navigate. Until this line existed the reference
       // lived only in the URL, and a citizen who closed the tab had no way back to their own
