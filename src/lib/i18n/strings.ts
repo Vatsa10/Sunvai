@@ -31,6 +31,20 @@ type Dict = {
   refPlaceholder: string;
   open: string;
   notFound: string;
+  /**
+   * The database is not answering. Different from a wrong number, and the instruction is
+   * different too: wait, do not re-read your number.
+   */
+  systemDown: string;
+  /** The on-device case list, under Door A. */
+  myCases: string;
+  /**
+   * Load-bearing. A list kept in the browser is only acceptable if we say exactly what it is,
+   * and this is the sentence that says it.
+   */
+  myCasesPrivacy: string;
+  /** One stored reference we could not open just now. Muted, not removed. */
+  caseUnavailable: string;
   /** A number that looks like a real registration number. Not an error — the boundary. */
   realRefHeading: string;
   realRefBody: string;
@@ -117,6 +131,12 @@ const en: Dict = {
   refPlaceholder: 'DEMO/2026/0000472',
   open: 'Open',
   notFound: 'We could not find that number. Check it, or open one of the examples below.',
+  systemDown:
+    'Our system is not answering right now. Your number is probably fine — please try again in a minute.',
+  myCases: 'Cases you opened on this phone',
+  myCasesPrivacy:
+    'Saved only on this phone. Nothing is sent anywhere, and we cannot see this list.',
+  caseUnavailable: 'We could not open this one right now.',
   realRefHeading: 'That looks like a real registration number. We cannot open it.',
   realRefBody:
     'Sunvai has no connection to the government grievance portal, and will not have one without an access agreement. Nothing here reads live cases. What does work on a real case: paste the reply the department actually sent you into the box below, and we will read it against what you asked for. Nothing is saved.',
@@ -231,6 +251,12 @@ const hi: Dict = {
   refPlaceholder: 'DEMO/2026/0000472',
   open: 'खोलिए',
   notFound: 'यह नंबर नहीं मिला। जाँच लीजिए, या नीचे दिए उदाहरण खोलिए।',
+  systemDown:
+    'हमारा सिस्टम अभी जवाब नहीं दे रहा। आपका नंबर शायद सही है — कृपया एक मिनट बाद फिर कोशिश कीजिए।',
+  myCases: 'इस फ़ोन पर खोली गई शिकायतें',
+  myCasesPrivacy:
+    'यह सिर्फ़ इसी फ़ोन में सहेजा गया है। कहीं कुछ नहीं भेजा जाता, और यह सूची हम नहीं देख सकते।',
+  caseUnavailable: 'यह अभी नहीं खुल पाई।',
   realRefHeading: 'यह असली पंजीकरण नंबर लगता है। हम इसे नहीं खोल सकते।',
   realRefBody:
     'सुनवाई का सरकारी शिकायत पोर्टल से कोई जुड़ाव नहीं है, और बिना आधिकारिक अनुमति के होगा भी नहीं। यहाँ से कोई असली शिकायत नहीं पढ़ी जाती। जो काम करता है वह यह है: विभाग ने आपको जो जवाब भेजा, उसे नीचे वाले बक्से में चिपकाइए — हम उसे आपकी माँग के सामने रखकर पढ़ेंगे। कुछ भी सहेजा नहीं जाता।',
@@ -345,6 +371,12 @@ const mr: Dict = {
   refPlaceholder: 'DEMO/2026/0000631',
   open: 'उघडा',
   notFound: 'हा क्रमांक सापडला नाही. तपासा, किंवा खालचं उदाहरण उघडा.',
+  systemDown:
+    'आमची यंत्रणा सध्या उत्तर देत नाही. तुमचा क्रमांक बहुधा बरोबर आहे — कृपया एका मिनिटाने पुन्हा पाहा.',
+  myCases: 'या फोनवर उघडलेल्या तक्रारी',
+  myCasesPrivacy:
+    'हे फक्त याच फोनमध्ये जतन केलं आहे. कुठेही काही पाठवलं जात नाही, आणि ही यादी आम्हाला दिसत नाही.',
+  caseUnavailable: 'ही सध्या उघडता आली नाही.',
   realRefHeading: 'हा खरा नोंदणी क्रमांक दिसतो. आम्ही तो उघडू शकत नाही.',
   realRefBody:
     'सुनवाईचा सरकारी तक्रार पोर्टलशी काहीही संबंध नाही, आणि अधिकृत परवानगीशिवाय तो होणारही नाही. इथून कुठलीही खरी तक्रार वाचली जात नाही. जे चालतं ते हे: विभागानं तुम्हाला पाठवलेलं उत्तर खालच्या चौकटीत चिकटवा — तुम्ही काय मागितलं होतं त्यासमोर आम्ही ते वाचू. काहीही साठवलं जात नाही.',

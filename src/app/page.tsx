@@ -4,6 +4,7 @@ import { adapter } from '@/lib/adapters';
 import { LANG_NAMES, SHIPPED_LANGS, t, type ShippedLang } from '@/lib/i18n/strings';
 import { MockNote } from '@/components/MockBadge';
 import { TryTheAuditor } from '@/components/TryTheAuditor';
+import { MyCases } from '@/components/MyCases';
 import { evalResults, pct } from '@/lib/eval-results';
 import { isDbUnavailable } from '@/lib/db';
 import { fixtureCase } from '@/lib/fixture-cases';
@@ -52,6 +53,10 @@ export default async function Home({
     if (looksLikeLiveRef(ref)) redirect(`/?lang=${lang}&notfound=live`);
 
     let found: { ref: string } | null = null;
+    // Whether the database was unreachable matters to what we tell her. "Re-read your number"
+    // and "wait a minute" are different instructions, and giving the first one to someone whose
+    // number was correct all along is the kind of small lie this project exists to not tell.
+    let down = false;
     try {
       found = await adapter.fetchCase(ref);
     } catch (err) {
@@ -59,9 +64,13 @@ export default async function Home({
       // broken query is still a real error, because quietly serving fixtures over a bug is how
       // a demo starts lying.
       if (!isDbUnavailable(err)) throw err;
+      down = true;
       found = fixtureCase(ref);
     }
-    redirect(found ? `/case/${encodeURIComponent(found.ref)}?lang=${lang}` : `/?lang=${lang}&notfound=1`);
+    if (found) redirect(`/case/${encodeURIComponent(found.ref)}?lang=${lang}`);
+    // Not one of the committed copies either, and the database is the reason we cannot say
+    // more than that. Never claim the number is wrong when we simply could not look.
+    redirect(`/?lang=${lang}&notfound=${down ? 'down' : '1'}`);
   }
 
   return (
@@ -116,9 +125,14 @@ export default async function Home({
               </a>
             </div>
           ) : (
-            sp.notfound && <p className="mt-3 text-bad">{s.notFound}</p>
+            sp.notfound && (
+              <p className="mt-3 text-bad">{sp.notfound === 'down' ? s.systemDown : s.notFound}</p>
+            )
           )}
         </div>
+
+        {/* Cases this device has already seen. Renders nothing when there are none. */}
+        <MyCases lang={lang} />
 
         <div className="rounded border border-rule p-5">
           <h2 className="text-lg font-semibold">{s.doorB}</h2>

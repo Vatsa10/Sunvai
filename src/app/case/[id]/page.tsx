@@ -8,6 +8,7 @@ import { verdictCopy } from '@/lib/verdicts';
 import { translateJargon } from '@/lib/jargon';
 import { QuotedReply } from '@/components/QuotedReply';
 import { ReadAloud } from '@/components/ReadAloud';
+import { RememberCase } from '@/components/RememberCase';
 import { MockBadge, MockNote } from '@/components/MockBadge';
 import { confirmResolution, prepareAppeal, sendAppeal } from '@/actions/case-actions';
 import { t, SHIPPED_LANGS, type ShippedLang } from '@/lib/i18n/strings';
@@ -114,6 +115,10 @@ export default async function CasePage({
 
   return (
     <div className="space-y-10">
+      {/* Renders nothing. Arriving here is what puts this case on the device's own list, so a
+          link someone was sent works the same way as a case they filed themselves. */}
+      <RememberCase caseRef={c.ref} subject={c.subject} />
+
       {degraded && (
         <FixtureBanner heading={s.offlineHeading} body={s.offlineBody} writes={s.offlineWrites} />
       )}

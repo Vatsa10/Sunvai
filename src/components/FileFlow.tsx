@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { advanceIntake, routeAndDraft, fileGrievance, type RoutedDraft } from '@/actions/file-actions';
 import type { Lang } from '@/lib/adapters/types';
 import type { IntakeFacts, DocumentResult } from '@/lib/agents/schemas';
+import { saveCase } from '@/lib/local-cases';
 
 type Turn = { question: string | null; answer: string };
 type Stage = 'speaking' | 'routing' | 'consent' | 'filing';
@@ -164,6 +165,10 @@ export function FileFlow({ lang }: { lang: Lang }) {
         routerReasoning: drafted.reasoning,
         routerOverridden: false,
       });
+      // Remembered on this device before we navigate. Until this line existed the reference
+      // lived only in the URL, and a citizen who closed the tab had no way back to their own
+      // case. Never throws — a device that cannot store it still gets the case page.
+      saveCase({ ref, subject: drafted.subject });
       router.push(`/case/${encodeURIComponent(ref)}?lang=${lang}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'We could not file this. Nothing has been sent.');
