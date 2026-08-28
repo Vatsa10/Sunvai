@@ -1,13 +1,13 @@
 import Link from 'next/link';
 import { FileFlow } from '@/components/FileFlow';
 import { MockNote } from '@/components/MockBadge';
-import { SHIPPED_LANGS, type ShippedLang } from '@/lib/i18n/strings';
+import { SHIPPED_LANGS, type ShippedLang , DEFAULT_LANG} from '@/lib/i18n/strings';
 
 export const dynamic = 'force-dynamic';
 
 export default async function FilePage({ searchParams }: { searchParams: Promise<{ lang?: string }> }) {
   const sp = await searchParams;
-  const lang = (SHIPPED_LANGS as readonly string[]).includes(sp.lang ?? '') ? (sp.lang as ShippedLang) : 'hi';
+  const lang = (SHIPPED_LANGS as readonly string[]).includes(sp.lang ?? '') ? (sp.lang as ShippedLang) : DEFAULT_LANG;
 
   return (
     <div className="space-y-8">

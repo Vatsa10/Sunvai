@@ -11,6 +11,16 @@
 export const SHIPPED_LANGS = ['hi', 'en', 'mr'] as const;
 export type ShippedLang = (typeof SHIPPED_LANGS)[number];
 
+/**
+ * The language a reader gets before they choose one.
+ *
+ * This was Hindi, on the reasoning that the citizen we build for reads Hindi first. It is
+ * English because the people who will read this page first — judges, and anyone arriving from
+ * a link — do not, and a page nobody can read defends nobody. The picker is one tap away and
+ * all three languages are complete; only the starting point moved.
+ */
+export const DEFAULT_LANG: ShippedLang = 'en';
+
 export const LANG_NAMES: Record<ShippedLang, string> = {
   hi: 'हिन्दी',
   en: 'English',
@@ -1207,7 +1217,7 @@ const mr: Dict = {
 const DICTS: Record<ShippedLang, Dict> = { en, hi, mr };
 
 export function t(lang: string): Dict {
-  return DICTS[(SHIPPED_LANGS as readonly string[]).includes(lang) ? (lang as ShippedLang) : 'hi'];
+  return DICTS[(SHIPPED_LANGS as readonly string[]).includes(lang) ? (lang as ShippedLang) : DEFAULT_LANG];
 }
 
 export function isShipped(lang: string): lang is ShippedLang {

@@ -79,7 +79,7 @@ export const JARGON: Record<string, Entry> = {
 type Lang = 'en' | 'hi' | 'mr';
 
 export function translateJargon(term: string, lang: string): string {
-  const l: Lang = (['en', 'hi', 'mr'] as const).includes(lang as Lang) ? (lang as Lang) : 'hi';
+  const l: Lang = (['en', 'hi', 'mr'] as const).includes(lang as Lang) ? (lang as Lang) : 'en';
   const hit = JARGON[term] ?? JARGON[Object.keys(JARGON).find((k) => k.toLowerCase() === term.toLowerCase()) ?? ''];
   return hit ? hit[l] : term;
 }

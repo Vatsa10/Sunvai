@@ -18,7 +18,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="hi">
+    <html lang="en">
       <body>
         {/* No emblem, no ministry logo, no tricolour masthead. This line is on every screen. */}
         <header className="border-b border-rule">
@@ -36,6 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="mt-16 border-t border-rule">
           <nav className="mx-auto flex max-w-3xl flex-wrap gap-x-6 gap-y-2 px-5 py-6 text-sm text-muted">
             <Link href="/how-this-works" className="underline">How this works · what is mocked</Link>
+            <Link href="/assistant" className="underline">The closure assistant</Link>
             <Link href="/numbers" className="underline">The numbers</Link>
             <Link href="/verify" className="underline">Verify a receipt</Link>
             <Link href="/dept" className="underline">Department view (scaffolding)</Link>

@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { adapter } from '@/lib/adapters';
-import { LANG_NAMES, SHIPPED_LANGS, t, type ShippedLang } from '@/lib/i18n/strings';
+import { LANG_NAMES, SHIPPED_LANGS, t, type ShippedLang , DEFAULT_LANG} from '@/lib/i18n/strings';
 import { MockNote } from '@/components/MockBadge';
 import { TryTheAuditor } from '@/components/TryTheAuditor';
 import { MyCases } from '@/components/MyCases';
@@ -30,7 +30,7 @@ export default async function Home({
   searchParams: Promise<{ lang?: string; notfound?: string }>;
 }) {
   const sp = await searchParams;
-  const lang = (SHIPPED_LANGS as readonly string[]).includes(sp.lang ?? '') ? (sp.lang as ShippedLang) : 'hi';
+  const lang = (SHIPPED_LANGS as readonly string[]).includes(sp.lang ?? '') ? (sp.lang as ShippedLang) : DEFAULT_LANG;
   const s = t(lang);
 
   // The only accuracy claim on this page, and it is read from the eval file rather than

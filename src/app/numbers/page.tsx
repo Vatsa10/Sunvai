@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { query, one } from '@/lib/db';
 import { evalResults, pct } from '@/lib/eval-results';
 import { GapMap } from '@/components/GapMap';
-import { t, SHIPPED_LANGS, type ShippedLang } from '@/lib/i18n/strings';
+import { t, SHIPPED_LANGS, type ShippedLang , DEFAULT_LANG} from '@/lib/i18n/strings';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,7 +34,7 @@ export default async function NumbersPage({
   const sp = await searchParams;
   const lang: ShippedLang = (SHIPPED_LANGS as readonly string[]).includes(sp.lang ?? '')
     ? (sp.lang as ShippedLang)
-    : 'hi';
+    : DEFAULT_LANG;
   const s = t(lang);
 
   const evals = evalResults();

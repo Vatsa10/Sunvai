@@ -11,7 +11,7 @@ import { ReadAloud } from '@/components/ReadAloud';
 import { RememberCase } from '@/components/RememberCase';
 import { MockBadge, MockNote } from '@/components/MockBadge';
 import { confirmResolution, prepareAppeal, sendAppeal } from '@/actions/case-actions';
-import { t, SHIPPED_LANGS, type ShippedLang } from '@/lib/i18n/strings';
+import { t, SHIPPED_LANGS, type ShippedLang , DEFAULT_LANG} from '@/lib/i18n/strings';
 import { appealWindow, hasAppealGrounds, mayDraftAppeal } from '@/lib/agents/appeal';
 import { readTranslated } from '@/lib/translated-text';
 
@@ -62,7 +62,7 @@ export default async function CasePage({
     ? (sp.lang as ShippedLang)
     : (SHIPPED_LANGS as readonly string[]).includes(c.narrativeLang)
       ? (c.narrativeLang as ShippedLang)
-      : 'hi';
+      : DEFAULT_LANG;
   const s = t(lang);
   const fmt = (iso: string) => formatDate(iso, lang);
 
