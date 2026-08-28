@@ -1,5 +1,11 @@
 -- 11. Our error rate must be a measurement, not arithmetic on the seed's own constants.
 --
+-- This file is the ONLY definition of `our_error_rate`. Migration 08 used to define it too,
+-- without the `model <> 'seed'` filter below, which meant re-running the folder in order
+-- reverted this fix without a word of complaint. 08 no longer creates the view at all, and the
+-- grants that used to sit in 09 sit at the bottom of this file instead. If you add another
+-- definition anywhere, this comment is the one you are contradicting.
+--
 -- Until now `our_error_rate` counted every audit row, and 2,800 of those rows are background
 -- corpus: their verdict was written by `supabase/seed/run.ts` and the citizen's yes/no beside
 -- it was a `chance()` roll the same script made. Comparing the two and publishing the
@@ -38,3 +44,8 @@ select
 from audits a
 join confirmations c on c.grievance_id = a.grievance_id and c.supersedes_id is null
 where a.model = 'seed';
+
+-- Granted here rather than in 09, because these two views do not exist until this file has
+-- run. Same list of readers as the other aggregates: counts only, never narrative text, never
+-- a citizen, never a named official.
+grant select on our_error_rate, simulated_corpus_rate to anon, authenticated;

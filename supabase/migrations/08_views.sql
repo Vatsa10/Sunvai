@@ -21,15 +21,18 @@ join departments d on d.id = o.department_id
 left join confirmations c on c.grievance_id = g.id and c.supersedes_id is null
 group by o.id, o.name, d.short_name, o.state, o.lat, o.lon;
 
--- Our own error rate, both directions, published beside the resolution rate.
-create or replace view our_error_rate as
-select
-  count(*) filter (where a.verdict = 'resolved' and c.resolved = false)          as too_soft,
-  count(*) filter (where a.verdict in ('deflected','boilerplate','non_responsive')
-                     and c.resolved = true)                                      as too_harsh,
-  count(*)                                                                       as total_compared
-from audits a
-join confirmations c on c.grievance_id = a.grievance_id and c.supersedes_id is null;
+-- `our_error_rate` used to be defined here, and it is deliberately not any more.
+--
+-- The definition that lived at this spot counted every audit row, including 2,800 seeded ones
+-- whose verdict and whose citizen answer were both written by the same script — arithmetic on
+-- two constants, published as "how often we are wrong". Migration 11 replaced it with a
+-- measurement over real model rows only.
+--
+-- But a `create or replace view` here is not inert: re-running this folder in order would have
+-- run 08 after 11 had already fixed it, silently restoring the fabricated behaviour this
+-- branch exists to remove. Nobody would have seen an error. A comment warning about that is
+-- not a safeguard, so the view simply does not exist until 11 creates it, and its grant moved
+-- to 11 alongside it. Re-running any prefix of this folder now lands on the same definition.
 
 -- Headline: disposal vs true resolution, nationally.
 create or replace view headline_numbers as
