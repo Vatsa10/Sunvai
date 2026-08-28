@@ -14,6 +14,7 @@
  * never arrived.
  */
 
+import type { ReasoningEffort } from 'openai/resources/shared';
 import { AuditResultSchema, type AuditResult, type Lang } from './schemas';
 import { checkCitations, requiresCitation } from './citation-guard';
 import { MODELS, loadPrompt, structuredCall } from './openai';
@@ -40,16 +41,18 @@ export type AuditOutcome = {
 };
 
 /**
- * Options nobody but the landing page's paste box should pass.
+ * Options that only the measurement script passes.
  *
- * `reasoningEffort` is undefined everywhere a number is published from: the 74-case eval, the
- * three demo cases, and every audit written to the ledger all run at the API default, because
- * that is the configuration `evals/results.json` was measured at. Publishing accuracy for one
- * setting and running another underneath it would be the same defect as an unlabelled
- * pre-computation, so the one caller that lowers it says so on screen.
+ * We measured `low` against the default to see whether the paste box's wait was reasoning we
+ * could buy less of. It is: over matched runs the default averaged about eleven seconds and
+ * `low` about six. We are not taking it. The verdicts agreed, but `low` returned consistently
+ * lower confidence values, so the paste box would print numbers the audited configuration does
+ * not produce — on the one feature whose job is showing the auditor we publish accuracy for.
+ * Every path here runs at the API default; the chips are fast because their audits are
+ * committed, and the box says so.
  */
 export type AuditOptions = {
-  reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high';
+  reasoningEffort?: ReasoningEffort;
 };
 
 export async function audit(input: AuditInput, options: AuditOptions = {}): Promise<AuditOutcome> {

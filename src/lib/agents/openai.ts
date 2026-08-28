@@ -3,6 +3,10 @@
  */
 
 import OpenAI from 'openai';
+// Taken from the SDK rather than restated. A hand-written copy of this union drifted from
+// theirs — ours had 'minimal', which openai@4 does not accept — and the mismatch surfaced only
+// in a remote build. Importing it makes that impossible instead of merely unlikely.
+import type { ReasoningEffort } from 'openai/resources/shared';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import type { ZodSchema } from 'zod';
@@ -67,13 +71,14 @@ export async function structuredCall<T>({
   schema: ZodSchema<T>;
   temperature?: number;
   /**
-   * Left undefined everywhere the published numbers come from. The eval, the demo cases and
-   * every stored audit run at the API default, because `evals/results.json` was measured at
-   * that setting and a quietly cheaper configuration underneath a published accuracy figure is
-   * the exact thing this project keeps deleting. Only the landing page's paste box passes a
-   * value here, and the page says so on screen when it does.
+   * No product caller passes this. It exists so `scripts/measure-audit-effort.ts` can time the
+   * auditor at a lower effort without editing the agent, and the measurement it produced is why
+   * nothing passes it: `low` roughly halves the wait but also lands systematically lower
+   * confidence numbers. `evals/results.json` was measured at the API default, so every path a
+   * reader sees a number from runs at the API default too. Publishing accuracy for one
+   * configuration and demonstrating another is the defect this project keeps deleting.
    */
-  reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high';
+  reasoningEffort?: ReasoningEffort;
 }): Promise<T> {
   let lastError = '';
 
