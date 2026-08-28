@@ -49,6 +49,19 @@ type Dict = {
   myCasesPrivacy: string;
   /** One stored reference we could not open just now. Muted, not removed. */
   caseUnavailable: string;
+  /**
+   * Where the citizen's own words go. The paste box, the microphone and the read-aloud button
+   * all send text or audio out of this service to OpenAI, which is who actually reads it. We
+   * store none of it — `auditText()` writes nothing, `/api/transcribe` keeps no audio — but
+   * "nothing is saved" and "nobody else sees it" are different promises, and only the first
+   * one is ours to make. So the transmission is said where the decision is taken, in the
+   * language the decision is being taken in.
+   */
+  sentToModel: string;
+  /** The microphone, before it is switched on. */
+  sentToModelVoice: string;
+  /** Read-aloud, next to the button. */
+  sentToModelSpeech: string;
   /** A number that looks like a real registration number. Not an error — the boundary. */
   realRefHeading: string;
   realRefBody: string;
@@ -149,9 +162,15 @@ const en: Dict = {
   myCasesPrivacy:
     'This list is saved only on this phone — we never store it. To show whether each case still opens, we check its number with our server.',
   caseUnavailable: 'We could not open this one right now.',
+  sentToModel:
+    'What you paste is sent to OpenAI, the model provider we use, so that a model can read it. We keep no copy — nothing you type here is written to our database or our logs.',
+  sentToModelVoice:
+    'Your recording is sent to OpenAI to be turned into text. The audio is not kept, by them or by us — only the words, which you can edit before anything else happens.',
+  sentToModelSpeech:
+    'To read this out, the text on this page is sent to OpenAI. Nothing about you is sent with it.',
   realRefHeading: 'That looks like a real registration number. We cannot open it.',
   realRefBody:
-    'Sunvai has no connection to the government grievance portal, and will not have one without an access agreement. Nothing here reads live cases. What does work on a real case: paste the reply the department actually sent you into the box below, and we will read it against what you asked for. Nothing is saved.',
+    'Sunvai has no connection to the government grievance portal, and will not have one without an access agreement. Nothing here reads live cases. What does work on a real case: paste the reply the department actually sent you into the box below, and we will read it against what you asked for. We keep no copy of it — but it is sent to OpenAI, the model provider we use, so that a model can read it.',
   offlineHeading: 'The live database is not answering.',
   offlineBody:
     'What you are reading is the copy committed to this repository — the same three demo cases, the same department replies, and the verdicts from the recorded model run against that text. It is not live data and we are not pretending otherwise.',
@@ -272,9 +291,15 @@ const hi: Dict = {
   myCasesPrivacy:
     'यह सूची सिर्फ़ इसी फ़ोन में सहेजी जाती है — हम इसे कभी अपने पास नहीं रखते। हर शिकायत अभी खुलती है या नहीं, यह दिखाने के लिए हम उसका नंबर अपने सर्वर से जाँचते हैं।',
   caseUnavailable: 'यह अभी नहीं खुल पाई।',
+  sentToModel:
+    'आप जो चिपकाएँगे वह पढ़े जाने के लिए OpenAI को भेजा जाता है — मॉडल हम उन्हीं का इस्तेमाल करते हैं। हम उसकी कोई नकल नहीं रखते: यहाँ लिखी कोई बात न हमारे डेटाबेस में जाती है, न हमारे रिकॉर्ड में।',
+  sentToModelVoice:
+    'आपकी रिकॉर्डिंग शब्दों में बदलने के लिए OpenAI को भेजी जाती है। आवाज़ न वे रखते हैं न हम — सिर्फ़ लिखे हुए शब्द बचते हैं, और आगे कुछ होने से पहले आप उन्हें बदल सकते हैं।',
+  sentToModelSpeech:
+    'पढ़कर सुनाने के लिए इस पन्ने का लिखा हुआ OpenAI को भेजा जाता है। आपके बारे में उसके साथ कुछ नहीं भेजा जाता।',
   realRefHeading: 'यह असली पंजीकरण नंबर लगता है। हम इसे नहीं खोल सकते।',
   realRefBody:
-    'सुनवाई का सरकारी शिकायत पोर्टल से कोई जुड़ाव नहीं है, और बिना आधिकारिक अनुमति के होगा भी नहीं। यहाँ से कोई असली शिकायत नहीं पढ़ी जाती। जो काम करता है वह यह है: विभाग ने आपको जो जवाब भेजा, उसे नीचे वाले बक्से में चिपकाइए — हम उसे आपकी माँग के सामने रखकर पढ़ेंगे। कुछ भी सहेजा नहीं जाता।',
+    'सुनवाई का सरकारी शिकायत पोर्टल से कोई जुड़ाव नहीं है, और बिना आधिकारिक अनुमति के होगा भी नहीं। यहाँ से कोई असली शिकायत नहीं पढ़ी जाती। जो काम करता है वह यह है: विभाग ने आपको जो जवाब भेजा, उसे नीचे वाले बक्से में चिपकाइए — हम उसे आपकी माँग के सामने रखकर पढ़ेंगे। उसकी कोई नकल हम नहीं रखते — पर पढ़े जाने के लिए वह OpenAI को भेजा जाता है, मॉडल हम उन्हीं का इस्तेमाल करते हैं।',
   offlineHeading: 'लाइव डेटाबेस जवाब नहीं दे रहा।',
   offlineBody:
     'आप जो देख रहे हैं वह इस प्रोजेक्ट में सहेजी गई प्रति है — वही तीन नमूना शिकायतें, वही विभागीय जवाब, और उसी दर्ज मॉडल-रन से निकले नतीजे। यह लाइव डेटा नहीं है, और हम इसे लाइव बताने की कोशिश नहीं कर रहे।',
@@ -395,9 +420,15 @@ const mr: Dict = {
   myCasesPrivacy:
     'ही यादी फक्त याच फोनमध्ये जतन होते — आम्ही ती कधीच आमच्याकडे ठेवत नाही. प्रत्येक तक्रार अजून उघडते का हे दाखवण्यासाठी आम्ही तिचा क्रमांक आमच्या सर्व्हरकडे तपासतो.',
   caseUnavailable: 'ही सध्या उघडता आली नाही.',
+  sentToModel:
+    'तुम्ही जे चिकटवाल ते वाचण्यासाठी OpenAI कडे पाठवलं जातं — मॉडेल आम्ही त्यांचंच वापरतो. आम्ही त्याची प्रत ठेवत नाही: इथे लिहिलेलं काहीही आमच्या डेटाबेसमध्ये किंवा नोंदींमध्ये जात नाही.',
+  sentToModelVoice:
+    'तुमचं रेकॉर्डिंग शब्दांत बदलण्यासाठी OpenAI कडे पाठवलं जातं. आवाज ना ते ठेवतात ना आम्ही — फक्त शब्द उरतात, आणि पुढे काही होण्याआधी तुम्ही ते बदलू शकता.',
+  sentToModelSpeech:
+    'वाचून दाखवण्यासाठी या पानावरचा मजकूर OpenAI कडे पाठवला जातो. तुमच्याबद्दलचं काहीही त्यासोबत जात नाही.',
   realRefHeading: 'हा खरा नोंदणी क्रमांक दिसतो. आम्ही तो उघडू शकत नाही.',
   realRefBody:
-    'सुनवाईचा सरकारी तक्रार पोर्टलशी काहीही संबंध नाही, आणि अधिकृत परवानगीशिवाय तो होणारही नाही. इथून कुठलीही खरी तक्रार वाचली जात नाही. जे चालतं ते हे: विभागानं तुम्हाला पाठवलेलं उत्तर खालच्या चौकटीत चिकटवा — तुम्ही काय मागितलं होतं त्यासमोर आम्ही ते वाचू. काहीही साठवलं जात नाही.',
+    'सुनवाईचा सरकारी तक्रार पोर्टलशी काहीही संबंध नाही, आणि अधिकृत परवानगीशिवाय तो होणारही नाही. इथून कुठलीही खरी तक्रार वाचली जात नाही. जे चालतं ते हे: विभागानं तुम्हाला पाठवलेलं उत्तर खालच्या चौकटीत चिकटवा — तुम्ही काय मागितलं होतं त्यासमोर आम्ही ते वाचू. आम्ही त्याची प्रत ठेवत नाही — पण वाचण्यासाठी ते OpenAI कडे पाठवलं जातं, मॉडेल आम्ही त्यांचंच वापरतो.',
   offlineHeading: 'लाइव्ह डेटाबेस उत्तर देत नाही.',
   offlineBody:
     'तुम्ही पाहताय ती या प्रकल्पात जतन केलेली प्रत आहे — तेच तीन नमुना तक्रारी, तीच विभागाची उत्तरं, आणि त्याच नोंदवलेल्या मॉडेल-रनमधून आलेले निकाल. ही लाइव्ह माहिती नाही, आणि तसं भासवतही नाही.',

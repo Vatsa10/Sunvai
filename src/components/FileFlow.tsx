@@ -6,6 +6,7 @@ import { advanceIntake, routeAndDraft, fileGrievance, type RoutedDraft } from '@
 import type { Lang } from '@/lib/adapters/types';
 import type { IntakeFacts, DocumentResult } from '@/lib/agents/schemas';
 import { saveCase } from '@/lib/local-cases';
+import { t as dict } from '@/lib/i18n/strings';
 
 type Turn = { question: string | null; answer: string };
 type Stage = 'speaking' | 'routing' | 'consent' | 'filing';
@@ -21,6 +22,7 @@ type Stage = 'speaking' | 'routing' | 'consent' | 'filing';
  */
 export function FileFlow({ lang }: { lang: Lang }) {
   const router = useRouter();
+  const copy = dict(lang);
 
   const [stage, setStage] = useState<Stage>('speaking');
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -220,6 +222,15 @@ export function FileFlow({ lang }: { lang: Lang }) {
             </button>
             {recording && <span className="text-bad">Listening… tap Stop when you are finished.</span>}
           </div>
+
+          {/*
+            Said before the microphone is switched on, not after. The recording leaves this
+            service — it goes to OpenAI to be turned into text — and that is a fact about who
+            hears her, not about storage. `/api/transcribe` keeps no audio and writes no row,
+            which is a different and smaller promise, so both are said and neither stands in
+            for the other.
+          */}
+          <p className="text-muted">{copy.sentToModelVoice}</p>
 
           <div>
             <label htmlFor="transcript" className="block font-semibold">

@@ -118,9 +118,11 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
       if (!outcome.ok) setError(outcome.message);
       else setResult(outcome);
     } catch {
-      // A genuine fault: the model call failed or the network went. There is no message worth
-      // repeating from it, so we say the one true thing we know.
-      setError('That did not work. Nothing was saved, and nothing was sent anywhere.');
+      // A genuine fault: the model call failed or the network went. It said "nothing was sent
+      // anywhere", which was false: by the time this branch runs the text has already gone to
+      // OpenAI. Saying it at the moment of failure is the worst possible moment to say it,
+      // because it is the moment a reader is most likely to believe it.
+      setError('That did not work. We kept no copy of what you pasted — but it had already been sent to OpenAI to be read, and we cannot unsend it.');
     } finally {
       setTook((Date.now() - startedAt.current) / 1000);
       setBusy(false);

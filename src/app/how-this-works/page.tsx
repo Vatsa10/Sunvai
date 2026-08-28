@@ -18,6 +18,7 @@ const WORKS = [
   ['Our error rate', 'Measured against 74 replies we labelled by hand before the prompt was written, and published in full — including the gate we fail. Any disagreement between a real verdict and a citizen’s answer is counted too, in both directions, at whatever honest n it currently is.'],
   ['Appeal drafting', 'Written from the audit’s own citations, and gated behind a consent screen showing exactly what will be sent.'],
   ['Clustering', 'Cases grouped by office and problem. Membership is derived, never self-declared.'],
+  ['Where your words go', 'Every model call on this site goes to OpenAI. The reply you paste into the box on the front page, the narrative you speak into Door B, and any text you ask to be read aloud are all sent to api.openai.com to be read, transcribed or spoken — that is a third party reading your words, and it is said on the screen where you decide to paste or to speak, in your own language. What we do not do is keep them: the paste box writes nothing to the database and nothing to a log, and /api/transcribe holds no audio. "Nothing is saved" is true here and it is a smaller promise than "nobody else sees it", which we cannot make.'],
 ];
 
 const MOCKED = [
