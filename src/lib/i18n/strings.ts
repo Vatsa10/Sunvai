@@ -162,6 +162,46 @@ type Dict = {
   homeMockNote: string;
   homeMockNoteLink: string;
 
+  /**
+   * The one line above everything else on the landing page: who is hurt, by what. The figure
+   * is the published national one for May 2026, and `problemSource` says so — it is a number
+   * we read in a government monthly report, not one we measured, and the two must never be
+   * allowed to blur into each other on the same screen.
+   */
+  problemLead: string;
+  problemSource: string;
+
+  /**
+   * The side-by-side on Kamla's seeded closure. The left panel is deliberately plain: it is
+   * quoting the text a citizen received, and any attempt to make it *look* like the portal
+   * would be mimicry of a government interface. The plainness is the argument.
+   *
+   * The reply text, the status word and the dates are read from the seed, and the verdict and
+   * the quoted spans from the recorded model run, so none of them can drift out of these
+   * strings. What lives here is only our own framing — headings, the summary of what went
+   * unanswered, and the forum line — because all of it has to exist in three languages.
+   */
+  sxsHeading: string;
+  sxsLeftHeading: string;
+  sxsRightHeading: string;
+  sxsStatusLabel: string;
+  sxsElapsedLabel: string;
+  sxsReplyLabel: string;
+  sxsReplyNote: string;
+  sxsVerdictLabel: string;
+  sxsQuotedLabel: string;
+  sxsUnansweredLabel: string;
+  sxsUnanswered: string[];
+  sxsForumLabel: string;
+  sxsForumValue: string;
+  sxsOpenCase: string;
+  /** The whole argument in one line: what "simpler" is actually measured in. */
+  sxsClosing: string;
+
+  /** The elapsed time, given its own weight on the case page rather than a subordinate clause. */
+  elapsedDays: (n: number) => string;
+  elapsedCaption: string;
+
   // The paste box. Door A's answer to "of course it works, you picked the cases".
   tryHeading: string;
   trySub: string;
@@ -332,6 +372,37 @@ const en: Dict = {
   homeMockNote:
     'There is no login here, and nothing to sign up for. Every case, citizen and department reply on this site is synthetic — we never touch a live government system.',
   homeMockNoteLink: 'What is real and what is mocked',
+
+  problemLead:
+    'In May 2026 about 2.6 lakh grievances were closed on the national portal, while the feedback call centre reached about 79,000 people — so most people whose case was closed were never asked whether anything actually changed.',
+  problemSource:
+    'Published national figures for May 2026, read from the government’s own monthly reporting. Not our measurement.',
+
+  sxsHeading: 'The same closure, read two ways',
+  sxsLeftHeading: 'What the portal tells Kamla today',
+  sxsRightHeading: 'What Sunvai tells her',
+  sxsStatusLabel: 'Status',
+  sxsElapsedLabel: 'Time taken',
+  sxsReplyLabel: 'The reply, in full',
+  sxsReplyNote: 'She received it in English. Reproduced word for word, with nothing removed.',
+  sxsVerdictLabel: 'Our verdict',
+  sxsQuotedLabel: 'The words it rests on, quoted from that same reply',
+  sxsUnansweredLabel: 'What she asked, and this reply never answers',
+  sxsUnanswered: [
+    'Why the pension stopped in May.',
+    'When it starts again, and when the missed months get paid.',
+    'Which office holds the file now, and who there she can ask.',
+  ],
+  sxsForumLabel: 'Who can actually act',
+  sxsForumValue:
+    'The money leaves the State treasury, not the department that closed this. In writing to the Drawing and Disbursing Officer at the Muzaffarpur treasury — and, if the pension is a central one, on the pensioners’ own grievance portal.',
+  sxsOpenCase: 'Open Kamla’s case in full',
+  sxsClosing:
+    'Simpler is not fewer taps. It is fewer questions left unanswered — the same wait, ending with something she can act on.',
+
+  elapsedDays: (n) => `${n} days`,
+  elapsedCaption:
+    'from the day it was filed to the day it was closed. What those days produced is written below.',
 
   tryHeading: 'Try it on a reply we did not choose',
   trySub: 'Paste a closure you actually received, or write one designed to fool us.',
@@ -525,6 +596,37 @@ const hi: Dict = {
     'यहाँ न कोई लॉगिन है, न कुछ बनवाना है। इस साइट का हर मामला, हर नागरिक और विभाग का हर जवाब नमूना है — हम किसी चालू सरकारी व्यवस्था को छूते ही नहीं।',
   homeMockNoteLink: 'क्या असली है और क्या नमूना',
 
+  problemLead:
+    'मई 2026 में राष्ट्रीय पोर्टल पर लगभग 2.6 लाख शिकायतें बंद की गईं, और फ़ीडबैक कॉल सेंटर करीब 79,000 लोगों तक ही पहुँच पाया — यानी जिनकी शिकायत बंद हुई, उनमें से ज़्यादातर से कभी पूछा ही नहीं गया कि सचमुच कुछ बदला या नहीं।',
+  problemSource:
+    'मई 2026 के प्रकाशित राष्ट्रीय आँकड़े, सरकार की अपनी मासिक रिपोर्टिंग से लिए गए। यह हमारी अपनी नाप नहीं है।',
+
+  sxsHeading: 'एक ही बंदी, दो तरह से पढ़ी हुई',
+  sxsLeftHeading: 'आज पोर्टल कमला को इतना बताता है',
+  sxsRightHeading: 'सुनवाई उन्हें यह बताती है',
+  sxsStatusLabel: 'दर्जा',
+  sxsElapsedLabel: 'लगा समय',
+  sxsReplyLabel: 'पूरा जवाब, जस का तस',
+  sxsReplyNote: 'यह जवाब उन्हें अंग्रेज़ी में मिला था। यहाँ शब्दशः वही रखा है, कुछ हटाया नहीं गया।',
+  sxsVerdictLabel: 'हमारा निष्कर्ष',
+  sxsQuotedLabel: 'यह निष्कर्ष जिन शब्दों पर टिका है — उसी जवाब से उद्धृत',
+  sxsUnansweredLabel: 'कमला ने जो पूछा, और इस जवाब में जिसका कहीं नाम नहीं',
+  sxsUnanswered: [
+    'पेंशन मई में रुकी क्यों।',
+    'दोबारा कब से मिलेगी, और छूटे महीनों का पैसा कब आएगा।',
+    'फ़ाइल अब किस दफ्तर के पास है, और वहाँ किससे पूछा जाए।',
+  ],
+  sxsForumLabel: 'ज़ोर किस पर चलता है',
+  sxsForumValue:
+    'पैसा राज्य के ट्रेजरी से निकलता है, उस विभाग से नहीं जिसने यह शिकायत बंद की। मुज़फ़्फ़रपुर ट्रेजरी के आहरण एवं संवितरण अधिकारी (DDO) को लिखित में — और अगर पेंशन केंद्र सरकार की नौकरी से है, तो पेंशनभोगियों के अपने शिकायत पोर्टल पर।',
+  sxsOpenCase: 'कमला का पूरा मामला खोलिए',
+  sxsClosing:
+    'आसान का मतलब कम टैप नहीं। आसान का मतलब है — कम सवाल जो बिना जवाब रह जाएँ। इंतज़ार उतना ही रहा, पर अंत में उनके हाथ में कुछ ऐसा है जिस पर वे चल सकें।',
+
+  elapsedDays: (n) => `${n} दिन`,
+  elapsedCaption:
+    'शिकायत दर्ज होने से बंद होने तक का समय। इन दिनों में क्या निकला, वह नीचे लिखा है।',
+
   tryHeading: 'ऐसे जवाब पर आज़माइए जो हमने नहीं चुना',
   trySub: 'आपको सचमुच मिला कोई बंदी-जवाब यहाँ चिपकाइए, या ऐसा जवाब लिखिए जो हमें चकमा दे सके।',
   tryChipsHeading: 'वही बंद गली, छह अलग-अलग व्यवस्थाओं में',
@@ -716,6 +818,37 @@ const mr: Dict = {
   homeMockNote:
     'इथे लॉगिन नाही, आणि नोंदणी करण्यासारखं काहीच नाही. या संकेतस्थळावरचं प्रत्येक प्रकरण, प्रत्येक नागरिक आणि विभागाचं प्रत्येक उत्तर नमुना आहे — आम्ही कोणत्याही चालू सरकारी यंत्रणेला हातही लावत नाही.',
   homeMockNoteLink: 'काय खरं आहे आणि काय नमुना',
+
+  problemLead:
+    'मे 2026 मध्ये राष्ट्रीय पोर्टलवर सुमारे 2.6 लाख तक्रारी बंद करण्यात आल्या, आणि फीडबॅक कॉल सेंटर जेमतेम 79,000 लोकांपर्यंत पोहोचलं — म्हणजे ज्यांची तक्रार बंद झाली, त्यांतल्या बहुतेकांना खरंच काही बदललं का, हे कधी विचारलंच गेलं नाही.',
+  problemSource:
+    'मे 2026 चे प्रकाशित राष्ट्रीय आकडे, सरकारच्या स्वतःच्या मासिक अहवालातून घेतलेले. ही आमची स्वतःची मोजणी नाही.',
+
+  sxsHeading: 'एकच बंदी, दोन प्रकारे वाचलेली',
+  sxsLeftHeading: 'आज पोर्टल कमलाला एवढंच सांगतं',
+  sxsRightHeading: 'सुनवाई तिला हे सांगते',
+  sxsStatusLabel: 'दर्जा',
+  sxsElapsedLabel: 'लागलेला वेळ',
+  sxsReplyLabel: 'संपूर्ण उत्तर, जसंच्या तसं',
+  sxsReplyNote: 'हे उत्तर तिला इंग्रजीत मिळालं होतं. इथे शब्दशः तेच ठेवलं आहे, काहीही काढलेलं नाही.',
+  sxsVerdictLabel: 'आमचा निष्कर्ष',
+  sxsQuotedLabel: 'हा निष्कर्ष ज्या शब्दांवर उभा आहे — त्याच उत्तरातून उद्धृत',
+  sxsUnansweredLabel: 'कमलाने जे विचारलं, आणि या उत्तरात ज्याचा उल्लेखही नाही',
+  sxsUnanswered: [
+    'पेन्शन मे महिन्यात का थांबली.',
+    'ती पुन्हा कधीपासून मिळेल, आणि थकलेल्या महिन्यांचे पैसे कधी येतील.',
+    'फाइल आता कोणत्या कार्यालयाकडे आहे, आणि तिथे कोणाला विचारायचं.',
+  ],
+  sxsForumLabel: 'कोण खरंच काही करू शकतं',
+  sxsForumValue:
+    'पैसा राज्याच्या तिजोरीतून निघतो, ही तक्रार बंद करणाऱ्या विभागाकडून नाही. मुझफ्फरपूर तिजोरीच्या आहरण व संवितरण अधिकाऱ्याकडे (DDO) लेखी — आणि पेन्शन केंद्र सरकारच्या नोकरीची असेल, तर पेन्शनधारकांच्या स्वतःच्या तक्रार पोर्टलवर.',
+  sxsOpenCase: 'कमलाचं संपूर्ण प्रकरण उघडा',
+  sxsClosing:
+    'सोपं म्हणजे कमी टॅप नाही. सोपं म्हणजे बिनउत्तराचे कमी प्रश्न — वाट तेवढीच, पण शेवटी तिच्या हातात कृती करण्यासारखं काहीतरी.',
+
+  elapsedDays: (n) => `${n} दिवस`,
+  elapsedCaption:
+    'तक्रार दाखल झाल्यापासून ती बंद होईपर्यंतचा वेळ. या दिवसांतून काय निघालं ते खाली लिहिलं आहे.',
 
   tryHeading: 'आम्ही न निवडलेल्या उत्तरावर करून पाहा',
   trySub: 'तुम्हाला खरोखर मिळालेलं बंद-उत्तर इथे चिकटवा, किंवा आम्हाला फसवेल असं उत्तर लिहा.',

@@ -5,6 +5,7 @@ import { LANG_NAMES, SHIPPED_LANGS, t, type ShippedLang } from '@/lib/i18n/strin
 import { MockNote } from '@/components/MockBadge';
 import { TryTheAuditor } from '@/components/TryTheAuditor';
 import { MyCases } from '@/components/MyCases';
+import { SideBySide } from '@/components/SideBySide';
 import { evalResults, pct } from '@/lib/eval-results';
 import { isDbUnavailable } from '@/lib/db';
 import { fixtureCase } from '@/lib/fixture-cases';
@@ -73,7 +74,7 @@ export default async function Home({
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8">
       <nav aria-label="Language" className="flex flex-wrap gap-2">
         {SHIPPED_LANGS.map((l) => (
           <Link
@@ -87,12 +88,50 @@ export default async function Home({
             {LANG_NAMES[l]}
           </Link>
         ))}
-        <span className="inline-flex items-center px-1 text-muted">{s.langNote}</span>
+        {/* Commentary, not a control. Hidden on a phone so it does not push the
+            proposition below the fold on the screen most people arrive on. */}
+        <span className="hidden items-center px-1 text-muted sm:inline-flex">{s.langNote}</span>
       </nav>
 
-      <h1 className="text-3xl font-semibold leading-tight tracking-tight">{s.tagline}</h1>
+      <h1 className="text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">{s.tagline}</h1>
 
-      {/* Door A first, and larger. The audit is the product; intake is table stakes. */}
+      {/* Who is hurt, and by what, before anything asks the reader for input. The figure is
+          the published national one and is labelled as read rather than measured — the two
+          kinds of number are never allowed to sit unlabelled on the same screen. */}
+      <section className="space-y-2">
+        <p className="text-lg leading-relaxed sm:text-xl">{s.problemLead}</p>
+        <p className="text-sm text-muted">{s.problemSource}</p>
+      </section>
+
+      {/* The three demo cases, promoted above the form. A judge who has no registration
+          number must not meet a box asking for one as the first thing they can act on. */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold">{s.tryOne}</h2>
+        <ul className="space-y-3">
+          {DEMO_REFS.map((ref, i) => (
+            <li key={ref}>
+              <Link
+                href={`/case/${encodeURIComponent(ref)}?lang=${lang}`}
+                className="block rounded border border-rule p-4 no-underline hover:border-ink"
+              >
+                <span className="flex flex-wrap items-baseline gap-x-3">
+                  <span className="font-semibold text-ink">{s.demoChips[i].who}</span>
+                  <span className="rounded border border-warn/40 bg-warn/5 px-2 py-0.5 text-sm text-warn">
+                    {s.demoData}
+                  </span>
+                </span>
+                <span className="mt-1 block text-muted">{s.demoChips[i].what}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* What the portal gives her, against what we add. The argument for why "simpler"
+          cannot be counted in taps here. */}
+      <SideBySide lang={lang} />
+
+      {/* Door A, demoted. Someone who does have a number will look for the box. */}
       <section className="space-y-4">
         <div className="rounded border-2 border-ink p-5">
           <h2 className="text-xl font-semibold">{s.doorA}</h2>
@@ -141,28 +180,6 @@ export default async function Home({
             {s.doorB}
           </Link>
         </div>
-      </section>
-
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">{s.tryOne}</h2>
-        <ul className="space-y-3">
-          {DEMO_REFS.map((ref, i) => (
-            <li key={ref}>
-              <Link
-                href={`/case/${encodeURIComponent(ref)}?lang=${lang}`}
-                className="block rounded border border-rule p-4 no-underline hover:border-ink"
-              >
-                <span className="flex flex-wrap items-baseline gap-x-3">
-                  <span className="font-semibold text-ink">{s.demoChips[i].who}</span>
-                  <span className="rounded border border-warn/40 bg-warn/5 px-2 py-0.5 text-sm text-warn">
-                    {s.demoData}
-                  </span>
-                </span>
-                <span className="mt-1 block text-muted">{s.demoChips[i].what}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
       </section>
 
       {/* Try it on something we did not choose. Three cases we picked invite one fair
