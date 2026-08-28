@@ -213,7 +213,8 @@ for each event in order:
 → VERIFIED
 ```
 
-The UI shows: ✅ *"Verified — 7 events, unaltered."* or 🔴 *"This record has been changed
+The UI shows: ✅ *"Verified — every one of these 7 steps is unedited, and each follows the
+one before it."* or 🔴 *"This record has been changed
 at step 3."* Drag any receipt file onto `/verify` — including one we did not issue.
 
 **Demo moment:** the reviewer downloads a receipt, opens it in a text editor, changes one
@@ -248,8 +249,10 @@ and disclose them as unbuilt** in
 ## What this is not
 
 - **Not** a blockchain — no consensus, no distributed validators, no token.
-- **Not** proof that a department's *claim* is true — only that the record of the claim is
-  unaltered.
+- **Not** proof that a department's *claim* is true — only that each step in the record is
+  unedited and that consecutive steps follow one another. A receipt is one case's slice of a
+  shared chain, so on its own it cannot prove that nothing was removed from the gaps between
+  its steps; the word "unaltered" overclaimed that and the verifier no longer uses it.
 - **Not** legally admissible evidence. It is a **verifiable civic record**, and we say so.
 - **Not** a substitute for oversight. It is the substrate oversight would need.
 

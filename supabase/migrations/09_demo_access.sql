@@ -32,7 +32,10 @@ exception when duplicate_object then null; end $$;
 
 -- Aggregates. These views expose counts and office names only — never narrative text,
 -- never a citizen, never a named official.
-grant select on true_resolution_rate, our_error_rate, headline_numbers to anon, authenticated;
+-- `our_error_rate` and `simulated_corpus_rate` are not granted here: they do not exist yet at
+-- this point in the folder. Both are created and granted together in 11, so that the view and
+-- the permission to read it can never drift apart by ordering.
+grant select on true_resolution_rate, headline_numbers to anon, authenticated;
 
 -- Writes still go only through Server Actions using the service role, and every write is
 -- paired with ledger_append() in the same transaction.

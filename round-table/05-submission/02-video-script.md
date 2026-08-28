@@ -15,10 +15,16 @@ Most submissions will open by explaining the problem. **We open inside the momen
 failure**, because our problem is one every Indian viewer recognises in four seconds and
 needs no setup.
 
-The single most important decision in this script: **we say Samadhan Didi out loud, in the
-second minute.** Naming what the government already shipped, and then showing that we built
-somewhere else deliberately, is the strongest possible evidence of *product thinking* — a
-scored criterion. Hiding it invites a judge to discover it themselves, which is fatal.
+The single most important decision in this script: **minute two credits DARPG before it
+claims anything.** We say *Samadhan Didi* out loud, and we read DARPG's own August 2026
+factsheet language back to the room — *"resolution quality"*, *"closure without effective
+resolution"* — before we say a word about what we built.
+
+**We are not the first to say disposal is not resolution. The government said it first.**
+The finals are attended by invited government officials; presenting their stated policy as
+our discovery is the fastest available way to lose that room. The claim we *can* make is
+narrower and much stronger: **DARPG named this in August. It is in no spec and no portal.
+Here it is working, and the evidence is in the citizen's hands, not the department's.**
 
 ---
 
@@ -93,59 +99,66 @@ authority."**
 
 ## MINUTE TWO — how and why *(1:00–2:00)*
 
-### 1:00–1:18 — The pivot ★ *the most important 18 seconds*
+### 1:00–1:22 — The credit ★ *the most important 22 seconds*
 
-> "Here's the choice that shaped this build.
+> "We were going to build voice-first complaint filing. **DARPG shipped that in May** —
+> Samadhan Didi, twenty-two languages, on Bhashini. So we looked at what happens *after*
+> closure. The government had got there first."
+
+*Screen: the PIB factsheet of 9 Aug 2026, the phrase highlighted.*
+
+> "Three weeks ago, DARPG: **'validation of grievance redressal to assess resolution
+> quality'** — **'closure without effective resolution.'** That's this product, named by the
+> government, not by us."
+
+### 1:22–1:34 — So what is ours
+
+*Screen: split — the 154-page NextGen spec, searched, zero hits; beside it pgportal.gov.in
+showing* `Version 7.0.01092019.0.0`*, last updated 21-08-2026.*
+
+> "Except those words appear nowhere in DARPG's own 154-page spec, and the live portal still
+> runs version seven.
 >
-> We were going to build voice-first, multilingual complaint filing. Then we found that
-> **DARPG shipped exactly that on the 30th of May** — Samadhan Didi, built with Bhashini.
-> Twenty-two languages, AI routing, follow-up questions. It's good.
+> **The idea isn't ours. The working thing is** — and the part they didn't name: the evidence
+> ends up in **her** hands, not the department's."
+
+### 1:34–1:40 — What we do not claim
+
+> "So, two things we don't claim. We didn't discover that disposal isn't resolution — the
+> minister said that in 2025. And we're not the first to name closure-quality auditing.
+> We're showing you it running."
+
+### 1:40–1:52 — The design decision that matters
+
+> "One thing to judge us on. **Our AI's verdict is not the score.** Once departments know a
+> model reads their replies, some will write for the model. So the number we publish comes
+> from **the citizen's answer**. A perfect reply still scores zero if the pension never came."
+
+*Screen:* `/numbers`, part two — **Disposal 94.0% · True resolution 39.4%**, under the heading
+that says these come from a synthetic corpus.
+
+> "CPGRAMS measures disposal. **We measure resolution.** Nobody publishes that number in
+> India. Both figures here are from a synthetic corpus of 2,800 cases — the page says so, and
+> no office on it is real."
+
+*Cursor scrolls up to part one: what we measured.*
+
+> "Seventy-four replies, hand-labelled before we wrote the prompt. It never accused a
+> department that had answered. It caught 87.5% of the replies we wrote to fool it. One test
+> it fails — and we left it failing, on screen, in the demo."
+
+### 1:52–1:56 — Build and architecture
+
+> "Next.js, Supabase, OpenAI models, built with Codex from a spec in the repo. The ledger's a
+> hash chain, verified **in your browser**, not our server. **CPGRAMS is mocked**, behind an
+> adapter — the brief says don't touch live government systems."
+
+### 1:56–2:00 — Close
+
+> "What we'd need next isn't technical. It's an access agreement.
 >
-> So intake is solved. We went and looked at what **isn't**."
-
-*Screen: the intake-vs-outcome table from the landscape doc.*
-
-> "Every improvement of the last two years is on the front door. **Nothing is on what
-> happens after your complaint is closed.** That's the whole gap, and that's where we built."
-
-### 1:18–1:36 — The design decision that matters
-
-> "One thing we want to be judged on.
->
-> **Our AI's verdict is not the score.** Once departments know a model reads their replies,
-> some will write for the model. So the number we publish comes from **the citizen's
-> answer**, not ours. A department can write a perfect reply and still score zero if the
-> pension never arrived."
-
-*Screen:* `/numbers` — **Disposal 94% · True resolution 41%**
-
-> "CPGRAMS measures disposal. **We measure resolution.** That number doesn't exist in India
-> today."
-
-*Cursor moves to our own error rate, beside it.*
-
-> "And that's our error rate — every time our auditor disagreed with a citizen. We publish
-> where we were wrong. One of our three demo cases is one we get wrong, on purpose."
-
-### 1:36–1:52 — Build and architecture
-
-> "Next.js, Supabase Postgres, OpenAI models, built with Codex from a written spec that
-> ships in the repo.
->
-> The ledger is a hash chain in Postgres — append-only, and verified **in your browser**, not
-> by our server.
->
-> Everything that touches the outside world is behind an adapter. **CPGRAMS is mocked** —
-> the brief says don't touch live government systems, and scraping a government portal was
-> never an architecture that could ship. Adding EPFO is one file. The audit, the ledger and
-> the metric don't change, because none of them know what CPGRAMS is."
-
-### 1:52–2:00 — Close
-
-> "What we'd need next isn't technical. It's an access agreement, and somewhere for this
-> number to live that nobody can massage.
->
-> **The government fixed the front door. This is the back half.**"
+> **The government fixed the front door, and named the back half. This is the back half,
+> running.**"
 
 ---
 
@@ -156,14 +169,62 @@ it lands harder than any description · let the receipt turn red on screen, it n
 narration · show Hindi UI, not English, in minute one.
 
 **Don't:** open with a logo animation · explain the problem before showing it · say
-"revolutionary", "seamless", or "blockchain" · show a slide deck · exceed 2:00 by even three
-seconds.
+"revolutionary", "seamless", "blockchain", "immutable" or "tamper-proof" (it is a hash chain
+in Postgres, and a receipt is a non-contiguous slice that cannot prove nothing was removed
+from the gaps) · open on voice — voice intake is Samadhan Didi's, not ours, and it must
+never be the first thing in this video · claim we invented any of this · **quote an appeal
+rate** — none is published anywhere, and inventing one is an unforced fatal error; the safe
+line is *"CPGRAMS publishes disposal every month and has never published how many citizens
+appealed"* · say CPGRAMS has no escalation or no oversight — there is a Nodal Appellate
+Authority with a 30-day norm and a Directorate of Public Grievances; **attack the gate, not
+the tier** · show a slide deck · exceed 2:00 by even three seconds.
 
-**Pace:** ~150 words minute one (visuals carry it), ~190 minute two. Rehearse to 1:52 so the
-upload isn't rejected on a rounding error.
+**Pace — read this before recording.** Counted, not estimated (spoken lines only,
+`awk '/^## MINUTE ONE/,/^## MINUTE TWO/' 02-video-script.md | grep '^>' | sed 's/^> //' | wc -w`):
+**minute one ≈ 189 words, minute two ≈ 332.** Comfortable narration is ~160 wpm. **This
+script as written does not fit 2:00 read straight through, and it never did** — the previous
+version was 370 words in minute two. Minute one survives because long stretches are visual
+and silent; minute two does not.
+
+Minute two is now four beats instead of three — **credit · what's ours · what we do not
+claim · design and build** — and every beat was compressed to pay for the two new ones, so
+it is 38 words shorter than before while carrying more.
+
+**Do a timed read-aloud pass before recording.** If it runs long, cut in this order:
+1. The architecture beat, down to *"built with Codex from a spec in the repo"*.
+2. The eval sentence about 87.5%, keeping *"one test it fails, and we left it failing."*
+3. The closing *"access agreement"* line.
+
+**Never cut**, at any length: the **credit beat** (1:00–1:22) or the ***what we do not
+claim*** beat (1:34–1:40). Running to 2:00 with those intact beats running to 1:50 without
+them — a submission that presents government policy as its own discovery, in a room
+containing the officials who set it, loses on a criterion no edit can recover.
 
 **If two presenters:** one takes minute one as the citizen's story, one takes minute two as
 the builder. Hand over at exactly 1:00 — the split matches the brief's own structure.
+
+---
+
+## What we do not claim — the standing list
+
+Anyone rehearsing or re-cutting this video is bound by these. Each corresponds to a claim
+that would be false in front of the officials attending the finals.
+
+| We do **not** claim | Because |
+|---|---|
+| That we discovered disposal is not resolution | Dr Jitendra Singh, 9 Jul 2025: *"Citizen Satisfaction, Not Just Disposal"* |
+| That we are first to name closure-quality auditing | PIB factsheet, 9 Aug 2026, names it as a NextGen CPGRAMS feature |
+| That post-closure follow-up is our idea | The minister called for *"a human interface after grievance disposal"* |
+| That cross-citizen clustering is our idea | Same speech: *"identification of recurring grievance patterns to flag deeper policy issues"* |
+| That AI grievance work is unexplored | The government's own **AI-HI hybrid model**, announced 17 Jun 2026 |
+| That voice or multilingual intake is ours | Samadhan Didi, 30 May 2026, 22 languages, Bhashini |
+| That CPGRAMS has no appeal, escalation or oversight | Nodal Appellate Authority, 30-day norm; Directorate of Public Grievances |
+| Any appeal rate, in any form | None is published. Inventing or estimating one is fatal |
+| That the ledger is immutable or tamper-proof | Hash chain in Postgres; a receipt is a non-contiguous slice |
+
+**What we do claim, and all we claim:** DARPG named this in August 2026; it is in no
+engineering spec and on no live portal; here it is working, and the evidence is in the
+citizen's hands rather than the department's.
 
 ---
 

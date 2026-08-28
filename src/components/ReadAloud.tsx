@@ -2,6 +2,7 @@
 
 import { useRef, useState } from 'react';
 import type { Lang } from '@/lib/adapters/types';
+import { t } from '@/lib/i18n/strings';
 
 /**
  * Read-aloud.
@@ -12,6 +13,10 @@ import type { Lang } from '@/lib/adapters/types';
  * question and the consent text all get this control, not just the form.
  *
  * When speech is unavailable the button says so and disables itself. It never spins forever.
+ *
+ * The line under the button is not decoration. Pressing it sends the text on this page to
+ * OpenAI to be turned into audio, and a citizen deciding whether to press it is entitled to
+ * know that before she does, in the language she is reading.
  */
 export function ReadAloud({ text, lang, label = 'Read this aloud' }: { text: string; lang: Lang; label?: string }) {
   const [state, setState] = useState<'idle' | 'loading' | 'playing' | 'unavailable'>('idle');
@@ -56,6 +61,7 @@ export function ReadAloud({ text, lang, label = 'Read this aloud' }: { text: str
   }
 
   return (
+    <div className="space-y-1">
     <button
       type="button"
       onClick={play}
@@ -65,5 +71,7 @@ export function ReadAloud({ text, lang, label = 'Read this aloud' }: { text: str
       <span aria-hidden>{state === 'playing' ? '⏸' : '🔊'}</span>
       {state === 'loading' ? 'One moment…' : state === 'playing' ? 'Stop' : label}
     </button>
+    <p className="text-muted">{t(lang).sentToModelSpeech}</p>
+    </div>
   );
 }

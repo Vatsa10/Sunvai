@@ -25,6 +25,7 @@ export const AuditVerdictSchema = z.enum([
   'deflected',
   'boilerplate',
   'non_responsive',
+  'transferred_lawfully',
   'undetermined',
 ]);
 export type AuditVerdict = z.infer<typeof AuditVerdictSchema>;

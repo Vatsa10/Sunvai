@@ -20,6 +20,19 @@ export type CaseView = {
   slaDueAt: string | null;
   closedAt: string | null;
   filedByRelation: string | null;
+  /**
+   * The hand-written correct forum for this case, seeded per case, in the citizen's own
+   * language. Null where we do not know it — and then the page shows nothing, because a
+   * generic next step is the same harm as a wrong one.
+   */
+  nextStep: { heading: string; body: string } | null;
+  /** Our translations of the next step, language code to [heading, body]. */
+  nextStepTranslations: Record<string, string[]>;
+  /**
+   * Advisory only. A date the department stated, before which an appeal is likely to be
+   * dismissed as premature. It never removes the citizen's ability to appeal.
+   */
+  appealNotAdvisedBefore: string | null;
   citizen: { id: string; name: string; lang: Lang };
   reply: { id: string; body: string; lang: Lang; receivedAt: string } | null;
   audit: {
@@ -27,6 +40,10 @@ export type CaseView = {
     verdict: string;
     confidence: number;
     reasoning: string;
+    /** Our translations of `reasoning`, language code to parts. A cache, never evidence. */
+    reasoningTranslations: Record<string, string[]>;
+    /** Our translations of `unaddressed`, language code to the same bullets in order. */
+    unaddressedTranslations: Record<string, string[]>;
     citations: { quote: string }[];
     unaddressed: string[];
     citationsVerified: boolean;
@@ -35,7 +52,7 @@ export type CaseView = {
   } | null;
   confirmation: { resolved: boolean; answeredAt: string } | null;
   appeal: { id: string; status: string; bodyFormal: string; bodyCitizenLang: string; grounds: string[] } | null;
-  cluster: { id: string; label: string; members: number; closedUnresolved: number } | null;
+  cluster: { id: string; label: string; members: number; saidNotFixed: number; neverAsked: number } | null;
 };
 
 const RAW_STATUS: Record<string, string> = {
@@ -50,6 +67,8 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
   const g = await one<Record<string, string | null>>(
     `select g.id, g.external_ref, g.subject, g.narrative_original, g.original_lang, g.status,
             g.filed_at, g.sla_due_at, g.closed_at, g.filed_by_relation, g.office_id,
+            g.next_step_heading, g.next_step_body, g.next_step_translations,
+            g.appeal_not_advised_before,
             c.id as citizen_id, c.display_name, c.preferred_lang,
             o.name as office, d.short_name as department
        from grievances g
@@ -70,8 +89,8 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
 
   const audit = reply
     ? await one<Record<string, unknown>>(
-        `select id, verdict, confidence, reasoning, citations, unaddressed, citations_verified,
-                model, prompt_version
+        `select id, verdict, confidence, reasoning, reasoning_translations, citations, unaddressed,
+                unaddressed_translations, citations_verified, model, prompt_version
            from audits where grievance_id = $1 order by created_at desc limit 1`,
         [g.id],
       )
@@ -85,12 +104,15 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
 
   const appeal = await one<Record<string, unknown>>(
     `select id, status, body_formal, body_citizen_lang, grounds
-       from appeals where grievance_id = $1 order by id desc limit 1`,
+       from appeals where grievance_id = $1 order by created_at desc, id desc limit 1`,
     [g.id],
   );
 
   // Counts only. Never who.
-  const cluster = await one<{ id: string; label: string; members: string; closed_unresolved: string }>(
+  // Counted in three states, never two: a closure nobody answered about is not a closure the
+  // citizen said was unfixed, and rolling one into the other would build an accusation out of
+  // silence. See the same split on /cluster/[id].
+  const cluster = await one<{ id: string; label: string; members: string; said_not_fixed: string; never_asked: string }>(
     `select cl.id, cl.label,
             (select count(*) from cluster_members m where m.cluster_id = cl.id) as members,
             (select count(*) from cluster_members m
@@ -98,7 +120,13 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
                left join confirmations cf on cf.grievance_id = g2.id and cf.supersedes_id is null
               where m.cluster_id = cl.id
                 and g2.status in ('closed','appeal_closed')
-                and coalesce(cf.resolved, false) = false) as closed_unresolved
+                and cf.resolved is false) as said_not_fixed,
+            (select count(*) from cluster_members m
+               join grievances g2 on g2.id = m.grievance_id
+               left join confirmations cf on cf.grievance_id = g2.id and cf.supersedes_id is null
+              where m.cluster_id = cl.id
+                and g2.status in ('closed','appeal_closed')
+                and cf.id is null) as never_asked
        from clusters cl
        join cluster_members m on m.cluster_id = cl.id
       where m.grievance_id = $1 and cl.is_public
@@ -121,6 +149,12 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
     slaDueAt: g.sla_due_at,
     closedAt: g.closed_at,
     filedByRelation: g.filed_by_relation,
+    nextStep:
+      g.next_step_heading && g.next_step_body
+        ? { heading: g.next_step_heading, body: g.next_step_body }
+        : null,
+    nextStepTranslations: (g.next_step_translations as unknown as Record<string, string[]>) ?? {},
+    appealNotAdvisedBefore: g.appeal_not_advised_before,
     citizen: { id: g.citizen_id!, name: g.display_name!, lang: g.preferred_lang as Lang },
     reply: reply
       ? { id: reply.id, body: reply.body, lang: reply.body_lang as Lang, receivedAt: reply.received_at }
@@ -131,6 +165,8 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
           verdict: audit.verdict as string,
           confidence: Number(audit.confidence),
           reasoning: audit.reasoning as string,
+          reasoningTranslations: (audit.reasoning_translations as Record<string, string[]>) ?? {},
+          unaddressedTranslations: (audit.unaddressed_translations as Record<string, string[]>) ?? {},
           citations: (audit.citations as { quote: string }[]) ?? [],
           unaddressed: (audit.unaddressed as string[]) ?? [],
           citationsVerified: Boolean(audit.citations_verified),
@@ -155,7 +191,8 @@ export async function getCase(idOrRef: string): Promise<CaseView | null> {
           id: cluster.id,
           label: cluster.label,
           members: Number(cluster.members),
-          closedUnresolved: Number(cluster.closed_unresolved),
+          saidNotFixed: Number(cluster.said_not_fixed),
+          neverAsked: Number(cluster.never_asked),
         }
       : null,
   };

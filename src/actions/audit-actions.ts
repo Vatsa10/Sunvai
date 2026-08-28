@@ -9,10 +9,24 @@
  */
 
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { transaction, appendEvent, one } from '@/lib/db';
 import { audit, type AuditInput } from '@/lib/agents/closure-auditor';
 import { adapter } from '@/lib/adapters';
 import type { AuditResult, Lang } from '@/lib/agents/schemas';
+import { checkRateLimit } from '@/lib/rate-limit';
+
+/**
+ * Why a refusal is a return value and not a throw.
+ *
+ * This is a Server Action, and Next.js redacts the message of an uncaught Server Action error
+ * in a production build — the client receives an opaque digest. Throwing our carefully written
+ * "wait a minute, we are keeping the key alive for the next person" would have shown a judge a
+ * hex string instead. Anything the person is meant to read comes back as data.
+ */
+export type AuditOutcome =
+  | ({ ok: true } & AuditPreview)
+  | { ok: false; message: string };
 
 export type AuditPreview = {
   result: AuditResult;
@@ -33,15 +47,28 @@ export async function auditText(args: {
   reply: string;
   lang?: Lang;
   replyLang?: Lang;
-}): Promise<AuditPreview> {
+}): Promise<AuditOutcome> {
+  // Who is asking, as well as we can tell behind a proxy. Not identity — a throttling key. It
+  // is never stored, never logged, and never written to the ledger.
+  const h = await headers();
+  const ip =
+    h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    h.get('x-real-ip')?.trim() ||
+    'unknown';
+  const gate = checkRateLimit(ip);
+  if (!gate.ok) return { ok: false, message: gate.message };
+
   const complaint = args.complaint.trim();
   const reply = args.reply.trim();
 
-  if (complaint.length < 20) throw new Error('Tell us what was asked for — a sentence or two is enough.');
-  if (reply.length < 10) throw new Error('Paste the reply the department sent.');
+  // These are messages for a person too, so they travel the same way as the limiter's.
+  if (complaint.length < 20) {
+    return { ok: false, message: 'Tell us what was asked for — a sentence or two is enough.' };
+  }
+  if (reply.length < 10) return { ok: false, message: 'Paste the reply the department sent.' };
   // A ceiling, so one paste cannot become an expensive prompt.
   if (complaint.length > 4000 || reply.length > 4000) {
-    throw new Error('That is longer than we can read here. Trim it to the relevant part.');
+    return { ok: false, message: 'That is longer than we can read here. Trim it to the relevant part.' };
   }
 
   const sla = await adapter.slas();
@@ -60,6 +87,7 @@ export async function auditText(args: {
 
   const outcome = await audit(input);
   return {
+    ok: true,
     result: outcome.result,
     spans: outcome.spans,
     citationsVerified: outcome.citationsVerified,

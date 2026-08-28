@@ -60,8 +60,9 @@ Everything in this product serves one number.
 **True resolution rate** — the metric we create — is the percentage of grievances where
 **the citizen, asked afterward, confirms their problem was actually solved.**
 
-That number does not exist in India today. Producing it, per department, per office,
-publicly and verifiably, is the point of this product. Every feature either helps
+No such number is published in India today — CPGRAMS publishes disposal every month and
+has never published a citizen-confirmed resolution rate. Producing it, per department, per
+office, publicly and verifiably, is the point of this product. Every feature either helps
 measure it or helps improve it. If a proposed feature does neither, cut it.
 
 ## Design principles

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { adapter } from '@/lib/adapters';
+import { evalResults, pct } from '@/lib/eval-results';
 
 export const metadata = { title: 'How this works — Sunvai' };
 
@@ -14,9 +15,10 @@ const WORKS = [
   ['The ledger', 'A hash chain in Postgres. Append-only at the database level: there is no update or delete path, for anyone, including us.'],
   ['Receipt verification', 'Runs in your browser with no server call. It fails on a tampered file — try it.'],
   ['Confirmation → the metric', 'Your yes/no answer is what the resolution rate is computed from. Not our verdict.'],
-  ['Our error rate', 'Every disagreement between our verdict and a citizen’s answer is counted and published, both directions.'],
+  ['Our error rate', 'Measured against 74 replies we labelled by hand before the prompt was written, and published in full — including the gate we fail. Any disagreement between a real verdict and a citizen’s answer is counted too, in both directions, at whatever honest n it currently is.'],
   ['Appeal drafting', 'Written from the audit’s own citations, and gated behind a consent screen showing exactly what will be sent.'],
   ['Clustering', 'Cases grouped by office and problem. Membership is derived, never self-declared.'],
+  ['Where your words go', 'Every model call on this site goes to OpenAI. The reply you paste into the box on the front page, the narrative you speak into Door B, and any text you ask to be read aloud are all sent to api.openai.com to be read, transcribed or spoken — that is a third party reading your words, and it is said on the screen where you decide to paste or to speak, in your own language. What we do not do is keep them: the paste box writes nothing to the database and nothing to a log, and /api/transcribe holds no audio. "Nothing is saved" is true here and it is a smaller promise than "nobody else sees it", which we cannot make.'],
 ];
 
 const MOCKED = [
@@ -24,32 +26,51 @@ const MOCKED = [
   ['Every citizen, case and reply', 'Synthetic. Phone numbers are in the reserved +91 90000 0xxxx range and stored only as a hash. Every reference number carries a DEMO/ prefix. No official is named anywhere.'],
   ['Identity and login', 'There is none. Anyone can open any demo case, by design, so a reviewer is never stuck at a sign-up wall.'],
   ['Department replies', 'Hand-written from documented closure patterns, not model-generated — a model writing the pathology we then detect would be circular.'],
-  ['The /_dept view', 'Scaffolding, so you can send a reply and watch an audit run. It is not a product surface and it is not what we are asking to be judged on.'],
-  ['Outreach delivery', 'Nothing is actually sent to anyone. The events are recorded as though it were.'],
+  ['The /dept view', 'Scaffolding, so you can send a reply and watch an audit run. It is not a product surface and it is not what we are asking to be judged on.'],
 ];
 
+// Nothing in this list is a file in the repo. An earlier version of this page said some of
+// these shipped as stubs; they never did, and describing a file that does not exist on the
+// honesty page is worse than any gap it was covering. Each row now says what actually exists —
+// usually an interface — and what does not.
 const UNBUILT = [
-  ['The official adapter', 'The production path. Blocked on an access agreement with DARPG, not on engineering.'],
-  ['StatePortalAdapter, EPFOAdapter', 'Real files implementing the interface, every method throwing NotImplementedError. Adding a system is one file.'],
-  ['WhatsApp and IVR channels', 'Interfaces only. WhatsApp needs Meta business verification; IVR needs a telecom number.'],
-  ['BhashiniLanguageProvider', 'In production this runs on Bhashini rather than duplicating it. We make no claim to handle Indian languages better than they do.'],
-  ['Ledger anchoring', 'Publishing the chain head somewhere we do not control. Specified, not built — and it is the gap that matters most (see limitation 1).'],
+  ['The official adapter', 'The production path, and the only one that would touch a real system. Blocked on an access agreement with DARPG, not on engineering. Not written.'],
+  ['StatePortalAdapter, EPFOAdapter', 'Named in the design corpus (round-table/02-architecture/04-adapters.md) as how a second and third system get added. Neither exists as a file. What does exist is the interface they would implement — the GrievanceSystemAdapter contract and the NotImplementedError they would throw, both in src/lib/adapters/types.ts — and one implementation of it, the mock. So "adding a system is one file" is a claim about the shape of the code, not about code we have written.'],
+  ['WhatsApp and IVR channels', 'Not built, and not interfaced either: src/lib/adapters/channel/ is an empty directory. WhatsApp would need Meta business verification and IVR a telecom number, so neither was ever going to ship this week. The empty directory is where they would go.'],
+  ['BhashiniLanguageProvider', 'Does not exist. The LanguageProvider interface is real and shipped, with exactly one implementation — OpenAI’s — because the brief requires an OpenAI model. Running on Bhashini instead of duplicating it is the production intent, written down in the corpus and not written in code. We make no claim to handle Indian languages better than they do.'],
+  ['Outreach', 'Nothing contacts a citizen who has not come to us — no email, no SMS, no WhatsApp, and no event type recording that one was attempted. It is not stubbed and it is not simulated; there is simply nothing here.'],
+  ['Ledger anchoring', 'Publishing the chain head somewhere we do not control. Specified in the corpus, not built — and it is the gap that matters most (see limitation 1).'],
   ['Ledger sharding', 'One chain, one head, one advisory lock. Fine here; it would need to shard per department at national scale.'],
 ];
 
-const LIMITATIONS = [
-  'A hash chain proves the history was not edited. It does not prove we never wrote a false entry in the first place. With one operator and no external anchoring, we are still the root of trust.',
-  'Our auditor is wrong sometimes, and we publish how often, in both directions. One of our three demo cases is deliberately one we get wrong.',
-  '“Resolved” is self-reported by the citizen. We do not independently verify that a pension arrived. It is better than a satisfaction rating collected from a third of people — but it is not verification, and we never call it that.',
-  'We ship three languages properly, not the twenty-two CPGRAMS supports. We are also not qualified to rigorously assess our own language quality.',
-  'Routing is tested against our own taxonomy, not the real one. Real-world routing accuracy is unmeasured, and cannot be measured without touching a system we are not allowed to touch.',
-  'We do not know whether appeals succeed. No production data exists, and nothing here should be read as implying they do.',
-  'Deleting a case would still leave its ledger events behind — hashes, not content. Right-to-erasure and tamper-evidence pull against each other, and we have not resolved it.',
-  'Voice intake is not our contribution. DARPG shipped Samadhan Didi on 30 May 2026 with twenty-two languages. We built intake for journey completeness, not as a differentiator.',
-  'Our auditor almost never says "I do not know". Across eight deliberately ambiguous cases in our eval set it used the `undetermined` verdict zero times — in practice that verdict is reached only when the citation guard stops us, not because the model chose to withhold. It also errs generous, because we told it to: on a tie it favours the department. That makes a "resolved" verdict from us a weaker signal than it looks, which is one more reason the published number comes from citizens instead.',
+// Limitations carry a stable id and are numbered by position at render time. Two places in
+// this file link to one by number; hard-coding those numbers meant that reordering the array
+// silently pointed the reader at the wrong limitation, which is exactly the kind of quiet
+// wrongness this page exists to not have. `limitationNo()` cannot drift.
+const LIMITATIONS: { id: string; text: string }[] = [
+  { id: 'anchoring', text: 'A hash chain proves the history was not edited. It does not prove we never wrote a false entry in the first place. With one operator and no external anchoring, we are still the root of trust.' },
+  { id: 'slice', text: 'Your receipt is your case’s slice of one shared chain, so its steps are usually not next to each other in it. Checking the file proves that every step in it is unedited, and that consecutive steps follow each other — it cannot, on its own, prove that nothing was removed from the gaps between them. The fix is the same anchoring described above: publish the chain head somewhere we do not control, on a schedule, so a receipt can be placed against a head we could not have rewritten. It is specified and it is not built, so today you have our word for the gaps and a hash for everything else. The verifier says exactly that rather than the word “unaltered”.' },
+  { id: 'fallible', text: 'Our auditor is wrong sometimes, and we publish how often, in both directions. One of our three demo cases is deliberately one we get wrong.' },
+  { id: 'self_reported', text: '“Resolved” is self-reported by the citizen. We do not independently verify that a pension arrived. It is better than a satisfaction rating collected from a third of people — but it is not verification, and we never call it that.' },
+  { id: 'languages', text: 'We ship three languages properly, not the twenty-two CPGRAMS supports. We are also not qualified to rigorously assess our own language quality.' },
+  { id: 'routing', text: 'Routing is tested against our own taxonomy, not the real one. Real-world routing accuracy is unmeasured, and cannot be measured without touching a system we are not allowed to touch.' },
+  { id: 'appeals', text: 'We do not know whether appeals succeed. No production data exists, and nothing here should be read as implying they do.' },
+  { id: 'erasure', text: 'Deleting a case would still leave its ledger events behind — hashes, not content. Right-to-erasure and tamper-evidence pull against each other, and we have not resolved it.' },
+  { id: 'competence', text: 'The auditor does not check competence. It reads whether a reply is actionable, not whether the office named in it could plausibly handle the matter. In our own eval, a provident-fund claim transferred to a "Philately Division" — with a reference number attached — was scored a lawful transfer rather than deflection. Half our near-miss transfer cases leaked the same way. A department that names any office and quotes any reference number can currently buy itself a non-negative verdict from us. We found this, we are publishing it, and we have not fixed the prompt: the honest thing to ship this week is the limitation, not a patch tuned against the four cases that exposed it.' },
+  { id: 'voice', text: 'Voice intake is not our contribution. DARPG shipped Samadhan Didi on 30 May 2026 with twenty-two languages. We built intake for journey completeness, not as a differentiator.' },
+  { id: 'unstable', text: 'The same reply does not always get the same verdict. We call the model at temperature 0 and we do not claim determinism, and we have watched one of the example replies on the front page — the UIDAI one — come back "half answered" on one run and "answers something else" on the next. Both are negative verdicts and the citizen is told the same thing either way, but a reader is entitled to know that pressing the button twice can print two different words. The percentages in the table below come from a single run of the eval set and are published to one decimal place; a re-run would move them slightly. We have not run the set enough times to publish a spread, and quoting one would be inventing it.' },
+  { id: 'undetermined', text: 'Our auditor almost never says "I do not know". Across eight deliberately ambiguous cases in our eval set it used the `undetermined` verdict zero times — in practice that verdict is reached only when the citation guard stops us, not because the model chose to withhold. It also errs generous, because we told it to: on a tie it favours the department. That makes a "resolved" verdict from us a weaker signal than it looks, which is one more reason the published number comes from citizens instead.' },
 ];
 
+/** 1-based position of a limitation, looked up by id so a reorder can never mislabel a link. */
+const limitationNo = (id: string) => LIMITATIONS.findIndex((l) => l.id === id) + 1;
+
+const COUNT_WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen'];
+
 export default function HowThisWorksPage() {
+  // Read, never retyped. If the eval has not been run there is no table — not a placeholder.
+  const evals = evalResults();
+
   return (
     <div className="space-y-12">
       <header className="space-y-3">
@@ -66,43 +87,55 @@ export default function HowThisWorksPage() {
 
       <Section title="What actually works" rows={WORKS} />
       <Section title="What is mocked, and why" rows={MOCKED} />
-      <Section title="Specified, shipped in the repo, not built" rows={UNBUILT} />
+      <Section title="Specified in the design corpus, not built" rows={UNBUILT} />
 
       <section className="space-y-4 rounded border-2 border-ink p-6">
-        <h2 className="text-xl font-semibold">Eight things wrong with this, volunteered</h2>
+        <h2 className="text-xl font-semibold">
+          {(COUNT_WORD[LIMITATIONS.length] ?? String(LIMITATIONS.length)).replace(/^./, (c) => c.toUpperCase())} things
+          wrong with this, volunteered
+        </h2>
         <ol className="list-decimal space-y-3 pl-6">
           {LIMITATIONS.map((l) => (
-            <li key={l}>{l}</li>
+            <li key={l.id}>{l.text}</li>
           ))}
         </ol>
       </section>
 
-      <section className="space-y-3 rounded border border-rule p-6">
-        <h2 className="text-xl font-semibold">How often it is right, measured</h2>
-        <p className="text-muted">
-          Sixty closure replies, labelled by hand <em>before</em> the prompt was tuned against them, plus eight
-          written by us specifically to beat our own auditor.
-        </p>
-        <dl className="mt-2 divide-y divide-rule border-y border-rule">
-          {[
-            ['False accusation rate', '0.0%', 'A genuinely good reply judged negative. The number we care most about keeping low.'],
-            ['Deflection and boilerplate caught', '100.0%', 'Of replies we labelled as deflected or boilerplate.'],
-            ['Citation guard pass rate', '100.0%', 'Every quoted span appeared verbatim in the reply.'],
-            ['Adversarial replies caught', '87.5%', 'Case-specific, confident, correctly structured, and empty. One in eight got past us.'],
-            ['Ambiguous cases left undetermined', '0.0%', 'A gate we FAIL, at a threshold of 60%. See limitation 9 above.'],
-          ].map(([k, v, why]) => (
-            <div key={k} className="grid gap-1 py-3 sm:grid-cols-[16rem_5rem_1fr] sm:gap-4">
-              <dt className="font-semibold">{k}</dt>
-              <dd className="font-semibold tabular-nums">{v}</dd>
-              <dd className="text-muted">{why}</dd>
-            </div>
-          ))}
-        </dl>
-        <p className="text-sm text-muted">
-          The failing gate is left failing. We could have relabelled the ambiguous set until it went green;
-          the reasoning is written up in <code>evals/README.md</code>, which ships with the code.
-        </p>
-      </section>
+      {evals && (
+        <section className="space-y-3 rounded border border-rule p-6">
+          <h2 className="text-xl font-semibold">How often it is right, measured</h2>
+          <p className="text-muted">
+            {evals.cases} closure replies, labelled by hand <em>before</em> the prompt was tuned against them,
+            including {evals.adversarial} written by us specifically to beat our own auditor. Every figure in
+            this table is read from <code>evals/results.json</code> at render time rather than typed here, so it
+            cannot drift from the eval that produced it.
+          </p>
+          <dl className="mt-2 divide-y divide-rule border-y border-rule">
+            {[
+              ['False accusation rate', pct(evals.falseAccusation), 'A genuinely good reply judged negative. The number we care most about keeping low.'],
+              ['Deflection and boilerplate caught', pct(evals.negativeRecall), 'Of replies we labelled as deflected or boilerplate.'],
+              ['Citation guard pass rate', pct(evals.citationGuard), 'Every quoted span appeared verbatim in the reply.'],
+              ['Adversarial replies caught', pct(evals.adversarialCatch), 'Case-specific, confident, correctly structured, and empty.'],
+              ['Ambiguous cases left undetermined', pct(evals.undeterminedUse), `A gate we FAIL, at a threshold of 60%. See limitation ${limitationNo('undetermined')} above.`],
+              ['Exact verdict match', pct(evals.exactMatch), 'Across all seven verdict classes.'],
+              ...(evals.nearMissLeaked === undefined
+                ? []
+                : [['Near-miss transfers that leaked', pct(evals.nearMissLeaked), `Deflections dressed as lawful transfers that we accepted. See limitation ${limitationNo('competence')} above.`] as string[]]),
+            ].map(([k, v, why]) => (
+              <div key={k} className="grid gap-1 py-3 sm:grid-cols-[18rem_5rem_1fr] sm:gap-4">
+                <dt className="font-semibold">{k}</dt>
+                <dd className="font-semibold tabular-nums">{v}</dd>
+                <dd className="text-muted">{why}</dd>
+              </div>
+            ))}
+          </dl>
+          <p className="text-sm text-muted">
+            {evals.gatesFailed === 1 ? 'The failing gate is left failing.' : `${evals.gatesFailed} failing gates are left failing.`}{' '}
+            We could have relabelled the ambiguous set until it went green; the reasoning is written up in{' '}
+            <code>evals/README.md</code>, which ships with the code. Run {evals.generated_at.slice(0, 10)}.
+          </p>
+        </section>
+      )}
 
       <section className="space-y-3">
         <h2 className="text-xl font-semibold">What we will not claim</h2>

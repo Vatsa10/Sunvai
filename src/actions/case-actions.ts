@@ -8,10 +8,11 @@
  * ledger, it did not happen.
  */
 
+import { randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 import { transaction, appendEvent, one } from '@/lib/db';
 import { getCase } from '@/lib/cases';
-import { draftAppeal, mayDraftAppeal } from '@/lib/agents/appeal';
+import { appealWindow, draftAppeal, mayDraftAppeal } from '@/lib/agents/appeal';
 import type { AuditResult } from '@/lib/agents/schemas';
 import { adapter } from '@/lib/adapters';
 import type { Lang } from '@/lib/adapters/types';
@@ -36,21 +37,36 @@ export async function confirmResolution(formData: FormData) {
       [c.id],
     );
 
+    // The id of the answer about to be written. Generated here rather than by the database
+    // because the old row has to name it before it exists: a partial unique index allows only
+    // one confirmation per grievance with a null supersedes_id, so the old row must stop being
+    // the live one in the same breath as the new one becomes it.
+    const nextId = randomUUID();
+
     if (prior.rows[0]) {
       // Supersede rather than overwrite. The earlier answer stays, and so does its event.
-      await client.query(`update confirmations set supersedes_id = $1 where id = $1`, [prior.rows[0].id]);
+      //
+      // This used to read `set supersedes_id = $1 where id = $1`, which pointed the superseded
+      // row at itself. It cleared the partial index and so the published rate was never wrong,
+      // but the provenance was: a chain of changed answers could not be walked, and a row that
+      // supersedes itself is not a fact about anything. It now names the answer that replaced
+      // it.
+      await client.query(`update confirmations set supersedes_id = $1 where id = $2`, [
+        nextId,
+        prior.rows[0].id,
+      ]);
       await appendEvent(client, {
         grievanceId: c.id,
         citizenId: c.citizen.id,
         type: 'confirmation_superseded',
-        payload: { previous_id: prior.rows[0].id },
+        payload: { previous_id: prior.rows[0].id, superseded_by: nextId },
       });
     }
 
     await client.query(
-      `insert into confirmations (grievance_id, citizen_id, resolved, asked_via, asked_at)
-       values ($1, $2, $3, 'web', now())`,
-      [c.id, c.citizen.id, resolved],
+      `insert into confirmations (id, grievance_id, citizen_id, resolved, asked_via, asked_at)
+       values ($1, $2, $3, $4, 'web', now())`,
+      [nextId, c.id, c.citizen.id, resolved],
     );
 
     await appendEvent(client, {
@@ -79,7 +95,13 @@ export async function prepareAppeal(formData: FormData) {
   if (!c || !c.reply || !c.audit) throw new Error('nothing to appeal yet');
 
   const citizenSaysUnresolved = c.confirmation ? !c.confirmation.resolved : false;
-  if (!mayDraftAppeal({ verdict: c.audit.verdict, citizenSaysUnresolved })) {
+  // The same gate the page applies, applied again here. The page decides what to show; this
+  // decides what may exist. A time-barred appeal must not be creatable by replaying the form.
+  const closedAt = c.closedAt ?? c.reply.receivedAt;
+  if (!mayDraftAppeal({ verdict: c.audit.verdict, citizenSaysUnresolved, closedAt })) {
+    if (!appealWindow(closedAt).open) {
+      throw new Error('the 30-day appeal window on this closure has passed');
+    }
     throw new Error('this closure does not meet the grounds for an appeal');
   }
   if (c.appeal) return; // already drafted; drafting twice would be two records of one intent
@@ -96,7 +118,7 @@ export async function prepareAppeal(formData: FormData) {
     },
     citizenSaysUnresolved,
     filed_at: c.filedAt,
-    closed_at: c.closedAt ?? c.reply.receivedAt,
+    closed_at: closedAt,
     sla_days: sla.replyDays,
     officialLang: 'en' as Lang,
     citizenLang: c.narrativeLang,
@@ -132,6 +154,15 @@ export async function sendAppeal(formData: FormData) {
   const c = await getCase(ref);
   if (!c?.appeal) throw new Error('no drafted appeal');
   if (c.appeal.status !== 'drafted') return;
+
+  // The window is checked again here, not only at drafting. A draft made in time and opened
+  // again on day forty would otherwise walk straight through the consent gate and out through
+  // adapter.appeal(). Drafting is a page state; sending is the boundary, so the boundary is
+  // where the calendar has to hold.
+  const closedAt = c.closedAt ?? c.reply?.receivedAt ?? null;
+  if (!closedAt || !appealWindow(closedAt).open) {
+    throw new Error('not sent: the 30-day appeal window on this closure has passed');
+  }
 
   await transaction(async (client) => {
     await client.query(`update appeals set status = 'consented', consented_at = now() where id = $1`, [c.appeal!.id]);

@@ -9,12 +9,50 @@
 ## The challenge
 
 Pick **one real problem you have faced** on an Indian public-service website or digital
-service. Build a simpler, clearer, more useful way to solve it. Travel, taxes, pensions,
-certificates, payments, grievances or any other public need. IRCTC, EPFO and the Income
-Tax portal are named as *examples, not a fixed list*.
+service. Build a simpler, clearer, more useful way to solve it.
 
-**Our pick:** public grievance redressal — specifically the accountability gap after
-closure. See [`01-mission.md`](01-mission.md).
+**The brief lists ten platforms.** A previous version of this document recorded them as
+*"examples, not a fixed list."* **That was wrong, and it has been corrected here.** The ten
+are:
+
+| # | Platform | | # | Platform |
+|---|---|---|---|---|
+| 1 | **IRCTC** | | 6 | **MCA** |
+| 2 | **Income Tax e-Filing** | | 7 | **National Cyber Crime** |
+| 3 | **CPGRAMS** | | 8 | **UMANG** |
+| 4 | **GST** | | 9 | **Parivahan Sewa** |
+| 5 | **EPFO** | | 10 | **RTI Online** |
+
+**Our pick:** **CPGRAMS** — item 3, named on the list — specifically the accountability
+gap after closure. See [`01-mission.md`](01-mission.md). This matters more than it looks:
+we are not stretching an adjacent domain to fit, and nothing in the pitch needs to argue
+that our platform counts.
+
+---
+
+## "IDEAS OVER CODE" — verbatim from the rules video
+
+The rules video devotes a slide to this. Quoted exactly, because it is the clearest
+statement of what is being scored:
+
+> - *"Put your energy into the experience, not the plumbing."*
+> - *"They're frustrated, they don't have time, and they want a solution faster and simpler
+>   than the site they use today."*
+> - *"A map, a tax calculator, a chatbot-driven flow — the more unique but still useful to
+>   the end consumer, the better."*
+> - *"Crazy 3D and Three.js showpieces look impressive but don't actually help the end user.
+>   Useful beats flashy."*
+
+**[our reading]** Three consequences we are bound by:
+
+1. **No showpiece rendering.** No 3D, no Three.js, no scroll-jacked hero. The last bullet
+   is an explicit warning, and a judge who has watched the video will recognise the pattern
+   it warns against.
+2. *"Faster and simpler than the site they use today"* is the comparison actually being
+   made — not against other submissions. Our screens are judged against pgportal.gov.in.
+3. *"Unique but still useful"* is a conjunction, not a choice. Uniqueness alone does not
+   score; neither does a competent clone. The closure audit qualifies because it is
+   **useful first** — it tells a citizen something they cannot currently find out.
 
 ---
 

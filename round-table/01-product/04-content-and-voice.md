@@ -196,8 +196,8 @@ Pre-written, because these are the moments where a bad sentence costs trust.
 > *"This is exactly what we will send. Nothing else. Read it, or listen to it, first."*
 
 **On the public number:**
-> *"94% of these complaints were closed. 41% of the people who filed them say their problem
-> was actually solved."*
+> *"94% of these complaints were closed. 39% of the people who filed them say their problem
+> was actually solved. These are synthetic cases — the page says so above the numbers."*
 
 ---
 

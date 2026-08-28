@@ -1,0 +1,11 @@
+-- 10. The lawful-transfer verdict.
+--
+-- CPGRAMS is *required* to transfer whole classes of matter: State subjects, sub judice
+-- matters, RTI matters, a government servant's own service matter, policy demands, requests
+-- for employment or financial assistance. Doing so is correct procedure, not evasion. Until
+-- now the auditor had no word for it and called it `deflected` — a false accusation at
+-- exactly the volume that would discredit the product.
+--
+-- `alter type ... add value` cannot run inside a transaction block, so apply this file on its
+-- own and NEVER with psql -1. `if not exists` makes it safe to re-run.
+alter type audit_verdict add value if not exists 'transferred_lawfully';

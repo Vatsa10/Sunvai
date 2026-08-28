@@ -4,7 +4,11 @@ import { adapter } from '@/lib/adapters';
 import { LANG_NAMES, SHIPPED_LANGS, t, type ShippedLang } from '@/lib/i18n/strings';
 import { MockNote } from '@/components/MockBadge';
 import { TryTheAuditor } from '@/components/TryTheAuditor';
-import { one } from '@/lib/db';
+import { MyCases } from '@/components/MyCases';
+import { evalResults, pct } from '@/lib/eval-results';
+import { isDbUnavailable } from '@/lib/db';
+import { fixtureCase } from '@/lib/fixture-cases';
+import { looksLikeLiveRef } from '@/lib/ref';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,28 +18,58 @@ export const dynamic = 'force-dynamic';
  * first fifteen seconds on exactly that.
  */
 
-const DEMO_CHIPS = [
-  { ref: 'DEMO/2026/0000472', who: 'Kamla, 58', what: 'Pension stopped three months ago. Marked Disposed in 19 days.' },
-  { ref: 'DEMO/2026/0000518', who: 'Arif, 31', what: 'PF claim rejected. The reply repeats the rejection code.' },
-  { ref: 'DEMO/2026/0000631', who: 'Meera, 24', what: 'Road not repaired. A case our own auditor gets wrong.' },
-];
+// Only the references live here now. The name and the one-line description are per-language,
+// because this page defaults to Hindi and three English chips under a Hindi headline read as
+// unfinished localisation rather than as the deliberate choice they were not.
+const DEMO_REFS = ['DEMO/2026/0000472', 'DEMO/2026/0000518', 'DEMO/2026/0000631'];
 
-export default async function Home({ searchParams }: { searchParams: Promise<{ lang?: string; notfound?: string }> }) {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string; notfound?: string }>;
+}) {
   const sp = await searchParams;
   const lang = (SHIPPED_LANGS as readonly string[]).includes(sp.lang ?? '') ? (sp.lang as ShippedLang) : 'hi';
   const s = t(lang);
 
-  const errors = await one<{ too_soft: string; too_harsh: string; total_compared: string }>(
-    'select * from our_error_rate',
-  );
-  const wrong = Number(errors?.too_soft ?? 0) + Number(errors?.too_harsh ?? 0);
-  const compared = Number(errors?.total_compared ?? 0);
+  // The only accuracy claim on this page, and it is read from the eval file rather than
+  // computed from the seeded corpus. If the eval has not been run, the section does not render.
+  const evals = evalResults();
+
+  // Deliberately no database probe here. Nothing on this page needs one: the chips, the eval
+  // block and the paste box are static or read from a file. A probe would have put up to five
+  // seconds of blocking wait in front of a judge on exactly the scenario this work exists for
+  // — a paused pooler on the first click of the day — to tell them about a database whose
+  // absence changes nothing on this screen. The `open` action below degrades on its own.
 
   async function open(formData: FormData) {
     'use server';
     const ref = String(formData.get('ref') ?? '').trim();
-    const found = ref ? await adapter.fetchCase(ref) : null;
-    redirect(found ? `/case/${encodeURIComponent(found.ref)}?lang=${lang}` : `/?lang=${lang}&notfound=1`);
+    if (!ref) redirect(`/?lang=${lang}&notfound=1`);
+
+    // A number from a real system. We cannot open it and never will be able to without an
+    // access agreement, so we say that instead of implying they mistyped it.
+    if (looksLikeLiveRef(ref)) redirect(`/?lang=${lang}&notfound=live`);
+
+    let found: { ref: string } | null = null;
+    // Whether the database was unreachable matters to what we tell her. "Re-read your number"
+    // and "wait a minute" are different instructions, and giving the first one to someone whose
+    // number was correct all along is the kind of small lie this project exists to not tell.
+    let down = false;
+    try {
+      found = await adapter.fetchCase(ref);
+    } catch (err) {
+      // Only an unreachable database falls back — the same rule the case page holds to. A
+      // broken query is still a real error, because quietly serving fixtures over a bug is how
+      // a demo starts lying.
+      if (!isDbUnavailable(err)) throw err;
+      down = true;
+      found = fixtureCase(ref);
+    }
+    if (found) redirect(`/case/${encodeURIComponent(found.ref)}?lang=${lang}`);
+    // Not one of the committed copies either, and the database is the reason we cannot say
+    // more than that. Never claim the number is wrong when we simply could not look.
+    redirect(`/?lang=${lang}&notfound=${down ? 'down' : '1'}`);
   }
 
   return (
@@ -53,9 +87,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
             {LANG_NAMES[l]}
           </Link>
         ))}
-        <span className="inline-flex items-center px-1 text-sm text-muted">
-          Three languages, done properly. Not twenty-two, half-working.
-        </span>
+        <span className="inline-flex items-center px-1 text-muted">{s.langNote}</span>
       </nav>
 
       <h1 className="text-3xl font-semibold leading-tight tracking-tight">{s.tagline}</h1>
@@ -81,8 +113,23 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
             </button>
           </form>
 
-          {sp.notfound && <p className="mt-3 text-bad">{s.notFound}</p>}
+          {sp.notfound === 'live' ? (
+            <div className="mt-3 rounded border-2 border-ink p-4">
+              <p className="font-semibold text-ink">{s.realRefHeading}</p>
+              <p className="mt-1 text-ink">{s.realRefBody}</p>
+              <a href="#try-the-auditor" className="mt-2 inline-block underline">
+                {s.goToBox}
+              </a>
+            </div>
+          ) : (
+            sp.notfound && (
+              <p className="mt-3 text-bad">{sp.notfound === 'down' ? s.systemDown : s.notFound}</p>
+            )
+          )}
         </div>
+
+        {/* Cases this device has already seen. Renders nothing when there are none. */}
+        <MyCases lang={lang} />
 
         <div className="rounded border border-rule p-5">
           <h2 className="text-lg font-semibold">{s.doorB}</h2>
@@ -99,19 +146,19 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">{s.tryOne}</h2>
         <ul className="space-y-3">
-          {DEMO_CHIPS.map((c) => (
-            <li key={c.ref}>
+          {DEMO_REFS.map((ref, i) => (
+            <li key={ref}>
               <Link
-                href={`/case/${encodeURIComponent(c.ref)}?lang=${lang}`}
+                href={`/case/${encodeURIComponent(ref)}?lang=${lang}`}
                 className="block rounded border border-rule p-4 no-underline hover:border-ink"
               >
                 <span className="flex flex-wrap items-baseline gap-x-3">
-                  <span className="font-semibold text-ink">{c.who}</span>
+                  <span className="font-semibold text-ink">{s.demoChips[i].who}</span>
                   <span className="rounded border border-warn/40 bg-warn/5 px-2 py-0.5 text-sm text-warn">
                     {s.demoData}
                   </span>
                 </span>
-                <span className="mt-1 block text-muted">{c.what}</span>
+                <span className="mt-1 block text-muted">{s.demoChips[i].what}</span>
               </Link>
             </li>
           ))}
@@ -120,28 +167,28 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ l
 
       {/* Try it on something we did not choose. Three cases we picked invite one fair
           objection, and this is the answer to it. */}
-      <section className="rounded border-2 border-ink p-5">
-        <TryTheAuditor />
+      <section id="try-the-auditor" className="rounded border-2 border-ink p-5">
+        <TryTheAuditor lang={lang} />
       </section>
 
-      {/* Our own error rate, on the front page rather than in a footnote. */}
-      <section className="rounded border border-rule p-5">
-        <h2 className="text-lg font-semibold">We are wrong about {compared ? ((wrong / compared) * 100).toFixed(1) : '—'}% of the time</h2>
-        <p className="mt-1 text-muted">
-          Every time our verdict disagreed with what the citizen told us, we counted it — both when we were
-          too harsh and when we were too soft. That is {wrong.toLocaleString('en-IN')} out of{' '}
-          {compared.toLocaleString('en-IN')} cases.{' '}
-          <Link href="/numbers" className="underline">See the breakdown</Link>.
-        </p>
-        <p className="mt-1 text-muted">
-          One of the three cases above is one we get wrong on purpose. It is left in.
-        </p>
-      </section>
+      {/* How well the auditor actually does, measured on hand-labelled cases. Every figure here
+          comes from evals/results.json. If that file is missing this section renders nothing —
+          a fabricated fallback is the one thing this page must never do. */}
+      {evals && (
+        <section className="rounded border border-rule p-5">
+          <h2 className="text-lg font-semibold">{s.evalHeading(evals.cases)}</h2>
+          <p className="mt-1 text-muted">
+            {s.evalFalseAccusation(evals.falseAccusation === 0 ? null : pct(evals.falseAccusation))}{' '}
+            {s.evalAdversarial(pct(evals.adversarialCatch))} {s.evalGates(evals.gatesFailed)}{' '}
+            <Link href="/how-this-works" className="underline">{s.evalSeeEvery}</Link>.
+          </p>
+          <p className="mt-1 text-muted">{s.evalOneWrong}</p>
+        </section>
+      )}
 
       <MockNote>
-        There is no login here, and nothing to sign up for. Every case, citizen and department
-        reply on this site is synthetic — we never touch a live government system.{' '}
-        <Link href="/how-this-works" className="underline">What is real and what is mocked</Link>.
+        {s.homeMockNote}{' '}
+        <Link href="/how-this-works" className="underline">{s.homeMockNoteLink}</Link>.
       </MockNote>
     </div>
   );

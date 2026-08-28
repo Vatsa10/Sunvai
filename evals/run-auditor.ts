@@ -23,7 +23,7 @@ type Adversarial = { id: string; lang: string; complaint: string; reply: string;
 const NEGATIVE = new Set(['deflected', 'boilerplate', 'non_responsive']);
 
 const GATES = {
-  falseAccusation: { max: 0.05, label: 'False accusation rate (a good reply judged negative)' },
+  falseAccusation: { max: 0.05, label: 'False accusation rate (a blameless reply judged negative)' },
   negativeRecall: { min: 0.85, label: 'Recall on deflected + boilerplate' },
   undeterminedUse: { min: 0.6, label: 'Ambiguous cases correctly left undetermined' },
   citationGuard: { min: 0.98, label: 'Citation guard pass rate' },
@@ -90,9 +90,27 @@ const advResults = await mapLimit(adversarial, CONCURRENCY, async (c) => {
 
 // ---------------------------------------------------------------- scoring
 
+// A reply that did nothing wrong, judged negative. That is the `resolved` slice AND the
+// lawful-transfer slice: transferring a State subject or a sub judice matter to the competent
+// authority is correct procedure, so calling it deflection is an accusation with nothing
+// behind it. Both figures are reported; the resolved-only one stays comparable to v1.
 const good = results.filter((r) => r.expected === 'resolved');
-const falselyAccused = good.filter((r) => NEGATIVE.has(r.got) || r.got === 'partial');
-const falseAccusation = good.length ? falselyAccused.length / good.length : 0;
+const lawful = results.filter((r) => r.expected === 'transferred_lawfully');
+const isAccusation = (v: string) => NEGATIVE.has(v) || v === 'partial';
+const falseAccusationResolvedOnly = good.length ? good.filter((r) => isAccusation(r.got)).length / good.length : 0;
+const innocent = [...good, ...lawful];
+const falseAccusation = innocent.length ? innocent.filter((r) => isAccusation(r.got)).length / innocent.length : 0;
+const lawfulMisjudged = lawful.length ? lawful.filter((r) => isAccusation(r.got)).length / lawful.length : 0;
+
+// The boundary, reported apart from the centre. `near-*` are replies shaped like lawful
+// transfers that leave the citizen nowhere; `lawf-9` and `lawf-10` are lawful transfers written
+// without the "vide ref." construction. Together they test whether the new verdict is a class
+// the auditor can read or a phrase it can match.
+const nearMiss = results.filter((r) => r.id.startsWith('near-'));
+const nearMissHeld = nearMiss.length ? nearMiss.filter((r) => r.got === 'deflected').length / nearMiss.length : 0;
+const nearMissLeaked = nearMiss.length ? nearMiss.filter((r) => r.got === 'transferred_lawfully').length / nearMiss.length : 0;
+const plainLawful = results.filter((r) => r.id === 'lawf-9' || r.id === 'lawf-10');
+const plainLawfulHeld = plainLawful.length ? plainLawful.filter((r) => r.correct).length / plainLawful.length : 0;
 
 const negatives = results.filter((r) => r.expected === 'deflected' || r.expected === 'boilerplate');
 const negativeRecall = negatives.length ? negatives.filter((r) => NEGATIVE.has(r.got)).length / negatives.length : 0;
@@ -123,7 +141,14 @@ for (const [, value, threshold, dir, label] of scored) {
     `${pass ? 'PASS' : 'FAIL'}  ${(value * 100).toFixed(1).padStart(5)}%  (gate ${arrow} ${(threshold * 100).toFixed(0)}%)  ${label}`,
   );
 }
-console.log(`      ${(exact * 100).toFixed(1).padStart(5)}%         exact verdict match across all six classes`);
+console.log(`      ${(exact * 100).toFixed(1).padStart(5)}%         exact verdict match across all seven classes`);
+console.log(`      ${(falseAccusationResolvedOnly * 100).toFixed(1).padStart(5)}%         false accusation on the resolved slice alone (comparable to v1)`);
+console.log(`      ${(lawfulMisjudged * 100).toFixed(1).padStart(5)}%         lawful transfers judged negative`);
+console.log('');
+console.log('  the boundary, apart from the centre:');
+console.log(`      ${(nearMissHeld * 100).toFixed(1).padStart(5)}%         near-miss transfers correctly held to deflected (${nearMiss.length} cases)`);
+console.log(`      ${(nearMissLeaked * 100).toFixed(1).padStart(5)}%         near-miss transfers leaked into transferred_lawfully`);
+console.log(`      ${(plainLawfulHeld * 100).toFixed(1).padStart(5)}%         lawful transfers WITHOUT textbook phrasing, correct (${plainLawful.length} cases)`);
 
 // Confusion, so a failure says where rather than only how much.
 const confusion = new Map<string, Map<string, number>>();
@@ -144,6 +169,11 @@ const summary = {
   cases: cases.length,
   adversarial: adversarial.length,
   falseAccusation,
+  falseAccusationResolvedOnly,
+  lawfulMisjudged,
+  nearMissHeld,
+  nearMissLeaked,
+  plainLawfulHeld,
   negativeRecall,
   undeterminedUse,
   citationGuard,

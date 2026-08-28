@@ -274,12 +274,13 @@ Spec: [`../02-architecture/03-ledger.md`](../02-architecture/03-ledger.md).
 
 One public page. Not a dashboard — **one number, and how it is built**:
 
-> **Disposal rate: 94%.  True resolution rate: 41%.**
-> *Of 2,847 grievances closed in this demo dataset, 1,167 citizens confirmed their problem
-> was actually solved.*
+> **Disposal rate: 94.0%.  True resolution rate: 39.4%.**
+> *Of the grievances closed in this synthetic demo dataset, this many citizens confirmed their
+> problem was actually solved. The page labels both figures as simulated before showing them;
+> the measured figures on the site are the eval results, and they sit in a separate section.*
 
 Broken down **by office, never by named official**. This is the north star made visible,
-and it is the number that does not exist in India today.
+and it is the number nobody publishes in India today.
 
 ---
 

@@ -135,6 +135,55 @@ const SCHOLARSHIP =
   ['Kindly update me.', 'Updated.'],
 ].forEach(([c, r], i) => add(`ambi-${i + 1}`, 'undetermined', c, r, 'genuinely ambiguous'));
 
+// ------------------------------------------------------ lawful transfer (10)
+// CPGRAMS is *required* to transfer these: State subjects, sub judice matters, RTI matters,
+// a government servant's own service matter, policy demands, requests for employment or
+// financial assistance. Each reply here names a recipient AND gives the citizen something to
+// follow. Without both it would be deflection, not a lawful transfer.
+[
+  ['The drain outside my house in Pune has been overflowing for three weeks. Nobody has come.',
+   'Sanitation in municipal limits is a State subject and does not lie with this Ministry. Your grievance has been transferred to the Pune Municipal Corporation, Solid Waste Management Department, vide transfer ref. PMC/2026/11842. You may track it on the PMC grievance portal using that reference.'],
+  ['My land acquisition compensation is still not paid. Please order the district to pay it.',
+   'The matter of compensation in your case is sub judice before the Hon’ble High Court of Bombay in Writ Petition No. 4471 of 2025. Under the portal guidelines a matter pending before a court is not entertained here. The grievance is closed with the advice that relief lies before that Court.'],
+  ['I want copies of the inspection report and the file notings on my application.',
+   'Your request is for information held on file and is properly a request under the Right to Information Act, 2005, which this grievance portal does not process. Please file it with the Central Public Information Officer of this Ministry through the RTI Online portal at rtionline.gov.in, with the prescribed fee of Rs. 10.'],
+  ['My promotion has been withheld for two years. I am an employee of this department.',
+   'This is a service matter of a government servant and is not entertained on this portal. Your representation has been forwarded to the Establishment Section of this Ministry vide ref. ESTT/2026/0912, which is the competent authority, and you may also pursue it before the Central Administrative Tribunal.'],
+  ['My PF claim has not been settled and the regional office does not respond.',
+   'Settlement of provident fund claims lies with the Employees’ Provident Fund Organisation, a subordinate organisation of this Ministry. Your grievance has been transferred to the EPFO Regional Office, Hyderabad, vide transfer ref. EPFO/HYD/2026/33127. The Regional Office will reply to you directly.'],
+  ['The pension age should be lowered from 60 to 55. Please change the rule.',
+   'Your submission is a demand for a change in policy and not a grievance capable of individual redress on this portal. It has been placed on record and forwarded to the Policy Division of this Department vide ref. POL/2026/0288 for consideration during the next review of the scheme. No individual relief lies here.'],
+  ['My house was damaged in the floods. I need financial help from the government.',
+   'Requests for financial assistance are not decided on this portal. Relief for flood damage is disbursed under the State Disaster Response Fund by the District Collector. Your application has been forwarded to the Office of the District Collector, Nashik, vide ref. REL/NSK/2026/0741, and you may contact that office for the status.'],
+  ['The primary school in our village has no teacher and the building is unsafe.',
+   'School education is administered by the State Government. Your grievance has been transferred to the Maharashtra State Grievance Redressal portal (aaplesarkar.mahaonline.gov.in) under transfer ref. MH/2026/558123, and will be handled by the Directorate of Primary Education, Pune. Please use that reference to follow it.'],
+  // The last two carry no "vide ref." construction. If the verdict only fires on that phrase it
+  // is pattern-matching, and these two are where that would show.
+  ['The water pipeline on our street has been leaking for a month and nobody comes.',
+   'This is not our office. Water supply in your area is looked after by the Delhi Jal Board zonal office at Sector 12, Dwarka. We have sent your complaint across to them and it keeps the same number, 2026/DJB/8841. You can ring that office on 011-23538495 and quote it.'],
+  ['The bank rejected my loan under the scheme and will not tell me why.',
+   'A dispute with a bank about its own lending decision is not decided by this Ministry. It goes to the Banking Ombudsman under the Reserve Bank of India’s Integrated Ombudsman Scheme. You can file it yourself at cms.rbi.org.in, or by post to the Centralised Receipt and Processing Centre, Chandigarh, within one year of the bank’s reply.'],
+].forEach(([c, r], i) => add(`lawf-${i + 1}`, 'transferred_lawfully', c, r, 'mandated transfer, recipient and reference named'));
+
+// --------------------------------------------------- near-miss deflections (4)
+// The boundary, not the centre. Each of these has the SHAPE of a lawful transfer and fails the
+// only test that matters to the citizen: can they act on what they were told? Labelled by that
+// rule, before running anything, and not by what we expected the model to say.
+[
+  // (a) A named recipient, and nothing whatsoever to follow it with.
+  ['My widow pension has not come for four months. Please tell me why.',
+   'Your grievance has been transferred to the Directorate of Social Welfare. It stands disposed at this end.'],
+  // (b) A reference number, and no idea who has it.
+  ['My scholarship was not credited. Who do I ask now?',
+   'The grievance has been transferred out of this office vide ref. XYZ/2026/118 and is closed here.'],
+  // (c) A correct-sounding jurisdiction claim with neither a recipient nor a route.
+  ['The street light outside my house has been dead for two months.',
+   'This is a State subject. You may please approach the State Government in the matter. The grievance is disposed.'],
+  // (d) A named office, a reference — and an office that plainly cannot decide this subject.
+  ['Why was my provident fund withdrawal claim rejected? I need the reason.',
+   'Your grievance has been forwarded to the Department of Posts, Philately Division, vide ref. DOP/PHL/2026/2277, for necessary action. The grievance is closed at this level.'],
+].forEach(([c, r], i) => add(`near-${i + 1}`, 'deflected', c, r, 'looks like a lawful transfer, leaves the citizen nowhere'));
+
 // ---------------------------------------------------------------- adversarial (8)
 // Written by us to beat our own auditor: case-specific, confident, correctly structured,
 // and containing no substance whatsoever.

@@ -223,7 +223,7 @@ neighbourhood has no leverage. Mode 5 is why nobody's day is worse for having fa
 | 21-day clock, 13–15 day average disposal | Appeal gated behind an unasked question |
 | A formal appeal tier exists | No consequence for bad handling |
 | Massive scale, real volume | Systemic issues invisible as patterns |
-| Disposal rate is published monthly | **True resolution rate does not exist** |
+| Disposal rate is published monthly | **No resolution rate is published** |
 
 Sunvai works exclusively on the right-hand column.
 

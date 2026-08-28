@@ -83,7 +83,12 @@ export async function routeAndDraft(args: {
   });
 
   // Blocks the gate. Does not warn.
-  const numbers = checkNumbersInSource(drafted.formalText, { narrative: args.narrative, facts: args.facts });
+  // Subject as well as body: the subject line is the first thing an officer reads, and an
+  // invented claim number is no less invented for being in the heading.
+  const numbers = checkNumbersInSource([drafted.subject, drafted.formalText].join(' '), {
+    narrative: args.narrative,
+    facts: args.facts,
+  });
   if (!numbers.ok) {
     throw new Error(
       `We will not send this: the draft contains ${numbers.invented.join(', ')}, which you did not tell us. ` +

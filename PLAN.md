@@ -23,11 +23,16 @@ pnpm tsx scripts/check-journey.ts                      all ten acceptance steps
 bash scripts/check-adapter-boundary.sh                 the vendor stays inside lib/adapters/
 ```
 
-**Seeded numbers:** disposal 94.0% · true resolution 39.2% · our disagreement 10.9%
-(too soft 88, too harsh 153).
+**Simulated corpus numbers** (synthetic, not measurements): disposal 94.0% · true resolution
+39.4%. The seeded corpus's internal disagreement now lives in the `simulated_corpus_rate` view
+and is shown only under the "What we simulated" heading on `/numbers`.
 
-⚠️ The video script and the 250-word summary both quote **41%**. The corpus lands at **39.2%**.
-One of the two has to move before submission.
+**Measured numbers** come from `evals/results.json` alone — 74 hand-labelled cases — and are
+read at render time by `/`, `/numbers` and `/how-this-works`. `our_error_rate` now excludes
+seeded rows (`model <> 'seed'`), so it reports real model runs at whatever honest n exists.
+
+✅ Resolved: the video script and the 250-word summary now quote **39.4%**, labelled synthetic.
+That figure is what the seed produces; do not retype it from memory anywhere else.
 
 **Two design-doc corrections, both found by a check rather than by reading:**
 
@@ -151,8 +156,8 @@ The day the video's "rebuild it entirely" gets answered.
 - **Receipt export + `/verify`** — one `lib/ledger/verify.ts` running in Node and browser
   (WebCrypto), JCS canonical JSON. Ships with the **tampered-receipt negative case**: a
   verifier that always says verified is a decoration.
-- `/numbers` — disposal 94% vs true resolution 41%, **and our own error rate beside it**,
-  both directions, from the `our_error_rate` view.
+- `/numbers` — split into "What we measured" (the eval) and "What we simulated" (the
+  corpus: disposal 94.0% vs true resolution 39.4%), with `our_error_rate` over real runs only.
 - `/how-this-works` — the honesty surface: what works, what is mocked, what is specified but
   unbuilt, and the **eight volunteered limitations** from `05-submission/01-honesty-disclosure.md`.
 - `MockBadge` rendered from `adapter.isMock`, never hardcoded.
@@ -175,8 +180,11 @@ The day the video's "rebuild it entirely" gets answered.
 - **Video** to `05-submission/02-video-script.md`. Rehearse to 1:52. Minute two says
   *Samadhan Didi* out loud — naming what the government already shipped is the strongest
   product-thinking evidence available, and hiding it invites a judge to find it themselves.
-- **Summary at exactly 250 words** (the video's wording; the corpus draft is 242 — pad to
-  248–250). Keep the closing line verbatim.
+- **Summary at exactly 250 words** (the video's wording). Keep the closing line verbatim.
+  ~~the corpus draft is 242 — pad to 248–250~~ — **superseded.** The 242 was a miscount; so
+  were the 238, 248 and 249 that followed it. The body now stands at exactly 250, and
+  `05-submission/03-summary-250-words.md` carries the delimiter-based counting command beside
+  the figure so the next editor does not derive a sixth number.
 - Pre-computed audit fixtures committed; **verify the demo works with the OpenAI key removed.**
 - Full submission-day checklist from `04-build/04-build-order.md`, run today not tomorrow.
 

@@ -18,7 +18,7 @@ import { AuditResultSchema, type AuditResult, type Lang } from './schemas';
 import { checkCitations, requiresCitation } from './citation-guard';
 import { MODELS, loadPrompt, structuredCall } from './openai';
 
-export const AUDITOR_PROMPT_VERSION = 'closure-auditor.v1';
+export const AUDITOR_PROMPT_VERSION = 'closure-auditor.v2';
 
 export type AuditInput = {
   narrative_original: string;

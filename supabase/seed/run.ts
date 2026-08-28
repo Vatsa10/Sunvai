@@ -19,6 +19,7 @@ import { readFileSync } from 'node:fs';
 import { createHash, randomUUID } from 'node:crypto';
 import { pool, transaction, appendEvent } from '../../src/lib/db';
 import { DEMO_CASES } from './demo-cases';
+import { warmTranslated } from '../../src/lib/translated-text';
 
 // ---------------------------------------------------------------- deterministic randomness
 
@@ -96,6 +97,16 @@ const BULK_REPLIES = {
   partial: [
     'The delay is regretted. The matter regarding the remaining amount is under examination. Grievance closed.',
   ],
+  // Mandated transfers. CPGRAMS is *required* to move State subjects, sub judice matters, RTI
+  // matters and service matters to the competent authority; doing so is correct procedure, not
+  // evasion, and the corpus has to contain some or /numbers under-represents a verdict the
+  // auditor can now return. These name the receiving authority and carry a transfer reference —
+  // that is what separates them from the `deflected` texts above.
+  transferred_lawfully: [
+    'This matter falls within the jurisdiction of the State Government. It has been transferred to the Office of the Collector, DEMO District, under transfer reference DEMO/TR/2026/0041, and that office will reply to you directly.',
+    'The subject relates to a service matter of a government servant, which this forum does not adjudicate. The papers have been sent to the Administrative Section of the concerned cadre-controlling authority vide DEMO/TR/2026/0088.',
+    'As the request is for information, it has been transferred to the Central Public Information Officer of this Ministry under section 6(3) of the Right to Information Act, 2005, vide DEMO/TR/2026/0113.',
+  ],
   resolved: [
     'The pending amount was credited on 12.07.2026 through the treasury. Arrears for two months are included.',
     'The defect was rectified on 03.08.2026 and the connection restored the same day.',
@@ -126,8 +137,95 @@ async function main() {
   await seedDemoCases(deptIds, officeIds, precomputed);
   await seedBackgroundCorpus(officeIds);
   await seedClusters(officeIds);
+  await warmDemoTranslations();
   await report();
   await pool().end();
+}
+
+/**
+ * Text of ours that a demo case renders in a language it was not written in, translated once,
+ * here, and stored beside the row it belongs to.
+ *
+ * Doing this during a render cost fourteen seconds of blank screen on a cold instance, on the
+ * headline case, on a reviewer's first click. Doing it here costs a handful of calls at seed
+ * time and the first click is served from the database.
+ *
+ * Three kinds, and every one of them is text a citizen would carry to a counter: the auditor's
+ * reasoning and its "what they did not answer" list, both written in English; and the next
+ * step, written in the case's own language, which is the wrong language for anyone reading
+ * that case in one of the other two.
+ *
+ * A demo case is warmed for every shipped language it can actually be read in, not only its
+ * own, because the language picker is on every page and a Hindi speaker opening Meera's case
+ * is an ordinary thing to do. A failure here is not fatal: the page falls back to the original
+ * with an honest label, and fills the gap behind the next render.
+ */
+async function warmDemoTranslations() {
+  const langs = ['hi', 'en', 'mr'] as const;
+
+  for (const c of DEMO_CASES) {
+    const row = await pool().query<{
+      gid: string;
+      aid: string | null;
+      reasoning: string | null;
+      unaddressed: string[] | null;
+    }>(
+      `select g.id as gid, a.id as aid, a.reasoning, a.unaddressed
+         from grievances g
+         left join lateral (
+           select id, reasoning, unaddressed from audits
+            where grievance_id = g.id order by created_at desc limit 1
+         ) a on true
+        where g.external_ref = $1`,
+      [c.ref],
+    );
+    const r = row.rows[0];
+    if (!r) continue;
+
+    const jobs: { label: string; req: Parameters<typeof warmTranslated>[0] }[] = [];
+    for (const to of langs) {
+      if (r.aid && r.reasoning) {
+        jobs.push({
+          label: `${c.ref} reasoning -> ${to}`,
+          req: { store: 'auditReasoning', rowId: r.aid, parts: [r.reasoning], stored: {}, from: 'en', to },
+        });
+        if (r.unaddressed && r.unaddressed.length > 0) {
+          jobs.push({
+            label: `${c.ref} unaddressed -> ${to}`,
+            req: { store: 'auditUnaddressed', rowId: r.aid, parts: r.unaddressed, stored: {}, from: 'en', to },
+          });
+        }
+      }
+      if (c.nextStep) {
+        jobs.push({
+          label: `${c.ref} next step -> ${to}`,
+          req: {
+            store: 'nextStep',
+            rowId: r.gid,
+            parts: [c.nextStep.heading, c.nextStep.body],
+            stored: {},
+            from: c.narrativeLang,
+            to,
+          },
+        });
+      }
+    }
+
+    // In parallel: these are twenty-odd independent calls and doing them one after another
+    // turned a seed into a coffee break. Each one writes to its own key on its own row.
+    await Promise.all(
+      jobs
+        .filter((job) => job.req.to !== job.req.from)
+        .map(async (job) => {
+          try {
+            const done = await warmTranslated(job.req);
+            console.log(`warmed: ${job.label} ${done ? 'ok' : '(unchanged, skipped)'}`);
+          } catch (e) {
+            console.log(`warmed: ${job.label} FAILED (${(e as Error).message})`);
+          }
+        }),
+    );
+  }
 }
 
 async function wipe() {
@@ -206,11 +304,13 @@ async function seedDemoCases(
         `insert into grievances (citizen_id, filed_by_citizen_id, filed_by_relation, consent_recorded,
                                  external_ref, source_system, imported, department_id, office_id,
                                  original_lang, narrative_original, subject, status,
-                                 filed_at, sla_due_at, closed_at)
-         values ($1,$2,$3,true,$4,'mock_cpgrams',true,$5,$6,$7,$8,$9,'closed',$10,$11,$12)
+                                 filed_at, sla_due_at, closed_at,
+                                 next_step_heading, next_step_body, appeal_not_advised_before)
+         values ($1,$2,$3,true,$4,'mock_cpgrams',true,$5,$6,$7,$8,$9,'closed',$10,$11,$12,$13,$14,$15)
          returning id`,
         [citizenId, filedById, c.filedBy?.relation ?? null, c.ref, deptId, officeId,
-         c.narrativeLang, c.narrative, c.subject, c.filedAt, slaDue, c.closedAt],
+         c.narrativeLang, c.narrative, c.subject, c.filedAt, slaDue, c.closedAt,
+         c.nextStep?.heading ?? null, c.nextStep?.body ?? null, c.appealNotAdvisedBefore ?? null],
       );
       const gid = g.rows[0].id as string;
 
@@ -263,6 +363,9 @@ async function seedDemoCases(
  * disposal in the nineties, true resolution in the forties, and a gap between how many
  * closures happen and how many citizens are ever asked about them.
  */
+const CORPUS_CITIZENS = 420;
+const corpusPhone = (i: number) => `+91 90000 0${String(i + 1).padStart(4, '0')}`;
+
 async function seedBackgroundCorpus(officeIds: Map<string, string>) {
   const offices = [...officeIds.values()];
   const TOTAL = 2800;
@@ -283,18 +386,37 @@ async function seedBackgroundCorpus(officeIds: Map<string, string>) {
     let verdict: keyof typeof BULK_REPLIES | null = null;
     if (closed) {
       const roll = rand();
-      verdict = roll < 0.22 ? 'deflected' : roll < 0.40 ? 'boilerplate' : roll < 0.55 ? 'non_responsive' : roll < 0.70 ? 'partial' : 'resolved';
+      verdict =
+        roll < 0.08 ? 'transferred_lawfully'
+        : roll < 0.28 ? 'deflected'
+        : roll < 0.44 ? 'boilerplate'
+        : roll < 0.57 ? 'non_responsive'
+        : roll < 0.71 ? 'partial'
+        : 'resolved';
     }
 
     // Sunvai asks everyone; ~15% never answer. The gap is real and we show it.
     const asked = closed && chance(0.85);
     // The metric: whether the problem actually got fixed, by their answer, not our verdict.
     // Tuned so the corpus lands where the published figures do — disposal in the nineties,
-    // true resolution in the low forties — and so the gap between our verdict and the
-    // citizen's answer stays in a range a real auditor could plausibly have. A negative
+    // true resolution just under forty (94.0% and 39.4% as this seed currently stands) — and
+    // so the gap between our verdict and the citizen's answer stays in a range a real auditor
+    // could plausibly have. That gap is NOT a measurement of us and is never published as one;
+    // it lives in the `simulated_corpus_rate` view and only under the "What we simulated"
+    // heading on /numbers. A negative
     // verdict is sometimes followed by the problem getting fixed anyway; that is our
     // "too harsh" column, and inventing a lot of it would be inventing our own incompetence.
-    const resolved = asked && chance(verdict === 'resolved' ? 0.88 : verdict === 'partial' ? 0.55 : 0.13);
+    // A lawful transfer is correct procedure but not, by itself, a fix: the receiving office
+    // still has to act, and often does not. It sits between `partial` and the negative verdicts,
+    // and it is never counted as one of our errors — see supabase/migrations/11_real_error_rate.sql.
+    const resolved =
+      asked &&
+      chance(
+        verdict === 'resolved' ? 0.88
+        : verdict === 'partial' ? 0.55
+        : verdict === 'transferred_lawfully' ? 0.30
+        : 0.13,
+      );
     const closedAt = closed ? new Date(filedAt.getTime() + (5 + Math.floor(rand() * 25)) * 86400_000) : null;
 
     drafts.push({
@@ -309,26 +431,40 @@ async function seedBackgroundCorpus(officeIds: Map<string, string>) {
   // One round trip per table, not per row. The database is in Singapore and this machine is
   // not; 2,800 sequential inserts is half an hour of latency for rows nobody reads singly.
   await transaction(async (client) => {
-    const citizen = await client.query(
+    // One citizen row per synthetic complainant, not one row for the whole corpus. A single
+    // shared row would make every "distinct people" count in this build a lie — including the
+    // one the cluster visibility gate turns on, which is the count that decides whether an
+    // accusation about an office gets published. Numbers, not names: these rows carry no
+    // narrative and no identity beyond an index.
+    const citizens = await client.query<{ id: string }>(
       `insert into citizens (phone_hash, display_name, preferred_lang, is_demo)
-       values ($1,'Synthetic corpus','hi',true) returning id`,
-      [phoneHash('+91 90000 00000')],
+       select u.h, 'Synthetic complainant ' || u.i, u.lang, true
+         from unnest($1::text[], $2::int[], $3::text[]) as u(h, i, lang)
+      returning id`,
+      [
+        Array.from({ length: CORPUS_CITIZENS }, (_, i) => phoneHash(corpusPhone(i))),
+        Array.from({ length: CORPUS_CITIZENS }, (_, i) => i + 1),
+        Array.from({ length: CORPUS_CITIZENS }, (_, i) => LANGS[i % LANGS.length]),
+      ],
     );
-    const corpusCitizen = citizen.rows[0].id as string;
+    const corpusCitizens = citizens.rows.map((r) => r.id);
+    // Deterministic and stride-based rather than random, so the RNG stream — and with it the
+    // headline figures — is untouched by this. 149 is coprime with CORPUS_CITIZENS, so the
+    // first 420 cases land on 420 different people before anyone gets a second one.
+    const citizenOf = (i: number) => corpusCitizens[(i * 149) % CORPUS_CITIZENS]!;
 
     await client.query(
       `insert into grievances (id, citizen_id, external_ref, source_system, imported, office_id,
                                department_id, original_lang, narrative_original, subject, status,
                                filed_at, sla_due_at, closed_at)
-       select u.id, $1, u.ref, 'mock_cpgrams', true, u.office_id,
+       select u.id, u.citizen_id, u.ref, 'mock_cpgrams', true, u.office_id,
               o.department_id, u.lang, u.narrative, 'Synthetic background case', u.status::grievance_status,
               u.filed_at, u.filed_at + interval '21 days', u.closed_at
-         from unnest($2::uuid[], $3::text[], $4::uuid[], $5::text[], $6::text[], $7::text[],
-                     $8::timestamptz[], $9::timestamptz[])
-              as u(id, ref, office_id, lang, narrative, status, filed_at, closed_at)
+         from unnest($1::uuid[], $2::text[], $3::uuid[], $4::text[], $5::text[], $6::text[],
+                     $7::timestamptz[], $8::timestamptz[], $9::uuid[])
+              as u(id, ref, office_id, lang, narrative, status, filed_at, closed_at, citizen_id)
          join offices o on o.id = u.office_id`,
       [
-        corpusCitizen,
         drafts.map((d) => d.id),
         drafts.map(() => `DEMO/2026/${String(1000 + n++).padStart(7, '0')}`),
         drafts.map((d) => d.officeId),
@@ -337,6 +473,7 @@ async function seedBackgroundCorpus(officeIds: Map<string, string>) {
         drafts.map((d) => (d.closed ? 'closed' : 'replied')),
         drafts.map((d) => d.filedAt.toISOString()),
         drafts.map((d) => d.closedAt?.toISOString() ?? null),
+        drafts.map((_, i) => citizenOf(i)),
       ],
     );
 
@@ -371,16 +508,18 @@ async function seedBackgroundCorpus(officeIds: Map<string, string>) {
       ],
     );
 
-    const asked = drafts.filter((d) => d.asked && d.closedAt);
+    // The confirmation is answered by the person who filed, so it carries their citizen row.
+    const asked = drafts.map((d, i) => ({ d, i })).filter(({ d }) => d.asked && d.closedAt);
     await client.query(
       `insert into confirmations (grievance_id, citizen_id, resolved, asked_via, asked_at, answered_at)
-       select u.gid, $1, u.resolved, 'web', u.asked_at, u.asked_at + interval '1 day'
-         from unnest($2::uuid[], $3::boolean[], $4::timestamptz[]) as u(gid, resolved, asked_at)`,
+       select u.gid, u.citizen_id, u.resolved, 'web', u.asked_at, u.asked_at + interval '1 day'
+         from unnest($1::uuid[], $2::boolean[], $3::timestamptz[], $4::uuid[])
+              as u(gid, resolved, asked_at, citizen_id)`,
       [
-        corpusCitizen,
-        asked.map((d) => d.id),
-        asked.map((d) => d.resolved),
-        asked.map((d) => d.closedAt!.toISOString()),
+        asked.map(({ d }) => d.id),
+        asked.map(({ d }) => d.resolved),
+        asked.map(({ d }) => d.closedAt!.toISOString()),
+        asked.map(({ i }) => citizenOf(i)),
       ],
     );
   });
@@ -389,27 +528,46 @@ async function seedBackgroundCorpus(officeIds: Map<string, string>) {
 }
 
 /**
- * Clusters. Membership is derived, so the seed writes members and then applies the same public
- * visibility gate the recompute job applies: >=5 members, >=5 distinct citizens, spread over
- * more than 48 hours. Three clusters pass it. Three do not, and stay private.
+ * Clusters. Publishing "46 people complained about this office" is an accusation, so the seed
+ * does not get to decide which clusters are public. It writes membership, then asks the
+ * database what the membership actually is, and the gate decides.
+ *
+ * The gate: at least MIN_MEMBERS cases, from at least MIN_CITIZENS distinct citizens, with more
+ * than MIN_SPREAD_HOURS between the first and last filing. Without the distinct-citizen and
+ * time-spread conditions, one motivated person could manufacture a public accusation in an
+ * afternoon, and we would have built a machine for doing it.
+ *
+ * What this gate does NOT include is a same-device check. The design calls for one; this
+ * corpus has no device or session signal to check against, so the code does not pretend to
+ * apply it and neither does /cluster. In production that condition belongs here, computed from
+ * the submission metadata, alongside these three.
+ *
+ * first_seen_at / last_seen_at are likewise read off the members rather than typed in, so the
+ * dates on the page cannot drift from the cases behind them.
  */
+const MIN_MEMBERS = 5;
+const MIN_CITIZENS = 5;
+const MIN_SPREAD_HOURS = 48;
 async function seedClusters(officeIds: Map<string, string>) {
   const treasury = officeIds.get('Treasury Office, Muzaffarpur')!;
 
+  // Month ranges in the labels match the filing dates the gate reads off the members below.
   const specs = [
-    { label: 'Pension disbursement stoppage · Muzaffarpur · May–Aug 2026', office: treasury, size: 46, public: true, include: 'DEMO/2026/0000472' },
-    { label: 'PF claim rejection without stated reason · Hyderabad · Jun–Aug 2026', office: officeIds.get('EPFO Regional Office, Hyderabad')!, size: 31, public: true, include: 'DEMO/2026/0000518' },
-    { label: 'Monsoon road damage unrepaired · Pune Rural · Jul–Aug 2026', office: officeIds.get('PWD Sub-Division, Pune (Rural)')!, size: 18, public: true, include: 'DEMO/2026/0000631' },
-    { label: 'Delayed scheme payments · Ranchi · Aug 2026', office: officeIds.get('Block Development Office, Ranchi')!, size: 4, public: false },
-    { label: 'Refund not credited · CPC Bengaluru · Aug 2026', office: officeIds.get('CPC Bengaluru')!, size: 3, public: false },
-    { label: 'Hospital billing dispute · Bhopal · Aug 2026', office: officeIds.get('District Hospital, Bhopal')!, size: 4, public: false },
+    { label: 'Pension disbursement stoppage · Muzaffarpur · May–Aug 2026', office: treasury, size: 46, include: 'DEMO/2026/0000472' },
+    { label: 'PF claim rejection without stated reason · Hyderabad · May–Aug 2026', office: officeIds.get('EPFO Regional Office, Hyderabad')!, size: 31, include: 'DEMO/2026/0000518' },
+    { label: 'Monsoon road damage unrepaired · Pune Rural · May–Jul 2026', office: officeIds.get('PWD Sub-Division, Pune (Rural)')!, size: 18, include: 'DEMO/2026/0000631' },
+    { label: 'Delayed scheme payments · Ranchi · May 2026', office: officeIds.get('Block Development Office, Ranchi')!, size: 4 },
+    { label: 'Refund not credited · CPC Bengaluru · May 2026', office: officeIds.get('CPC Bengaluru')!, size: 3 },
+    { label: 'Hospital billing dispute · Bhopal · May 2026', office: officeIds.get('District Hospital, Bhopal')!, size: 4 },
   ];
+
+  let publicCount = 0;
 
   for (const s of specs) {
     const { rows } = await pool().query(
       `insert into clusters (label, office_id, first_seen_at, last_seen_at, is_public)
-       values ($1,$2,'2026-05-14T00:00:00Z','2026-08-20T00:00:00Z',$3) returning id`,
-      [s.label, s.office, s.public],
+       values ($1,$2,now(),now(),false) returning id`,
+      [s.label, s.office],
     );
     const clusterId = rows[0].id as string;
 
@@ -429,15 +587,56 @@ async function seedClusters(officeIds: Map<string, string>) {
         [clusterId, m.id, (0.82 + rand() * 0.15).toFixed(3)],
       );
     }
+
+    // The gate, applied to what is actually in the table — not to what the spec above hoped for.
+    const gated = await pool().query<{
+      members: string; citizens: string; spread_hours: string | null;
+      first_seen_at: string; last_seen_at: string; is_public: boolean;
+    }>(
+      `update clusters cl
+          set first_seen_at = f.first_filed,
+              last_seen_at  = f.last_filed,
+              is_public     = f.members >= $2 and f.citizens >= $3
+                              and f.last_filed > f.first_filed + make_interval(hours => $4)
+         from (select count(*)                        as members,
+                      count(distinct g.citizen_id)    as citizens,
+                      min(g.filed_at)                 as first_filed,
+                      max(g.filed_at)                 as last_filed
+                 from cluster_members m
+                 join grievances g on g.id = m.grievance_id
+                where m.cluster_id = $1) f
+        where cl.id = $1
+    returning cl.is_public, cl.first_seen_at, cl.last_seen_at,
+              (select count(*) from cluster_members m where m.cluster_id = cl.id) as members,
+              (select count(distinct g.citizen_id) from cluster_members m
+                 join grievances g on g.id = m.grievance_id
+                where m.cluster_id = cl.id) as citizens,
+              (select extract(epoch from (max(g.filed_at) - min(g.filed_at))) / 3600
+                 from cluster_members m join grievances g on g.id = m.grievance_id
+                where m.cluster_id = cl.id) as spread_hours`,
+      [clusterId, MIN_MEMBERS, MIN_CITIZENS, MIN_SPREAD_HOURS],
+    );
+    const g = gated.rows[0]!;
+    if (g.is_public) publicCount++;
+    console.log(
+      `  cluster ${g.is_public ? 'PUBLIC ' : 'private'} · members ${g.members} · distinct citizens ${g.citizens}` +
+        ` · spread ${Number(g.spread_hours ?? 0).toFixed(1)}h · ${s.label}`,
+    );
   }
-  console.log(`clusters: ${specs.length} (${specs.filter((s) => s.public).length} public)`);
+  console.log(`clusters: ${specs.length} (${publicCount} public by gate, ${specs.length - publicCount} held back)`);
 }
 
 async function report() {
   const { rows } = await pool().query('select * from headline_numbers');
   const err = await pool().query('select * from our_error_rate');
+  const sim = await pool().query('select * from simulated_corpus_rate');
+  const verdicts = await pool().query(
+    `select verdict, count(*)::int as n from audits where model = 'seed' group by verdict order by n desc`,
+  );
   console.log('\nheadline:', rows[0]);
-  console.log('our error rate:', err.rows[0]);
+  console.log('our error rate (real model runs only):', err.rows[0]);
+  console.log('simulated corpus rate (seeded rows, NOT a measurement):', sim.rows[0]);
+  console.log('seeded verdict mix:', verdicts.rows);
 }
 
 main().catch((e) => {

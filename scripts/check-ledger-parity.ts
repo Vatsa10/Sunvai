@@ -9,7 +9,7 @@
  */
 
 import { readFileSync } from 'node:fs';
-import { preimage, sha256Hex, verifyReceipt, GENESIS_HASH, RECEIPT_VERSION } from '../src/lib/ledger/verify';
+import { preimage, sha256Hex, successCopy, verifyReceipt, GENESIS_HASH, RECEIPT_VERSION } from '../src/lib/ledger/verify';
 import type { LedgerEvent } from '../src/lib/ledger/verify';
 
 const path = process.argv[2];
@@ -52,6 +52,39 @@ tampered.events[0]!.occurred_at = '2020-01-01T00:00:00.000Z';
 const dirty = await verifyReceipt(tampered);
 console.log('tampered receipt:', dirty.ok ? 'VERIFIED (BAD — the guard is not working)' : `rejected at seq ${dirty.brokenAtSeq}`);
 
-const pass = failures === 0 && clean.ok && !dirty.ok;
+// The honest boundary. A receipt is a slice of one shared chain, so a truncated receipt is
+// still internally consistent and MUST verify — that is the algorithm behaving correctly, not
+// a hole. What must never happen is the copy beside that green tick claiming the record is
+// complete. successCopy() is the only text /verify renders on a pass (verify/page.tsx calls it
+// for both lines of the success box), so asserting on it here reaches the real claim.
+const truncated = structuredClone(receipt);
+if (truncated.events.length > 2) {
+  truncated.events = [truncated.events[0]!, truncated.events.at(-1)!];
+}
+const cut = await verifyReceipt(truncated);
+console.log('truncated receipt:', cut.ok ? `VERIFIED (expected — a slice cannot see its own gaps)` : `rejected — ${cut.reason}`);
+
+let copyOk = true;
+if (cut.ok) {
+  const { headline, scope } = successCopy(cut);
+  const words = `${headline} ${scope}`.toLowerCase();
+  const forbidden = ['unaltered', 'complete', 'nothing was removed', 'whole record', 'full history', 'tamper-proof', 'immutable'];
+  const found = forbidden.filter((w) => words.includes(w));
+  const admitsGaps = scope.includes('removed from between');
+  if (found.length > 0) {
+    copyOk = false;
+    console.log(`  BAD — success copy overclaims: ${found.join(', ')}`);
+  }
+  if (!admitsGaps) {
+    copyOk = false;
+    console.log('  BAD — success copy does not disclose that removals from the gaps are unprovable');
+  }
+  if (copyOk) console.log(`  copy discloses the gap: ${JSON.stringify(scope)}`);
+} else {
+  copyOk = false;
+  console.log('  BAD — a truncated slice should still verify; the algorithm has been weakened');
+}
+
+const pass = failures === 0 && clean.ok && !dirty.ok && copyOk;
 console.log(pass ? '\nPARITY OK' : '\nPARITY FAILED');
 process.exit(pass ? 0 : 1);
