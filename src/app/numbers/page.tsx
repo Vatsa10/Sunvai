@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { query, one } from '@/lib/db';
 import { evalResults, pct } from '@/lib/eval-results';
+import { GapMap } from '@/components/GapMap';
 
 export const dynamic = 'force-dynamic';
 
@@ -43,8 +44,9 @@ export default async function NumbersPage() {
   const offices = await query<{
     office_name: string; department: string; state: string;
     disposed: string; citizens_asked: string; true_resolution_pct: string | null;
+    lat: string | null; lon: string | null;
   }>(
-    `select office_name, department, state, disposed, citizens_asked, true_resolution_pct
+    `select office_name, department, state, disposed, citizens_asked, true_resolution_pct, lat, lon
        from true_resolution_rate
       where citizens_asked > 20
       order by true_resolution_pct asc nulls last`,
@@ -222,6 +224,18 @@ export default async function NumbersPage() {
             <span className="tabular-nums">{simCompared.toLocaleString('en-IN')}</span> synthetic cases. It is a
             plausible shape, deliberately not a flattering one, and it is evidence of nothing.
           </p>
+        </div>
+
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Where the gap falls · simulated</h3>
+          <p className="text-muted">
+            The two figures above are national averages, and an average hides the only thing worth knowing:
+            the gap is not spread evenly. Each circle below is one invented office, sized and numbered by how
+            often its <em>closed</em> cases were <em>not</em> confirmed fixed by the citizen who complained —
+            their own yes/no, never a verdict from our auditor. Number 1 is the worst. The full ranking is
+            written out under the map, so nothing here depends on reading a colour or squinting at a dot.
+          </p>
+          <GapMap offices={offices} />
         </div>
 
         <div className="space-y-4">
