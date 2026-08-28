@@ -58,13 +58,14 @@ const LIMITATIONS: { id: string; text: string }[] = [
   { id: 'erasure', text: 'Deleting a case would still leave its ledger events behind — hashes, not content. Right-to-erasure and tamper-evidence pull against each other, and we have not resolved it.' },
   { id: 'competence', text: 'The auditor does not check competence. It reads whether a reply is actionable, not whether the office named in it could plausibly handle the matter. In our own eval, a provident-fund claim transferred to a "Philately Division" — with a reference number attached — was scored a lawful transfer rather than deflection. Half our near-miss transfer cases leaked the same way. A department that names any office and quotes any reference number can currently buy itself a non-negative verdict from us. We found this, we are publishing it, and we have not fixed the prompt: the honest thing to ship this week is the limitation, not a patch tuned against the four cases that exposed it.' },
   { id: 'voice', text: 'Voice intake is not our contribution. DARPG shipped Samadhan Didi on 30 May 2026 with twenty-two languages. We built intake for journey completeness, not as a differentiator.' },
+  { id: 'unstable', text: 'The same reply does not always get the same verdict. We call the model at temperature 0 and we do not claim determinism, and we have watched one of the example replies on the front page — the UIDAI one — come back "half answered" on one run and "answers something else" on the next. Both are negative verdicts and the citizen is told the same thing either way, but a reader is entitled to know that pressing the button twice can print two different words. The percentages in the table below come from a single run of the eval set and are published to one decimal place; a re-run would move them slightly. We have not run the set enough times to publish a spread, and quoting one would be inventing it.' },
   { id: 'undetermined', text: 'Our auditor almost never says "I do not know". Across eight deliberately ambiguous cases in our eval set it used the `undetermined` verdict zero times — in practice that verdict is reached only when the citation guard stops us, not because the model chose to withhold. It also errs generous, because we told it to: on a tie it favours the department. That makes a "resolved" verdict from us a weaker signal than it looks, which is one more reason the published number comes from citizens instead.' },
 ];
 
 /** 1-based position of a limitation, looked up by id so a reorder can never mislabel a link. */
 const limitationNo = (id: string) => LIMITATIONS.findIndex((l) => l.id === id) + 1;
 
-const COUNT_WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+const COUNT_WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen'];
 
 export default function HowThisWorksPage() {
   // Read, never retyped. If the eval has not been run there is no table — not a placeholder.

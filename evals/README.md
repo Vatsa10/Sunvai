@@ -154,3 +154,13 @@ chasing it.
 - Real-world routing accuracy against the real CPGRAMS taxonomy — we are not permitted to touch
   that system, so this is unmeasurable by design rather than by omission.
 - Whether appeals succeed. No production data exists.
+
+## One run, one decimal place
+
+Every percentage in this file and on `/how-this-works` comes from a **single** run of the set.
+The auditor is called at temperature 0, which is not a guarantee of determinism and is not
+claimed as one: the same reply has come back `partial` on one run and `non_responsive` on
+another — the UIDAI example on the front page is one we have seen do it. So the figures should
+be read as one measurement rather than as a stable constant, and a re-run would move them a
+little. We have not run the set enough times to publish a spread, and a spread we had not
+measured would be exactly the kind of number this project refuses to print.
