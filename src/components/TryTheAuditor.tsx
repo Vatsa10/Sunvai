@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { auditText, type AuditPreview } from '@/actions/audit-actions';
 import { verdictCopy } from '@/lib/verdicts';
+import { t, type ShippedLang } from '@/lib/i18n/strings';
 
 /**
  * Audit a reply we did not choose.
@@ -18,6 +19,13 @@ import { verdictCopy } from '@/lib/verdicts';
  * none of them: the strings are text we typed into this file, nothing more.
  *
  * Nothing here is stored. It is not a case; it is the auditor with its hands open.
+ *
+ * Every word of the chrome around it now comes from the dictionary rather than from string
+ * literals in this file. The front page defaults to Hindi, and this box was the largest block
+ * of hardcoded English underneath a Hindi headline — a reader's first fifteen seconds said
+ * "unfinished" about a site whose case pages are fully translated. The six terminal strings on
+ * the chips stay in the language they were observed in, because translating a rejection code
+ * would be inventing one.
  */
 
 type Example = {
@@ -83,7 +91,8 @@ const EXAMPLES: Example[] = [
   },
 ];
 
-export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
+export function TryTheAuditor({ lang, compact = false }: { lang: ShippedLang; compact?: boolean }) {
+  const s = t(lang);
   const [complaint, setComplaint] = useState('');
   const [reply, setReply] = useState('');
   const [busy, setBusy] = useState(false);
@@ -122,42 +131,36 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
       // anywhere", which was false: by the time this branch runs the text has already gone to
       // OpenAI. Saying it at the moment of failure is the worst possible moment to say it,
       // because it is the moment a reader is most likely to believe it.
-      setError('That did not work. We kept no copy of what you pasted — but it had already been sent to OpenAI to be read, and we cannot unsend it.');
+      setError(s.tryFailed);
     } finally {
       setTook((Date.now() - startedAt.current) / 1000);
       setBusy(false);
     }
   }
 
-  const v = result ? verdictCopy(result.result.verdict, 'en') : null;
+  const v = result ? verdictCopy(result.result.verdict, lang) : null;
 
   return (
     <div className="space-y-4">
       {!compact && (
         <div>
-          <h2 className="text-xl font-semibold">Try it on a reply we did not choose</h2>
-          <p className="mt-1 text-muted">
-            Paste a closure you actually received, or write one designed to fool us. Nothing is saved.
-          </p>
+          <h2 className="text-xl font-semibold">{s.tryHeading}</h2>
+          <p className="mt-1 text-muted">{s.trySub}</p>
+          {/* Where the words go, said where the decision to paste is taken. */}
+          <p className="mt-1 text-muted">{s.sentToModel}</p>
         </div>
       )}
 
       <div className="space-y-3">
         <div>
-          <h3 className="font-semibold">The same dead end, on six different systems</h3>
+          <h3 className="font-semibold">{s.tryChipsHeading}</h3>
           {/*
             This paragraph is the whole point of the chips, and it sits above them rather than
             below so nobody can read the six logos' worth of names and conclude we are wired
             into six portals. We are not. These are strings people have pasted into public
             forums, retyped here by hand.
           */}
-          <p className="mt-1 text-muted">
-            These are other people’s rejection letters, pasted in here as text. Nothing is stored, and no
-            platform is contacted — we hold no connection to EPFO, the Income Tax portal, GST, UIDAI or
-            CPGRAMS, and none of these buttons reaches one. The verdict vocabulary is generic: the auditor
-            judges whether a reply answered the question, and knows nothing about any particular platform’s
-            reason codes.
-          </p>
+          <p className="mt-1 text-muted">{s.tryChipsBody}</p>
         </div>
 
         <ul className="flex flex-wrap gap-2">
@@ -181,7 +184,7 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
                 >
                   <span className="text-sm font-semibold uppercase tracking-wide">
                     {e.system}
-                    {isLoaded && <span className="ml-2 font-normal normal-case">· loaded</span>}
+                    {isLoaded && <span className="ml-2 font-normal normal-case">· {s.tryLoadedBadge}</span>}
                   </span>
                   <span className="font-serif">“{e.string}”</span>
                 </button>
@@ -191,37 +194,34 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
         </ul>
 
         {loaded && (
-          <p className="text-sm text-muted">
-            <strong>{loaded.system}</strong> — {loaded.attribution}. Retyped from public reports; the
-            complaint above it is written by us, not taken from anyone’s case.
-          </p>
+          <p className="text-muted">{s.tryAttribution(loaded.system, loaded.attribution)}</p>
         )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
           <label htmlFor="ta-complaint" className="block font-semibold">
-            What the citizen asked for
+            {s.tryComplaintLabel}
           </label>
           <textarea
             id="ta-complaint"
             value={complaint}
             onChange={(e) => setComplaint(e.target.value)}
             rows={5}
-            placeholder="My pension stopped in May and nobody has told me why…"
+            placeholder={s.tryComplaintPlaceholder}
             className="mt-1 w-full rounded border border-ink p-3"
           />
         </div>
         <div>
           <label htmlFor="ta-reply" className="block font-semibold">
-            What the department wrote back
+            {s.tryReplyLabel}
           </label>
           <textarea
             id="ta-reply"
             value={reply}
             onChange={(e) => setReply(e.target.value)}
             rows={5}
-            placeholder="The matter has been forwarded to the concerned department…"
+            placeholder={s.tryReplyPlaceholder}
             className="mt-1 w-full rounded border border-ink p-3"
           />
         </div>
@@ -234,7 +234,7 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
           disabled={busy || !complaint.trim() || !reply.trim()}
           className="min-h-touch rounded bg-ink px-6 py-3 font-semibold text-paper disabled:opacity-40"
         >
-          {busy ? 'Reading it…' : 'Judge this reply'}
+          {busy ? s.tryReadingButton : s.tryJudge}
         </button>
 
         {/*
@@ -244,11 +244,7 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
           reading this text.
         */}
         {!busy && (
-          <p className="text-ink">
-            This takes about <strong>eight to thirteen seconds</strong>. Nothing is looked up and nothing is
-            canned — a reasoning model reads the reply against the complaint, and then every quote it wants
-            to show you is checked character-by-character against your text before you see a verdict.
-          </p>
+          <p className="text-ink">{s.tryTimeNote}</p>
         )}
       </div>
 
@@ -260,7 +256,7 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
             would be unusable.
           */}
           <p role="status" aria-live="polite" className="font-semibold">
-            Reading it. This usually takes eight to thirteen seconds.
+            {s.tryBusyStatus}
           </p>
           <p aria-hidden className="mt-2 font-serif text-2xl tabular-nums">
             {elapsed.toFixed(1)}s
@@ -273,17 +269,13 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
             client learns nothing until the whole thing returns. So they are listed as what the
             wait consists of, not staged as though we were watching them tick by.
           */}
-          <p className="mt-2">
-            In that time, two things happen and we cannot see which one is running: the model reads the
-            reply against the complaint, and then the citation guard checks every quote it produced against
-            your text — sending it back to try again if a quote is not exactly there.
-          </p>
+          <p className="mt-2">{s.tryBusyDetail}</p>
         </div>
       )}
 
       {took !== null && !busy && (result || error) && (
         <p role="status" aria-live="polite" className="text-ink">
-          That took <strong>{took.toFixed(1)} seconds</strong>, measured from your click.
+          {s.tryTook(took.toFixed(1))}
         </p>
       )}
 
@@ -301,10 +293,16 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
           </p>
           <p className="text-lg font-semibold text-ink">{v.headline}</p>
           <p className="text-ink">{result.result.reasoning}</p>
+          {/*
+            The auditor writes its reasoning in English. On a Hindi or Marathi page we say so
+            rather than let it read as a translation gap — and rather than machine-translating
+            a verdict's own words on the way out.
+          */}
+          {s.tryReasoningLang && <p className="text-muted">{s.tryReasoningLang}</p>}
 
           {result.result.citations.length > 0 && (
             <div className="text-ink">
-              <h3 className="font-semibold">Quoted from what you pasted</h3>
+              <h3 className="font-semibold">{s.tryQuoted}</h3>
               <ul className="mt-1 space-y-1">
                 {result.result.citations.map((c, i) => (
                   <li key={i} className="border-l-2 border-current/40 pl-3 font-serif">
@@ -312,17 +310,13 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-sm">
-                Each of those was checked character-by-character against your text before you were shown a
-                verdict. Verified: <strong>{result.citationsVerified ? 'yes' : 'no'}</strong>
-                {result.guardFailures > 0 && ` · the model had to be sent back ${result.guardFailures} time(s)`}
-              </p>
+              <p className="mt-2">{s.tryCheckedLine(result.citationsVerified, result.guardFailures)}</p>
             </div>
           )}
 
           {result.result.unaddressed.length > 0 && (
             <div className="text-ink">
-              <h3 className="font-semibold">What it did not answer</h3>
+              <h3 className="font-semibold">{s.tryUnaddressed}</h3>
               <ul className="mt-1 list-disc space-y-1 pl-5">
                 {result.result.unaddressed.map((u) => (
                   <li key={u}>{u}</li>
@@ -332,16 +326,10 @@ export function TryTheAuditor({ compact = false }: { compact?: boolean }) {
           )}
 
           {result.result.injection_suspected && (
-            <p className="rounded border border-bad p-3 text-bad">
-              That text tried to give our auditor instructions. We treated it as evidence and judged it on its
-              substance — but you should know it tried.
-            </p>
+            <p className="rounded border border-bad p-3 text-bad">{s.tryInjection}</p>
           )}
 
-          <p className="text-sm text-ink">
-            This verdict is not a score. In a real case the number that counts is the citizen’s own answer to
-            “did your problem actually get fixed?” — never ours.
-          </p>
+          <p className="text-ink">{s.tryNotScore}</p>
         </div>
       )}
     </div>

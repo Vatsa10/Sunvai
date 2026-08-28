@@ -18,11 +18,10 @@ export const dynamic = 'force-dynamic';
  * first fifteen seconds on exactly that.
  */
 
-const DEMO_CHIPS = [
-  { ref: 'DEMO/2026/0000472', who: 'Kamla, 58', what: 'Pension stopped three months ago. Marked Disposed in 19 days.' },
-  { ref: 'DEMO/2026/0000518', who: 'Arif, 31', what: 'PF claim rejected. The reply repeats the rejection code.' },
-  { ref: 'DEMO/2026/0000631', who: 'Meera, 24', what: 'Road not repaired. A case our own auditor gets wrong.' },
-];
+// Only the references live here now. The name and the one-line description are per-language,
+// because this page defaults to Hindi and three English chips under a Hindi headline read as
+// unfinished localisation rather than as the deliberate choice they were not.
+const DEMO_REFS = ['DEMO/2026/0000472', 'DEMO/2026/0000518', 'DEMO/2026/0000631'];
 
 export default async function Home({
   searchParams,
@@ -88,9 +87,7 @@ export default async function Home({
             {LANG_NAMES[l]}
           </Link>
         ))}
-        <span className="inline-flex items-center px-1 text-sm text-muted">
-          Three languages, done properly. Not twenty-two, half-working.
-        </span>
+        <span className="inline-flex items-center px-1 text-muted">{s.langNote}</span>
       </nav>
 
       <h1 className="text-3xl font-semibold leading-tight tracking-tight">{s.tagline}</h1>
@@ -121,7 +118,7 @@ export default async function Home({
               <p className="font-semibold text-ink">{s.realRefHeading}</p>
               <p className="mt-1 text-ink">{s.realRefBody}</p>
               <a href="#try-the-auditor" className="mt-2 inline-block underline">
-                Go to the box
+                {s.goToBox}
               </a>
             </div>
           ) : (
@@ -149,19 +146,19 @@ export default async function Home({
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">{s.tryOne}</h2>
         <ul className="space-y-3">
-          {DEMO_CHIPS.map((c) => (
-            <li key={c.ref}>
+          {DEMO_REFS.map((ref, i) => (
+            <li key={ref}>
               <Link
-                href={`/case/${encodeURIComponent(c.ref)}?lang=${lang}`}
+                href={`/case/${encodeURIComponent(ref)}?lang=${lang}`}
                 className="block rounded border border-rule p-4 no-underline hover:border-ink"
               >
                 <span className="flex flex-wrap items-baseline gap-x-3">
-                  <span className="font-semibold text-ink">{c.who}</span>
+                  <span className="font-semibold text-ink">{s.demoChips[i].who}</span>
                   <span className="rounded border border-warn/40 bg-warn/5 px-2 py-0.5 text-sm text-warn">
                     {s.demoData}
                   </span>
                 </span>
-                <span className="mt-1 block text-muted">{c.what}</span>
+                <span className="mt-1 block text-muted">{s.demoChips[i].what}</span>
               </Link>
             </li>
           ))}
@@ -171,7 +168,7 @@ export default async function Home({
       {/* Try it on something we did not choose. Three cases we picked invite one fair
           objection, and this is the answer to it. */}
       <section id="try-the-auditor" className="rounded border-2 border-ink p-5">
-        <TryTheAuditor />
+        <TryTheAuditor lang={lang} />
       </section>
 
       {/* How well the auditor actually does, measured on hand-labelled cases. Every figure here
@@ -179,31 +176,19 @@ export default async function Home({
           a fabricated fallback is the one thing this page must never do. */}
       {evals && (
         <section className="rounded border border-rule p-5">
-          <h2 className="text-lg font-semibold">
-            We tested this on {evals.cases} closure replies we labelled before we wrote the prompt.
-          </h2>
+          <h2 className="text-lg font-semibold">{s.evalHeading(evals.cases)}</h2>
           <p className="mt-1 text-muted">
-            {evals.falseAccusation === 0
-              ? 'It never accused a department that had actually answered.'
-              : `It wrongly accused a department that had actually answered ${pct(evals.falseAccusation)} of the time.`}{' '}
-            It caught {pct(evals.adversarialCatch)} of replies we wrote specifically to fool it.{' '}
-            {evals.gatesFailed === 1
-              ? 'There is one test it fails, and we left it failing.'
-              : evals.gatesFailed === 0
-                ? 'It passes every gate we set for it.'
-                : `There are ${evals.gatesFailed} tests it fails, and we left them failing.`}{' '}
-            <Link href="/how-this-works" className="underline">See every number, and what it fails</Link>.
+            {s.evalFalseAccusation(evals.falseAccusation === 0 ? null : pct(evals.falseAccusation))}{' '}
+            {s.evalAdversarial(pct(evals.adversarialCatch))} {s.evalGates(evals.gatesFailed)}{' '}
+            <Link href="/how-this-works" className="underline">{s.evalSeeEvery}</Link>.
           </p>
-          <p className="mt-1 text-muted">
-            One of the three cases above is one we get wrong on purpose. It is left in.
-          </p>
+          <p className="mt-1 text-muted">{s.evalOneWrong}</p>
         </section>
       )}
 
       <MockNote>
-        There is no login here, and nothing to sign up for. Every case, citizen and department
-        reply on this site is synthetic — we never touch a live government system.{' '}
-        <Link href="/how-this-works" className="underline">What is real and what is mocked</Link>.
+        {s.homeMockNote}{' '}
+        <Link href="/how-this-works" className="underline">{s.homeMockNoteLink}</Link>.
       </MockNote>
     </div>
   );

@@ -139,6 +139,54 @@ type Dict = {
   clusterLine: (others: number, saidNotFixed: number, neverAsked: number) => string;
   clusterSee: string;
   mockNote: string;
+
+  /**
+   * The front page in the language the front page is actually in.
+   *
+   * It defaults to `hi`, and until now the headline was Hindi over an English body: the demo
+   * chips, the whole paste box, the measured-accuracy block and the footer note were all
+   * hardcoded English while every case page behind them was fully translated. A reader's first
+   * fifteen seconds read that as unfinished localisation. These are the strings that were
+   * hardcoded.
+   */
+  langNote: string;
+  goToBox: string;
+  /** The three demo chips. `what` is one line; `who` carries the name and age. */
+  demoChips: { who: string; what: string }[];
+  evalHeading: (cases: number) => string;
+  evalFalseAccusation: (pct: string | null) => string;
+  evalAdversarial: (pct: string) => string;
+  evalGates: (n: number) => string;
+  evalSeeEvery: string;
+  evalOneWrong: string;
+  homeMockNote: string;
+  homeMockNoteLink: string;
+
+  // The paste box. Door A's answer to "of course it works, you picked the cases".
+  tryHeading: string;
+  trySub: string;
+  tryChipsHeading: string;
+  tryChipsBody: string;
+  tryLoadedBadge: string;
+  tryAttribution: (system: string, attribution: string) => string;
+  tryComplaintLabel: string;
+  tryReplyLabel: string;
+  tryComplaintPlaceholder: string;
+  tryReplyPlaceholder: string;
+  tryJudge: string;
+  tryReadingButton: string;
+  tryTimeNote: string;
+  tryBusyStatus: string;
+  tryBusyDetail: string;
+  tryTook: (seconds: string) => string;
+  tryFailed: string;
+  tryQuoted: string;
+  tryCheckedLine: (verified: boolean, retries: number) => string;
+  tryUnaddressed: string;
+  tryInjection: string;
+  tryNotScore: string;
+  /** The model writes its reasoning in English. In hi/mr we say so rather than pretend. */
+  tryReasoningLang: string;
   events: Record<string, string>;
 };
 
@@ -254,6 +302,62 @@ const en: Dict = {
   clusterSee: 'See the pattern',
   mockNote:
     'This case, this citizen and this department reply are synthetic. The audit above was produced by a real model run against that text, and the ledger entries behind the receipt are real hashes of real events.',
+  langNote: 'Three languages, done properly. Not twenty-two, half-working.',
+  goToBox: 'Go to the box',
+  demoChips: [
+    { who: 'Kamla, 58', what: 'Pension stopped three months ago. Marked Disposed in 19 days.' },
+    { who: 'Arif, 31', what: 'PF claim rejected. The reply repeats the rejection code.' },
+    { who: 'Meera, 24', what: 'Road not repaired. A case our own auditor gets wrong.' },
+  ],
+  evalHeading: (cases) => `We tested this on ${cases} closure replies we labelled before we wrote the prompt.`,
+  evalFalseAccusation: (p) =>
+    p === null
+      ? 'It never accused a department that had actually answered.'
+      : `It wrongly accused a department that had actually answered ${p} of the time.`,
+  evalAdversarial: (p) => `It caught ${p} of replies we wrote specifically to fool it.`,
+  evalGates: (n) =>
+    n === 0
+      ? 'It passes every gate we set for it.'
+      : n === 1
+        ? 'There is one test it fails, and we left it failing.'
+        : `There are ${n} tests it fails, and we left them failing.`,
+  evalSeeEvery: 'See every number, and what it fails',
+  evalOneWrong: 'One of the three cases above is one we get wrong on purpose. It is left in.',
+  homeMockNote:
+    'There is no login here, and nothing to sign up for. Every case, citizen and department reply on this site is synthetic — we never touch a live government system.',
+  homeMockNoteLink: 'What is real and what is mocked',
+
+  tryHeading: 'Try it on a reply we did not choose',
+  trySub: 'Paste a closure you actually received, or write one designed to fool us.',
+  tryChipsHeading: 'The same dead end, on six different systems',
+  tryChipsBody:
+    'These are other people’s rejection letters, pasted in here as text. Nothing is stored, and no platform is contacted — we hold no connection to EPFO, the Income Tax portal, GST, UIDAI or CPGRAMS, and none of these buttons reaches one. The verdict vocabulary is generic: the auditor judges whether a reply answered the question, and knows nothing about any particular platform’s reason codes.',
+  tryLoadedBadge: 'loaded',
+  tryAttribution: (system, attribution) =>
+    `${system} — ${attribution}. Retyped from public reports; the complaint above it is written by us, not taken from anyone’s case.`,
+  tryComplaintLabel: 'What the citizen asked for',
+  tryReplyLabel: 'What the department wrote back',
+  tryComplaintPlaceholder: 'My pension stopped in May and nobody has told me why…',
+  tryReplyPlaceholder: 'The matter has been forwarded to the concerned department…',
+  tryJudge: 'Judge this reply',
+  tryReadingButton: 'Reading it…',
+  tryTimeNote:
+    'This takes about eight to thirteen seconds. Nothing is looked up and nothing is canned — a reasoning model reads the reply against the complaint, and then every quote it wants to show you is checked character-by-character against your text before you see a verdict.',
+  tryBusyStatus: 'Reading it. This usually takes eight to thirteen seconds.',
+  tryBusyDetail:
+    'In that time, two things happen and we cannot see which one is running: the model reads the reply against the complaint, and then the citation guard checks every quote it produced against your text — sending it back to try again if a quote is not exactly there.',
+  tryTook: (seconds) => `That took ${seconds} seconds, measured from your click.`,
+  tryFailed:
+    'That did not work. We kept no copy of what you pasted — but it had already been sent to OpenAI to be read, and we cannot unsend it.',
+  tryQuoted: 'Quoted from what you pasted',
+  tryCheckedLine: (verified, retries) =>
+    `Each of those was checked character-by-character against your text before you were shown a verdict. Verified: ${verified ? 'yes' : 'no'}${retries > 0 ? ` · the model had to be sent back ${retries} time(s)` : ''}`,
+  tryUnaddressed: 'What it did not answer',
+  tryInjection:
+    'That text tried to give our auditor instructions. We treated it as evidence and judged it on its substance — but you should know it tried.',
+  tryNotScore:
+    'This verdict is not a score. In a real case the number that counts is the citizen’s own answer to “did your problem actually get fixed?” — never ours.',
+  tryReasoningLang: '',
   events: {
     grievance_filed: 'Complaint filed',
     assisted_filing_declared: 'Filed by someone on her behalf, with her consent',
@@ -383,6 +487,63 @@ const hi: Dict = {
   clusterSee: 'यह सिलसिला देखिए',
   mockNote:
     'यह मामला, यह नागरिक और विभाग का यह जवाब — तीनों नमूना हैं। ऊपर की जाँच उसी लिखे पर असली मॉडल चलाकर की गई है, और रसीद के पीछे की बहीखाता प्रविष्टियाँ असली घटनाओं के असली हैश हैं।',
+  langNote: 'तीन भाषाएँ, ठीक से। बाईस भाषाएँ आधी-अधूरी नहीं।',
+  goToBox: 'उस बक्से तक जाइए',
+  demoChips: [
+    { who: 'कमला, 58', what: 'तीन महीने से पेंशन बंद। 19 दिन में “निपटा दिया गया” लिख दिया।' },
+    { who: 'आरिफ़, 31', what: 'पीएफ़ का दावा खारिज। जवाब में वही खारिजी कोड दोबारा लिखा है।' },
+    { who: 'मीरा, 24', what: 'सड़क नहीं बनी। यह वह मामला है जिसमें हमारी अपनी जाँच गलत निकलती है।' },
+  ],
+  evalHeading: (cases) =>
+    `प्रॉम्प्ट लिखने से पहले हमने ${cases} बंदी-जवाबों पर खुद निशान लगाए, और उन्हीं पर यह जाँच परखी।`,
+  evalFalseAccusation: (p) =>
+    p === null
+      ? 'जिस विभाग ने सचमुच जवाब दिया था, उस पर इसने कभी गलत इल्ज़ाम नहीं लगाया।'
+      : `जिस विभाग ने सचमुच जवाब दिया था, उस पर इसने ${p} बार गलत इल्ज़ाम लगाया।`,
+  evalAdversarial: (p) => `इसे चकमा देने के लिए हमने जो जवाब खुद लिखे थे, उनमें से ${p} इसने पकड़ लिए।`,
+  evalGates: (n) =>
+    n === 0
+      ? 'हमने जो भी कसौटी रखी, यह उस पर खरा उतरा।'
+      : n === 1
+        ? 'एक जाँच में यह फेल होता है, और हमने उसे फेल ही रहने दिया।'
+        : `${n} जाँचों में यह फेल होता है, और हमने उन्हें फेल ही रहने दिया।`,
+  evalSeeEvery: 'हर आँकड़ा देखिए, और यह भी कि कहाँ फेल होता है',
+  evalOneWrong: 'ऊपर के तीन मामलों में एक वह है जिसे हम जानबूझकर गलत जाँचते हैं। उसे हटाया नहीं गया है।',
+  homeMockNote:
+    'यहाँ न कोई लॉगिन है, न कुछ बनवाना है। इस साइट का हर मामला, हर नागरिक और विभाग का हर जवाब नमूना है — हम किसी चालू सरकारी व्यवस्था को छूते ही नहीं।',
+  homeMockNoteLink: 'क्या असली है और क्या नमूना',
+
+  tryHeading: 'ऐसे जवाब पर आज़माइए जो हमने नहीं चुना',
+  trySub: 'आपको सचमुच मिला कोई बंदी-जवाब यहाँ चिपकाइए, या ऐसा जवाब लिखिए जो हमें चकमा दे सके।',
+  tryChipsHeading: 'वही बंद गली, छह अलग-अलग व्यवस्थाओं में',
+  tryChipsBody:
+    'ये दूसरे लोगों को मिले खारिजी जवाब हैं, यहाँ सिर्फ़ लिखे हुए रूप में रखे गए हैं। कुछ भी सहेजा नहीं जाता, और किसी मंच से कोई संपर्क नहीं होता — ईपीएफ़ओ, आयकर पोर्टल, जीएसटी, यूआईडीएआई या सीपीग्राम्स से हमारा कोई जुड़ाव नहीं है, और इनमें से कोई बटन वहाँ तक नहीं पहुँचता। नतीजे के शब्द आम हैं: जाँच यह देखती है कि जवाब में सवाल का उत्तर है या नहीं, और किसी मंच के अपने कोड उसे मालूम ही नहीं।',
+  tryLoadedBadge: 'भरा हुआ',
+  tryAttribution: (system, attribution) =>
+    `${system} — ${attribution}। सार्वजनिक रिपोर्टों से हाथ से टाइप किया गया; ऊपर लिखी शिकायत हमने खुद लिखी है, किसी के मामले से नहीं ली।`,
+  tryComplaintLabel: 'नागरिक ने क्या माँगा था',
+  tryReplyLabel: 'विभाग ने क्या जवाब लिखा',
+  tryComplaintPlaceholder: 'मई से मेरी पेंशन बंद है और किसी ने वजह नहीं बताई…',
+  tryReplyPlaceholder: 'मामला संबंधित विभाग को भेज दिया गया है…',
+  tryJudge: 'इस जवाब को जाँचिए',
+  tryReadingButton: 'पढ़ा जा रहा है…',
+  tryTimeNote:
+    'इसमें करीब आठ से तेरह सेकंड लगते हैं। कुछ भी पहले से रखा हुआ नहीं है और कुछ ढूँढ़कर नहीं लाया जाता — एक मॉडल शिकायत के सामने रखकर जवाब पढ़ता है, और फिर वह जो भी उद्धरण दिखाना चाहता है, नतीजा दिखाने से पहले उसे आपके लिखे से अक्षर दर अक्षर मिलाया जाता है।',
+  tryBusyStatus: 'पढ़ा जा रहा है। आमतौर पर आठ से तेरह सेकंड लगते हैं।',
+  tryBusyDetail:
+    'इस बीच दो काम होते हैं और हमें दिखता नहीं कि अभी कौन-सा चल रहा है: मॉडल शिकायत के सामने रखकर जवाब पढ़ता है, और फिर उद्धरण-पहरा उसके हर उद्धरण को आपके लिखे से मिलाता है — कोई उद्धरण हूबहू न मिले तो उसे दोबारा करने के लिए वापस भेज देता है।',
+  tryTook: (seconds) => `आपके दबाने से गिनकर इसमें ${seconds} सेकंड लगे।`,
+  tryFailed:
+    'यह नहीं हो पाया। आपने जो चिपकाया उसकी कोई नकल हमने नहीं रखी — पर वह पढ़े जाने के लिए OpenAI तक पहुँच चुका था, और उसे वापस नहीं लिया जा सकता।',
+  tryQuoted: 'आपने जो चिपकाया, उसमें से उद्धृत',
+  tryCheckedLine: (verified, retries) =>
+    `इनमें से हर उद्धरण, नतीजा दिखाने से पहले, आपके लिखे से अक्षर दर अक्षर मिलाया गया। मिलाया गया: ${verified ? 'हाँ' : 'नहीं'}${retries > 0 ? ` · मॉडल को ${retries} बार वापस भेजना पड़ा` : ''}`,
+  tryUnaddressed: 'किन बातों का जवाब नहीं दिया',
+  tryInjection:
+    'उस लिखे ने हमारी जाँच को निर्देश देने की कोशिश की। हमने उसे सबूत मानकर उसकी बात पर ही परखा — पर आपको पता होना चाहिए कि कोशिश हुई थी।',
+  tryNotScore:
+    'यह नतीजा कोई आँकड़ा नहीं है। असली मामले में गिना वही जाता है जो नागरिक खुद कहता है — “क्या आपकी समस्या सच में ठीक हुई?” — हमारा कहा नहीं।',
+  tryReasoningLang: 'यह हमारी जाँच की अपनी बात है, अंग्रेज़ी में — यहाँ इसका अनुवाद नहीं किया जाता।',
   events: {
     grievance_filed: 'शिकायत दर्ज हुई',
     assisted_filing_declared: 'किसी और ने उनकी ओर से, उनकी सहमति से दर्ज की',
@@ -512,6 +673,63 @@ const mr: Dict = {
   clusterSee: 'हा प्रकार पाहा',
   mockNote:
     'हे प्रकरण, हा नागरिक आणि विभागाचं हे उत्तर — तिन्ही नमुना आहेत. वरची तपासणी त्याच मजकुरावर खरा मॉडेल चालवून केली आहे, आणि पावतीमागच्या नोंदी खऱ्या घटनांचे खरे हॅश आहेत.',
+  langNote: 'तीन भाषा, नीट. बावीस भाषा अर्धवट नाही.',
+  goToBox: 'त्या चौकटीकडे जा',
+  demoChips: [
+    { who: 'कमला, 58', what: 'तीन महिन्यांपासून पेन्शन बंद. 19 दिवसांत “निकाली काढलं” असं नोंदवलं.' },
+    { who: 'आरिफ, 31', what: 'पीएफचा दावा नाकारला. उत्तरात तोच नकाराचा कोड पुन्हा लिहिला आहे.' },
+    { who: 'मीरा, 24', what: 'रस्ता दुरुस्त झाला नाही. याच प्रकरणात आमची स्वतःची तपासणी चुकते.' },
+  ],
+  evalHeading: (cases) =>
+    `प्रॉम्प्ट लिहिण्याआधी आम्ही ${cases} बंद-उत्तरांवर स्वतः खुणा केल्या, आणि त्यांवरच ही तपासणी पडताळली.`,
+  evalFalseAccusation: (p) =>
+    p === null
+      ? 'ज्या विभागाने खरोखर उत्तर दिलं होतं, त्याच्यावर हिने कधीही चुकीचा आरोप केला नाही.'
+      : `ज्या विभागाने खरोखर उत्तर दिलं होतं, त्याच्यावर हिने ${p} वेळा चुकीचा आरोप केला.`,
+  evalAdversarial: (p) => `तिला फसवण्यासाठी आम्ही मुद्दाम लिहिलेल्या उत्तरांपैकी ${p} तिने पकडली.`,
+  evalGates: (n) =>
+    n === 0
+      ? 'आम्ही ठेवलेल्या प्रत्येक कसोटीवर ती उतरते.'
+      : n === 1
+        ? 'एका चाचणीत ती नापास होते, आणि आम्ही ती तशीच नापास ठेवली आहे.'
+        : `${n} चाचण्यांत ती नापास होते, आणि आम्ही त्या तशाच नापास ठेवल्या आहेत.`,
+  evalSeeEvery: 'प्रत्येक आकडा पाहा, आणि ती कुठे नापास होते तेही',
+  evalOneWrong: 'वरच्या तीन प्रकरणांपैकी एक असं आहे जे आम्ही मुद्दाम चुकीचं तपासतो. ते काढून टाकलेलं नाही.',
+  homeMockNote:
+    'इथे लॉगिन नाही, आणि नोंदणी करण्यासारखं काहीच नाही. या संकेतस्थळावरचं प्रत्येक प्रकरण, प्रत्येक नागरिक आणि विभागाचं प्रत्येक उत्तर नमुना आहे — आम्ही कोणत्याही चालू सरकारी यंत्रणेला हातही लावत नाही.',
+  homeMockNoteLink: 'काय खरं आहे आणि काय नमुना',
+
+  tryHeading: 'आम्ही न निवडलेल्या उत्तरावर करून पाहा',
+  trySub: 'तुम्हाला खरोखर मिळालेलं बंद-उत्तर इथे चिकटवा, किंवा आम्हाला फसवेल असं उत्तर लिहा.',
+  tryChipsHeading: 'तीच बंद गल्ली, सहा वेगवेगळ्या यंत्रणांत',
+  tryChipsBody:
+    'ही दुसऱ्या लोकांना आलेली नकाराची उत्तरं आहेत, इथे फक्त मजकूर म्हणून ठेवलेली. काहीही साठवलं जात नाही, आणि कोणत्याही मंचाशी संपर्क होत नाही — ईपीएफओ, आयकर पोर्टल, जीएसटी, यूआयडीएआय किंवा सीपीग्राम्सशी आमचा काहीही संबंध नाही, आणि यापैकी कोणतंही बटण तिथवर पोहोचत नाही. निकालाचे शब्द सर्वसाधारण आहेत: उत्तरात प्रश्नाचं उत्तर आहे का एवढंच तपासणी पाहते, कोणत्याही मंचाचे स्वतःचे कोड तिला माहीतच नाहीत.',
+  tryLoadedBadge: 'भरलेलं',
+  tryAttribution: (system, attribution) =>
+    `${system} — ${attribution}. सार्वजनिक नोंदींवरून हाताने पुन्हा टाइप केलेलं; वरची तक्रार आम्ही स्वतः लिहिली आहे, कुणाच्या प्रकरणातून घेतलेली नाही.`,
+  tryComplaintLabel: 'नागरिकाने काय मागितलं होतं',
+  tryReplyLabel: 'विभागाने काय उत्तर लिहिलं',
+  tryComplaintPlaceholder: 'मे महिन्यापासून माझी पेन्शन बंद आहे आणि कुणीही कारण सांगितलेलं नाही…',
+  tryReplyPlaceholder: 'हे प्रकरण संबंधित विभागाकडे पाठवण्यात आलं आहे…',
+  tryJudge: 'हे उत्तर तपासा',
+  tryReadingButton: 'वाचलं जात आहे…',
+  tryTimeNote:
+    'याला साधारण आठ ते तेरा सेकंद लागतात. काहीही आधीच तयार ठेवलेलं नाही आणि काहीही शोधून आणलं जात नाही — एक मॉडेल तक्रारीसमोर ठेवून उत्तर वाचतं, आणि मग ते जे अवतरण दाखवू पाहतं ते निकाल दिसण्याआधी तुमच्या मजकुराशी अक्षर न् अक्षर पडताळलं जातं.',
+  tryBusyStatus: 'वाचलं जात आहे. यास सहसा आठ ते तेरा सेकंद लागतात.',
+  tryBusyDetail:
+    'या वेळात दोन गोष्टी होतात आणि आत्ता कोणती चालू आहे हे आम्हाला दिसत नाही: मॉडेल तक्रारीसमोर ठेवून उत्तर वाचतं, आणि मग अवतरण-पहारा त्याचं प्रत्येक अवतरण तुमच्या मजकुराशी पडताळतो — अवतरण तंतोतंत नसेल तर त्याला पुन्हा करायला परत पाठवतो.',
+  tryTook: (seconds) => `तुम्ही दाबल्यापासून मोजून यास ${seconds} सेकंद लागले.`,
+  tryFailed:
+    'हे झालं नाही. तुम्ही जे चिकटवलं त्याची प्रत आम्ही ठेवलेली नाही — पण ते वाचण्यासाठी OpenAI कडे पोहोचलं होतं, आणि ते परत घेता येत नाही.',
+  tryQuoted: 'तुम्ही चिकटवलेल्या मजकुरातून उद्धृत',
+  tryCheckedLine: (verified, retries) =>
+    `यातलं प्रत्येक अवतरण, निकाल दाखवण्याआधी, तुमच्या मजकुराशी अक्षर न् अक्षर पडताळलं गेलं. पडताळलं: ${verified ? 'हो' : 'नाही'}${retries > 0 ? ` · मॉडेलला ${retries} वेळा परत पाठवावं लागलं` : ''}`,
+  tryUnaddressed: 'कशाचं उत्तर दिलं नाही',
+  tryInjection:
+    'त्या मजकुराने आमच्या तपासणीला सूचना देण्याचा प्रयत्न केला. आम्ही तो पुरावा मानून त्याच्या आशयावरच तपासला — पण प्रयत्न झाला होता हे तुम्हाला कळायला हवं.',
+  tryNotScore:
+    'हा निकाल म्हणजे आकडा नाही. खऱ्या प्रकरणात मोजलं जातं ते नागरिकाचं स्वतःचं उत्तर — “तुमची अडचण खरंच दूर झाली का?” — आमचं म्हणणं नाही.',
+  tryReasoningLang: 'हे आमच्या तपासणीचं स्वतःचं म्हणणं आहे, इंग्रजीत — इथे त्याचं भाषांतर केलं जात नाही.',
   events: {
     grievance_filed: 'तक्रार दाखल झाली',
     assisted_filing_declared: 'दुसऱ्या कुणीतरी त्यांच्या वतीने, त्यांच्या संमतीने दाखल केली',
