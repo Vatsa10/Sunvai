@@ -8,6 +8,20 @@ page, or a database that is paused, and nobody notices because whoever is checki
 already signed in and already has the database awake in another tab. A judge has neither. Every
 step below exists to catch that.
 
+## 0a. Region — this one is worth more than it looks
+
+`vercel.json` pins functions to `sin1` (Singapore). It must stay pinned to whatever region the
+Supabase project lives in.
+
+The default put functions in `iad1` (Washington DC) against a Supabase in `ap-southeast-1`
+(Singapore), so every query crossed the Pacific and back. The headline case page took **3.4s**
+live while taking 0.65s locally, and a second hit did not help because the cost was network, not
+cache. `X-Vercel-Id: bom1::iad1` is how you spot it — the first segment is where the request
+entered, the second is where it actually ran.
+
+If you move the database, change this file to match. If you ever see a case page above a second
+in production, check that header first.
+
 ## 0. Before you touch Vercel
 
 - `Nirantar/` and `CPGRAMS/` are **other people's separate projects** living in this same
