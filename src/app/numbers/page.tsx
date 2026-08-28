@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { query, one } from '@/lib/db';
 import { evalResults, pct } from '@/lib/eval-results';
 import { GapMap } from '@/components/GapMap';
+import { t, SHIPPED_LANGS, type ShippedLang } from '@/lib/i18n/strings';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +25,18 @@ export const dynamic = 'force-dynamic';
  * The resolution rate itself comes from `confirmations` — the citizen's own yes/no — and never
  * from a model verdict, simulated or not.
  */
-export default async function NumbersPage() {
+export default async function NumbersPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  // The map speaks the reader's language, the same way every other citizen-facing surface does.
+  const sp = await searchParams;
+  const lang: ShippedLang = (SHIPPED_LANGS as readonly string[]).includes(sp.lang ?? '')
+    ? (sp.lang as ShippedLang)
+    : 'hi';
+  const s = t(lang);
+
   const evals = evalResults();
 
   const headline = await one<{
@@ -227,15 +239,9 @@ export default async function NumbersPage() {
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Where the gap falls · simulated</h3>
-          <p className="text-muted">
-            The two figures above are national averages, and an average hides the only thing worth knowing:
-            the gap is not spread evenly. Each circle below is one invented office, sized and numbered by how
-            often its <em>closed</em> cases were <em>not</em> confirmed fixed by the citizen who complained —
-            their own yes/no, never a verdict from our auditor. Number 1 is the worst. The full ranking is
-            written out under the map, so nothing here depends on reading a colour or squinting at a dot.
-          </p>
-          <GapMap offices={offices} />
+          <h3 className="text-lg font-semibold">{s.mapHeading}</h3>
+          <p className="text-muted">{s.mapIntro}</p>
+          <GapMap offices={offices} lang={lang} />
         </div>
 
         <div className="space-y-4">

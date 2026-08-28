@@ -233,6 +233,24 @@ type Dict = {
   tryNotScore: string;
   /** The model writes its reasoning in English. In hi/mr we say so rather than pretend. */
   tryReasoningLang: string;
+  /**
+   * The national gap map on /numbers.
+   *
+   * Two disclosures inside `mapCaption` are load-bearing and must survive translation intact:
+   * that only office coordinates are plotted and no complainant is located on the map, and that
+   * every office name is invented. Drop or soften either one in any language and the map stops
+   * being a picture of a synthetic corpus and becomes a claim about real places.
+   *
+   * The per-office line is a function of the number rather than a fragment concatenated onto a
+   * numeral, because Hindi and Marathi put the count and its postposition where English does not.
+   */
+  mapHeading: string;
+  mapIntro: string;
+  mapCaption: string;
+  mapAria: (count: number, worst: string, worstGap: number, best: string, bestGap: number) => string;
+  mapOfficeTitle: (rank: number, office: string, gap: number) => string;
+  mapNotFixed: (gap: number) => string;
+  mapAsked: (n: number) => string;
   events: Record<string, string>;
 };
 
@@ -441,6 +459,17 @@ const en: Dict = {
   tryNotScore:
     'This verdict is not a score. In a real case the number that counts is the citizen’s own answer to “did your problem actually get fixed?” — never ours.',
   tryReasoningLang: '',
+  mapHeading: 'Where the gap falls · simulated',
+  mapIntro:
+    'The two figures above are national averages, and an average hides the only thing worth knowing: the gap is not spread evenly. Each circle below is one invented office, sized and numbered by how often its closed cases were not confirmed fixed by the citizen who complained — their own yes or no, never a verdict from our auditor. Number 1 is the worst. The full ranking is written out under the map, so nothing here depends on reading a colour or squinting at a dot.',
+  mapCaption:
+    'Schematic, and simulated. Circles are office locations, sized and numbered by the gap — the biggest, number 1, is the office whose closures were least often confirmed fixed. Office coordinates only — no complainant is located on this map, and every office name here is invented. Where two offices are too close to draw apart, the circle is nudged aside and a hairline points back to its true coordinate.',
+  mapAria: (count, worst, worstGap, best, bestGap) =>
+    `Schematic map of ${count} simulated offices, ranked by how often a closed case was not confirmed fixed by the citizen — from ${worst} at ${worstGap} in 100, down to ${best} at ${bestGap} in 100. The same ranking is written out in full below the map.`,
+  mapOfficeTitle: (rank, office, gap) =>
+    `${rank}. ${office} — ${gap} of every 100 citizens asked said their closed case was not fixed`,
+  mapNotFixed: (gap) => `${gap} in 100 not fixed`,
+  mapAsked: (n) => `${n} citizens asked`,
   events: {
     grievance_filed: 'Complaint filed',
     assisted_filing_declared: 'Filed by someone on her behalf, with her consent',
@@ -664,6 +693,17 @@ const hi: Dict = {
   tryNotScore:
     'यह नतीजा कोई आँकड़ा नहीं है। असली मामले में गिना वही जाता है जो नागरिक खुद कहता है — “क्या आपकी समस्या सच में ठीक हुई?” — हमारा कहा नहीं।',
   tryReasoningLang: 'यह हमारी जाँच की अपनी बात है, अंग्रेज़ी में — यहाँ इसका अनुवाद नहीं किया जाता।',
+  mapHeading: 'यह अंतर कहाँ पड़ता है · नकली आँकड़े',
+  mapIntro:
+    'ऊपर के दोनों आँकड़े पूरे देश के औसत हैं, और औसत ठीक वही बात छिपा लेता है जो जानने लायक है: यह अंतर हर जगह एक जैसा नहीं है। नीचे का हर गोला एक बनाया हुआ कार्यालय है, जिसका आकार और नंबर यह बताता है कि उसकी बंद की गई शिकायतों में कितनी बार शिकायत करने वाले ने खुद कहा कि काम नहीं हुआ — उसका अपना हाँ या ना, हमारी जाँच का फ़ैसला कभी नहीं। नंबर 1 सबसे ख़राब है। पूरी सूची नक्शे के नीचे लिखी है, ताकि यहाँ कुछ भी रंग पहचानने या छोटे बिंदु पर आँख गड़ाने पर न टिके।',
+  mapCaption:
+    'यह रेखाचित्र है, और आँकड़े नकली हैं। गोले कार्यालयों की जगहें हैं, अंतर के हिसाब से छोटे-बड़े और गिने हुए — सबसे बड़ा, यानी नंबर 1, वह कार्यालय है जिसकी बंद की गई शिकायतों में सबसे कम बार काम होना पक्का हुआ। इस नक्शे पर सिर्फ़ कार्यालयों के निर्देशांक हैं — किसी शिकायत करने वाले की जगह इस नक्शे पर नहीं दिखाई गई है, और यहाँ हर कार्यालय का नाम बनाया हुआ है। जहाँ दो कार्यालय अलग-अलग खींचने के लिए बहुत पास हैं, वहाँ गोला थोड़ा हटा दिया गया है और एक पतली रेखा उसकी असली जगह की ओर इशारा करती है।',
+  mapAria: (count, worst, worstGap, best, bestGap) =>
+    `${count} नकली कार्यालयों का रेखाचित्र नक्शा, इस क्रम में कि बंद की गई शिकायत में कितनी बार नागरिक ने काम होना पक्का नहीं किया — ${worst} में हर 100 में से ${worstGap} से लेकर ${best} में हर 100 में से ${bestGap} तक। यही पूरी सूची नक्शे के नीचे लिखी है।`,
+  mapOfficeTitle: (rank, office, gap) =>
+    `${rank}. ${office} — पूछे गए हर 100 नागरिकों में से ${gap} ने कहा कि उनकी बंद की गई शिकायत का काम नहीं हुआ`,
+  mapNotFixed: (gap) => `हर 100 में से ${gap} का काम नहीं हुआ`,
+  mapAsked: (n) => `${n} नागरिकों से पूछा गया`,
   events: {
     grievance_filed: 'शिकायत दर्ज हुई',
     assisted_filing_declared: 'किसी और ने उनकी ओर से, उनकी सहमति से दर्ज की',
@@ -887,6 +927,17 @@ const mr: Dict = {
   tryNotScore:
     'हा निकाल म्हणजे आकडा नाही. खऱ्या प्रकरणात मोजलं जातं ते नागरिकाचं स्वतःचं उत्तर — “तुमची अडचण खरंच दूर झाली का?” — आमचं म्हणणं नाही.',
   tryReasoningLang: 'हे आमच्या तपासणीचं स्वतःचं म्हणणं आहे, इंग्रजीत — इथे त्याचं भाषांतर केलं जात नाही.',
+  mapHeading: 'ही तफावत कुठे आहे · बनावट आकडे',
+  mapIntro:
+    'वरचे दोन्ही आकडे देशाची सरासरी आहेत, आणि सरासरी नेमकं तेच लपवते जे कळायला हवं: ही तफावत सगळीकडे सारखी नाही. खालचं प्रत्येक वर्तुळ एक काल्पनिक कार्यालय आहे; त्याचा आकार आणि क्रमांक हे सांगतात की त्याच्या बंद केलेल्या तक्रारींपैकी किती वेळा तक्रार करणाऱ्यानेच सांगितलं की काम झालं नाही — त्याचं स्वतःचं हो किंवा नाही, आमच्या तपासणीचा निकाल कधीच नाही. क्रमांक 1 सर्वात वाईट. संपूर्ण यादी नकाशाखाली लिहिली आहे, म्हणजे इथे काहीही रंग ओळखण्यावर किंवा बारीक ठिपक्याकडे डोळे ताणण्यावर अवलंबून राहत नाही.',
+  mapCaption:
+    'हे रेखाचित्र आहे, आणि आकडे बनावट आहेत. वर्तुळं ही कार्यालयांची ठिकाणं आहेत, तफावतीनुसार लहान-मोठी आणि क्रमांक दिलेली — सर्वात मोठं, म्हणजे क्रमांक 1, ते कार्यालय ज्याच्या बंद केलेल्या तक्रारींमध्ये सर्वात कमी वेळा काम झाल्याचं पक्कं झालं. या नकाशावर फक्त कार्यालयांचे भौगोलिक निर्देशांक आहेत — कोणत्याही तक्रार करणाऱ्याचं ठिकाण या नकाशावर दाखवलेलं नाही, आणि इथलं प्रत्येक कार्यालयाचं नाव काल्पनिक आहे. जिथे दोन कार्यालयं वेगळी काढण्याइतकी दूर नाहीत, तिथे वर्तुळ थोडं बाजूला सरकवलं आहे आणि एक बारीक रेषा त्याच्या खऱ्या जागेकडे दाखवते.',
+  mapAria: (count, worst, worstGap, best, bestGap) =>
+    `${count} बनावट कार्यालयांचा रेखाचित्र नकाशा, या क्रमाने की बंद केलेल्या तक्रारीत किती वेळा नागरिकाने काम झाल्याचं पक्कं केलं नाही — ${worst} इथे 100 पैकी ${worstGap} पासून ${best} इथे 100 पैकी ${bestGap} पर्यंत. हीच संपूर्ण यादी नकाशाखाली लिहिली आहे.`,
+  mapOfficeTitle: (rank, office, gap) =>
+    `${rank}. ${office} — विचारलेल्या दर 100 नागरिकांपैकी ${gap} जणांनी सांगितलं की त्यांच्या बंद केलेल्या तक्रारीचं काम झालं नाही`,
+  mapNotFixed: (gap) => `दर 100 पैकी ${gap} चं काम झालं नाही`,
+  mapAsked: (n) => `${n} नागरिकांना विचारलं`,
   events: {
     grievance_filed: 'तक्रार दाखल झाली',
     assisted_filing_declared: 'दुसऱ्या कुणीतरी त्यांच्या वतीने, त्यांच्या संमतीने दाखल केली',

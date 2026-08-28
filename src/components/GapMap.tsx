@@ -14,7 +14,14 @@
  * and the ranked list underneath all carry the same ordering, and the list — not the map — is
  * the authoritative reading on a narrow phone. Office names are deliberately not drawn on the
  * plot: at twenty offices they collide at any width that fits a phone.
+ *
+ * Every word of it is read out of `strings.ts` in the reader's own language. An English chart
+ * inside a Hindi page is the same half-translated defect this project already removed once from
+ * the case page, and the reader it fails is the one the product exists for. The two disclosures
+ * in the caption — office coordinates only, and invented names — are translated with it, because
+ * without them the map reads as a claim about real places.
  */
+import { t, type ShippedLang } from '@/lib/i18n/strings';
 
 export type GapOffice = {
   office_name: string;
@@ -37,7 +44,8 @@ function project(lat: number, lon: number) {
   return { x, y };
 }
 
-export function GapMap({ offices }: { offices: GapOffice[] }) {
+export function GapMap({ offices, lang }: { offices: GapOffice[]; lang: ShippedLang }) {
+  const s = t(lang);
   const rows = offices
     .filter((o) => o.true_resolution_pct !== null && o.lat !== null && o.lon !== null)
     .map((o) => ({
@@ -99,12 +107,7 @@ export function GapMap({ offices }: { offices: GapOffice[] }) {
           viewBox={`0 0 ${W} ${H}`}
           className="h-auto w-full min-w-[21rem] max-w-[38rem]"
           role="img"
-          aria-label={
-            `Schematic map of ${rows.length} simulated offices. Each is ranked by the share of ` +
-            `citizens who were asked after their case was closed and said it was still not fixed, ` +
-            `from ${worst.name} at ${Math.round(hi)} in 100 down to ${best.name} at ${Math.round(lo)} in 100. ` +
-            `The same ranking is listed in full below the map.`
-          }
+          aria-label={s.mapAria(rows.length, worst.name, Math.round(hi), best.name, Math.round(lo))}
         >
           <rect x={0} y={0} width={W} height={H} fill="none" stroke="#d9d9d9" />
 
@@ -131,9 +134,7 @@ export function GapMap({ offices }: { offices: GapOffice[] }) {
           {placed.map((o) => {
             return (
               <g key={o.name}>
-                <title>
-                  {`${o.rank}. ${o.name} — ${Math.round(o.gap)} of every 100 citizens asked said their closed case was not fixed`}
-                </title>
+                <title>{s.mapOfficeTitle(o.rank, o.name, Math.round(o.gap))}</title>
                 <line x1={o.x0} y1={o.y0} x2={o.x} y2={o.y} stroke="#8a8a8a" strokeWidth={1} />
                 <circle cx={o.x0} cy={o.y0} r={2} fill="#4a4a4a" />
                 <circle cx={o.x} cy={o.y} r={o.r} fill="#111111" fillOpacity={0.86} />
@@ -152,11 +153,7 @@ export function GapMap({ offices }: { offices: GapOffice[] }) {
             );
           })}
         </svg>
-        <figcaption className="mt-2 text-base text-muted">
-          Schematic, and simulated. Circles are office locations, sized and numbered by the gap — biggest and
-          number 1 is the office whose closures were least often confirmed fixed. Office coordinates only —
-          no complainant is located on this map, and every office name is invented. Where two offices are too close to draw apart, the circle is nudged aside and a hairline points back to its true coordinate.
-        </figcaption>
+        <figcaption className="mt-2 text-base text-muted">{s.mapCaption}</figcaption>
       </figure>
 
       <ol className="divide-y divide-rule border-y border-rule">
@@ -166,12 +163,10 @@ export function GapMap({ offices }: { offices: GapOffice[] }) {
             <span>
               {o.name}
               <span className="block text-base text-muted">
-                {o.department} · {o.state} · {o.asked} citizens asked
+                {o.department} · {o.state} · {s.mapAsked(o.asked)}
               </span>
             </span>
-            <span className="tabular-nums font-semibold">
-              {Math.round(o.gap)} in 100 not fixed
-            </span>
+            <span className="tabular-nums font-semibold">{s.mapNotFixed(Math.round(o.gap))}</span>
           </li>
         ))}
       </ol>
