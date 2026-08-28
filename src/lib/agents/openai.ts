@@ -59,12 +59,21 @@ export async function structuredCall<T>({
   user,
   schema,
   temperature = 0,
+  reasoningEffort,
 }: {
   model: string;
   system: string;
   user: string;
   schema: ZodSchema<T>;
   temperature?: number;
+  /**
+   * Left undefined everywhere the published numbers come from. The eval, the demo cases and
+   * every stored audit run at the API default, because `evals/results.json` was measured at
+   * that setting and a quietly cheaper configuration underneath a published accuracy figure is
+   * the exact thing this project keeps deleting. Only the landing page's paste box passes a
+   * value here, and the page says so on screen when it does.
+   */
+  reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high';
 }): Promise<T> {
   let lastError = '';
 
@@ -79,6 +88,7 @@ export async function structuredCall<T>({
       // Reasoning models reject any temperature but the default; every other agent here
       // wants 0. Sending it conditionally keeps both true without a per-agent special case.
       ...(supportsTemperature(model) ? { temperature } : {}),
+      ...(reasoningEffort ? { reasoning_effort: reasoningEffort } : {}),
       response_format: { type: 'json_object' },
       messages,
     });

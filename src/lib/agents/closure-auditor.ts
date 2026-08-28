@@ -39,7 +39,20 @@ export type AuditOutcome = {
   promptVersion: string;
 };
 
-export async function audit(input: AuditInput): Promise<AuditOutcome> {
+/**
+ * Options nobody but the landing page's paste box should pass.
+ *
+ * `reasoningEffort` is undefined everywhere a number is published from: the 74-case eval, the
+ * three demo cases, and every audit written to the ledger all run at the API default, because
+ * that is the configuration `evals/results.json` was measured at. Publishing accuracy for one
+ * setting and running another underneath it would be the same defect as an unlabelled
+ * pre-computation, so the one caller that lowers it says so on screen.
+ */
+export type AuditOptions = {
+  reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high';
+};
+
+export async function audit(input: AuditInput, options: AuditOptions = {}): Promise<AuditOutcome> {
   const system = loadPrompt(AUDITOR_PROMPT_VERSION);
   let guardFailures = 0;
   let feedback = '';
@@ -51,6 +64,7 @@ export async function audit(input: AuditInput): Promise<AuditOutcome> {
       system,
       user: buildUserMessage(input, feedback),
       schema: AuditResultSchema,
+      reasoningEffort: options.reasoningEffort,
     });
 
     if (!requiresCitation(result.verdict) && result.citations.length === 0) {
