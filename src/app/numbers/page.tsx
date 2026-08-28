@@ -79,43 +79,33 @@ export default async function NumbersPage({
   return (
     <div className="space-y-16">
       <header className="space-y-3">
-        <h1 className="text-3xl font-semibold tracking-tight">The numbers</h1>
+        <h1 className="text-3xl font-semibold tracking-tight">{s.numTitle}</h1>
         <p className="text-xl">
-          CPGRAMS measures disposal. <strong>We measure resolution.</strong>
+          {s.numLeadA} <strong>{s.numLeadB}</strong>
         </p>
-        <p className="text-muted">
-          This page is in two parts, and the order is deliberate. First what we actually measured. Then what we
-          simulated, said plainly, before any figure from it appears.
-        </p>
+        <p className="text-muted">{s.numLeadSub}</p>
       </header>
 
       {/* ------------------------------------------------------------ measured */}
       <section className="space-y-6 rounded border-2 border-ink p-6">
         <header className="space-y-2">
-          <p className="text-sm font-semibold uppercase tracking-wide text-ink">Part one</p>
-          <h2 className="text-2xl font-semibold">What we measured</h2>
-          <p className="text-muted">
-            Real model calls against replies we labelled by hand <em>before</em> the prompt was written against
-            them. These are the only numbers on this site that describe how well the auditor works.
-          </p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-ink">{s.numPartOne}</p>
+          <h2 className="text-2xl font-semibold">{s.numMeasuredHeading}</h2>
+          <p className="text-muted">{s.numMeasuredIntro}</p>
         </header>
 
         {evals ? (
           <>
             <dl className="divide-y divide-rule border-y border-rule">
               {[
-                ['False accusation rate', pct(evals.falseAccusation),
-                  `A genuinely good reply judged negative. Across ${evals.cases} labelled cases. The number we care most about keeping low.`],
-                ['Deflection and boilerplate caught', pct(evals.negativeRecall),
-                  'Of replies we labelled as deflected or boilerplate.'],
-                ['Citation guard pass rate', pct(evals.citationGuard),
-                  'Every quoted span appeared verbatim in the reply, character for character.'],
-                ['Adversarial replies caught', pct(evals.adversarialCatch),
-                  `Of ${evals.adversarial} replies written by us specifically to beat our own auditor.`],
-                ['Ambiguous cases left undetermined', pct(evals.undeterminedUse),
-                  'A gate we FAIL, at a threshold of 60%. It is left failing rather than relabelled until it goes green.'],
-                ['Exact verdict match', pct(evals.exactMatch),
-                  'Across all seven verdict classes, including the ones a coarser score would hide.'],
+                [s.numEvalFalseAccusation, pct(evals.falseAccusation),
+                  s.numEvalFalseAccusationWhy(evals.cases)],
+                [s.numEvalDeflection, pct(evals.negativeRecall), s.numEvalDeflectionWhy],
+                [s.numEvalCitationGuard, pct(evals.citationGuard), s.numEvalCitationGuardWhy],
+                [s.numEvalAdversarial, pct(evals.adversarialCatch),
+                  s.numEvalAdversarialWhy(evals.adversarial)],
+                [s.numEvalUndetermined, pct(evals.undeterminedUse), s.numEvalUndeterminedWhy],
+                [s.numEvalExactMatch, pct(evals.exactMatch), s.numEvalExactMatchWhy],
               ].map(([k, v, why]) => (
                 <div key={k} className="grid gap-1 py-3 sm:grid-cols-[18rem_5rem_1fr] sm:gap-4">
                   <dt className="font-semibold">{k}</dt>
@@ -125,116 +115,79 @@ export default async function NumbersPage({
               ))}
             </dl>
             <p className="text-sm text-muted">
-              {evals.cases} cases, {evals.adversarial} of them adversarial, run{' '}
-              {evals.generated_at.slice(0, 10)}. Every figure above is read from{' '}
-              <code>evals/results.json</code> at render time, so this table cannot drift from the eval. Method
-              and the full case list are in <code>evals/README.md</code>, which ships with the code.
+              {s.numEvalFootnote(evals.cases, evals.adversarial, evals.generated_at.slice(0, 10))}
             </p>
           </>
         ) : (
-          <p className="text-muted">
-            The eval has not been run against this checkout, so there is nothing measured to show. We would
-            rather show nothing here than a number we did not produce.
-          </p>
+          <p className="text-muted">{s.numEvalMissing}</p>
         )}
 
         <div className="space-y-2 rounded border border-rule p-5">
-          <h3 className="text-lg font-semibold">Where a real audit disagreed with a real citizen</h3>
+          <h3 className="text-lg font-semibold">{s.numDisagreeHeading}</h3>
           {compared > 0 ? (
             <>
-              <p className="text-muted">
-                Across <strong className="tabular-nums">{compared.toLocaleString('en-IN')}</strong>{' '}
-                {compared === 1 ? 'case' : 'cases'} where a model verdict and a citizen&rsquo;s own yes/no both
-                exist: we were too harsh{' '}
-                <strong className="tabular-nums">{tooHarsh.toLocaleString('en-IN')}</strong>{' '}
-                {tooHarsh === 1 ? 'time' : 'times'} and too soft{' '}
-                <strong className="tabular-nums">{tooSoft.toLocaleString('en-IN')}</strong>{' '}
-                {tooSoft === 1 ? 'time' : 'times'}.
+              <p className="text-muted tabular-nums">
+                {s.numDisagreeBody(
+                  compared.toLocaleString('en-IN'),
+                  tooHarsh.toLocaleString('en-IN'),
+                  tooSoft.toLocaleString('en-IN'),
+                )}
               </p>
-              <p className="text-sm text-muted">
-                That is a small n, and we publish it at whatever size it is rather than padding it.
-              </p>
+              <p className="text-sm text-muted">{s.numDisagreeSmallN}</p>
             </>
           ) : (
-            <p className="text-muted">
-              <strong>Nothing to report yet — n = 0.</strong> This counts only cases where a real model run and a
-              real citizen&rsquo;s answer both exist. In this prototype no such pair has been created, so there is
-              no rate to publish. An earlier version of this page filled that gap with arithmetic over the
-              synthetic corpus below and called it &ldquo;how often we are wrong&rdquo;. It measured nothing, and
-              it is gone.
-            </p>
+            <p className="text-muted">{s.numDisagreeEmpty}</p>
           )}
-          <p className="text-sm text-muted">
-            None of this could change the resolution rate below in any case. Our verdict is triage and
-            explanation; the metric is the citizen&rsquo;s answer. A department can write a flawless reply and
-            still score zero if the pension never arrived.
-          </p>
+          <p className="text-sm text-muted">{s.numAuditNotMetric}</p>
         </div>
       </section>
 
       {/* ------------------------------------------------------------ simulated */}
       <section className="space-y-6 rounded border-2 border-warn p-6">
         <header className="space-y-2">
-          <p className="text-sm font-semibold uppercase tracking-wide text-warn">Part two — simulated</p>
-          <h2 className="text-2xl font-semibold">What we simulated</h2>
-          <p className="text-ink">
-            Everything below this line comes from a <strong>synthetic corpus of ~2,800 cases</strong> generated
-            by <code>supabase/seed/run.ts</code>, shaped to match the published national picture — disposal in
-            the nineties, resolution far below it. <strong>These are not measurements.</strong> No office named
-            here is real, no citizen is real, and no reply was written by any government department. They exist
-            to show what the product would display against real volume.
-          </p>
+          <p className="text-sm font-semibold uppercase tracking-wide text-warn">{s.numPartTwo}</p>
+          <h2 className="text-2xl font-semibold">{s.numSimHeading}</h2>
+          <p className="text-ink">{s.numSimIntro('2,800', 'supabase/seed/run.ts')}</p>
         </header>
 
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="rounded border border-rule p-6">
-            <p className="text-sm font-semibold uppercase tracking-wide text-muted">Disposal rate · simulated</p>
+            <p className="text-sm font-semibold uppercase tracking-wide text-muted">
+              {s.numDisposalLabel}
+            </p>
             <p className="mt-2 text-5xl font-semibold tabular-nums">{headline?.disposal_pct}%</p>
-            <p className="mt-2 text-muted">
-              {Number(headline?.disposed).toLocaleString('en-IN')} of{' '}
-              {Number(headline?.total).toLocaleString('en-IN')} synthetic complaints marked finished by the
-              department. This is the shape of the number that exists today.
+            <p className="mt-2 text-muted tabular-nums">
+              {s.numDisposalBody(
+                Number(headline?.disposed).toLocaleString('en-IN'),
+                Number(headline?.total).toLocaleString('en-IN'),
+              )}
             </p>
           </div>
 
           <div className="rounded border border-rule p-6">
             <p className="text-sm font-semibold uppercase tracking-wide text-muted">
-              True resolution rate · simulated
+              {s.numTrueResLabel}
             </p>
-            <p className="mt-2 text-5xl font-semibold tabular-nums">{headline?.true_resolution_pct}%</p>
-            <p className="mt-2 text-muted">
-              Of the {asked.toLocaleString('en-IN')} synthetic citizens asked, this many said the thing they
-              complained about actually got fixed. Computed from their yes/no, never from a verdict.{' '}
-              <strong>DARPG named this capability in August 2026</strong> — validating whether a closure
-              resolved anything, rather than counting that it happened. We have not found it in an engineering
-              spec or a live portal. This is what it looks like built: the figure above is over cases we
-              generated, and the method is the part that would carry over.
+            <p className="mt-2 text-5xl font-semibold tabular-nums">
+              {headline?.true_resolution_pct}%
             </p>
+            <p className="mt-2 text-muted">{s.numTrueResBody(asked.toLocaleString('en-IN'))}</p>
           </div>
         </div>
 
         <div className="rounded border border-rule p-6">
-          <h3 className="text-lg font-semibold">The people nobody asks</h3>
-          <p className="mt-2">
-            <strong className="tabular-nums">{neverAsked.toLocaleString('en-IN')}</strong> of these simulated
-            closures were never followed up with the person who complained. The published national figures for
-            May 2026 are about 2.6 lakh grievances closed against roughly 79,000 people reached by the feedback
-            call centre — about seven in ten never asked. That comparison is the reason this project exists, and
-            it is a figure we read rather than one we measured. And the appeal that would hold someone to
-            account only unlocks if you rate the closure &ldquo;Poor&rdquo;, which is a question most people are
-            never asked.
-          </p>
+          <h3 className="text-lg font-semibold">{s.numNeverAskedHeading}</h3>
+          <p className="mt-2">{s.numNeverAskedBody(neverAsked.toLocaleString('en-IN'))}</p>
         </div>
 
         <div className="space-y-3 rounded border border-rule p-6">
-          <h3 className="text-lg font-semibold">How much the corpus disagrees with itself</h3>
-          <p className="text-muted">
-            In the synthetic corpus the seed assigned both the verdict and the citizen&rsquo;s answer. Comparing
-            the two tells you about the seed, not about the auditor, so it is reported here and nowhere else: too
-            harsh <span className="tabular-nums">{simTooHarsh.toLocaleString('en-IN')}</span>, too soft{' '}
-            <span className="tabular-nums">{simTooSoft.toLocaleString('en-IN')}</span>, across{' '}
-            <span className="tabular-nums">{simCompared.toLocaleString('en-IN')}</span> synthetic cases. It is a
-            plausible shape, deliberately not a flattering one, and it is evidence of nothing.
+          <h3 className="text-lg font-semibold">{s.numCorpusDisagreeHeading}</h3>
+          <p className="text-muted tabular-nums">
+            {s.numCorpusDisagreeBody(
+              simTooHarsh.toLocaleString('en-IN'),
+              simTooSoft.toLocaleString('en-IN'),
+              simCompared.toLocaleString('en-IN'),
+            )}
           </p>
         </div>
 
@@ -245,19 +198,16 @@ export default async function NumbersPage({
         </div>
 
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">By office · simulated</h3>
-          <p className="text-muted">
-            Every office name in this table is invented. Aggregated by office, never by named official — even in
-            simulation, because we know what a reply said, not who is good at their job.
-          </p>
+          <h3 className="text-lg font-semibold">{s.numByOfficeHeading}</h3>
+          <p className="text-muted">{s.numByOfficeIntro}</p>
           <div className="overflow-x-auto">
             <table className="w-full min-w-[36rem] border-collapse text-left">
               <thead>
                 <tr className="border-b-2 border-ink">
-                  <th className="py-2 pr-4">Office (invented)</th>
-                  <th className="py-2 pr-4">Closed</th>
-                  <th className="py-2 pr-4">Asked</th>
-                  <th className="py-2">Actually fixed</th>
+                  <th className="py-2 pr-4">{s.numColOffice}</th>
+                  <th className="py-2 pr-4">{s.numColClosed}</th>
+                  <th className="py-2 pr-4">{s.numColAsked}</th>
+                  <th className="py-2">{s.numColFixed}</th>
                 </tr>
               </thead>
               <tbody>
@@ -283,10 +233,9 @@ export default async function NumbersPage({
       </section>
 
       <p className="text-muted">
-        <Link href="/how-this-works" className="underline">
-          What is real, what is simulated, and what we got wrong
+        <Link href={`/how-this-works?lang=${lang}`} className="underline">
+          {s.numFooterLink}
         </Link>
-        .
       </p>
     </div>
   );

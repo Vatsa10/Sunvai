@@ -251,6 +251,70 @@ type Dict = {
   mapOfficeTitle: (rank: number, office: string, gap: number) => string;
   mapNotFixed: (gap: number) => string;
   mapAsked: (n: number) => string;
+  // ---------------------------------------------------------------- /numbers
+  /**
+   * The two section headings carry the whole argument of `/numbers`: everything under
+   * `numMeasuredHeading` is a real model run, everything under `numSimHeading` comes from the
+   * synthetic corpus, and `numSimIntro` names that corpus as synthetic before any figure from
+   * it appears. Soften any of the three in any language and the page stays honest in English
+   * while becoming dishonest in Hindi, which is the failure this split exists to prevent.
+   *
+   * `numColOffice` says the office names are invented, and so does `mapCaption`. Neither may
+   * drop it -- they are the same disclosure on two renderings of the same made-up data.
+   *
+   * `numDisagreeEmpty` is the page's conscience: it says an earlier version filled that gap
+   * with arithmetic over the synthetic corpus and called it "how often we are wrong".
+   * Translate it whole; trimming it is how the mistake comes back.
+   *
+   * Every sentence containing a number is a function of that number rather than a fragment
+   * concatenated onto a numeral, because Hindi and Marathi order the count and its
+   * postposition where English does not.
+   */
+  numTitle: string;
+  numLeadA: string;
+  numLeadB: string;
+  numLeadSub: string;
+  numPartOne: string;
+  numMeasuredHeading: string;
+  numMeasuredIntro: string;
+  numEvalFalseAccusation: string;
+  numEvalFalseAccusationWhy: (cases: number) => string;
+  numEvalDeflection: string;
+  numEvalDeflectionWhy: string;
+  numEvalCitationGuard: string;
+  numEvalCitationGuardWhy: string;
+  numEvalAdversarial: string;
+  numEvalAdversarialWhy: (n: number) => string;
+  numEvalUndetermined: string;
+  numEvalUndeterminedWhy: string;
+  numEvalExactMatch: string;
+  numEvalExactMatchWhy: string;
+  /** File paths stay in English in every language -- they are paths, not prose. */
+  numEvalFootnote: (cases: number, adversarial: number, date: string) => string;
+  numEvalMissing: string;
+  numDisagreeHeading: string;
+  numDisagreeBody: (compared: string, tooHarsh: string, tooSoft: string) => string;
+  numDisagreeSmallN: string;
+  numDisagreeEmpty: string;
+  numAuditNotMetric: string;
+  numPartTwo: string;
+  numSimHeading: string;
+  numSimIntro: (corpus: string, file: string) => string;
+  numDisposalLabel: string;
+  numDisposalBody: (disposed: string, total: string) => string;
+  numTrueResLabel: string;
+  numTrueResBody: (asked: string) => string;
+  numNeverAskedHeading: string;
+  numNeverAskedBody: (neverAsked: string) => string;
+  numCorpusDisagreeHeading: string;
+  numCorpusDisagreeBody: (tooHarsh: string, tooSoft: string, compared: string) => string;
+  numByOfficeHeading: string;
+  numByOfficeIntro: string;
+  numColOffice: string;
+  numColClosed: string;
+  numColAsked: string;
+  numColFixed: string;
+  numFooterLink: string;
   events: Record<string, string>;
 };
 
@@ -470,6 +534,69 @@ const en: Dict = {
     `${rank}. ${office} — ${gap} of every 100 citizens asked said their closed case was not fixed`,
   mapNotFixed: (gap) => `${gap} in 100 not fixed`,
   mapAsked: (n) => `${n} citizens asked`,
+  numTitle: 'The numbers',
+  numLeadA: 'CPGRAMS measures disposal.',
+  numLeadB: 'We measure resolution.',
+  numLeadSub:
+    'This page is in two parts, and the order is deliberate. First what we actually measured. Then what we simulated, said plainly, before any figure from it appears.',
+  numPartOne: 'Part one',
+  numMeasuredHeading: 'What we measured',
+  numMeasuredIntro:
+    'Real model calls against replies we labelled by hand before the prompt was written against them. These are the only numbers on this site that describe how well the auditor works.',
+  numEvalFalseAccusation: 'False accusation rate',
+  numEvalFalseAccusationWhy: (cases) =>
+    `A genuinely good reply judged negative. Across ${cases} labelled cases. The number we care most about keeping low.`,
+  numEvalDeflection: 'Deflection and boilerplate caught',
+  numEvalDeflectionWhy: 'Of replies we labelled as deflected or boilerplate.',
+  numEvalCitationGuard: 'Citation guard pass rate',
+  numEvalCitationGuardWhy:
+    'Every quoted span appeared verbatim in the reply, character for character.',
+  numEvalAdversarial: 'Adversarial replies caught',
+  numEvalAdversarialWhy: (n) =>
+    `Of ${n} replies written by us specifically to beat our own auditor.`,
+  numEvalUndetermined: 'Ambiguous cases left undetermined',
+  numEvalUndeterminedWhy:
+    'A gate we FAIL, at a threshold of 60%. It is left failing rather than relabelled until it goes green.',
+  numEvalExactMatch: 'Exact verdict match',
+  numEvalExactMatchWhy:
+    'Across all seven verdict classes, including the ones a coarser score would hide.',
+  numEvalFootnote: (cases, adversarial, date) =>
+    `${cases} cases, ${adversarial} of them adversarial, run ${date}. Every figure above is read from evals/results.json at render time, so this table cannot drift from the eval. Method and the full case list are in evals/README.md, which ships with the code.`,
+  numEvalMissing:
+    'The eval has not been run against this checkout, so there is nothing measured to show. We would rather show nothing here than a number we did not produce.',
+  numDisagreeHeading: 'Where a real audit disagreed with a real citizen',
+  numDisagreeBody: (compared, tooHarsh, tooSoft) =>
+    `Across ${compared} cases where a model verdict and a citizen’s own yes/no both exist: we were too harsh ${tooHarsh} times and too soft ${tooSoft} times.`,
+  numDisagreeSmallN:
+    'That is a small n, and we publish it at whatever size it is rather than padding it.',
+  numDisagreeEmpty:
+    'Nothing to report yet — n = 0. This counts only cases where a real model run and a real citizen’s answer both exist. In this prototype no such pair has been created, so there is no rate to publish. An earlier version of this page filled that gap with arithmetic over the synthetic corpus below and called it “how often we are wrong”. It measured nothing, and it is gone.',
+  numAuditNotMetric:
+    'None of this could change the resolution rate below in any case. Our verdict is triage and explanation; the metric is the citizen’s answer. A department can write a flawless reply and still score zero if the pension never arrived.',
+  numPartTwo: 'Part two — simulated',
+  numSimHeading: 'What we simulated',
+  numSimIntro: (corpus, file) =>
+    `Everything below this line comes from a synthetic corpus of ~${corpus} cases generated by ${file}, shaped to match the published national picture — disposal in the nineties, resolution far below it. These are not measurements. No office named here is real, no citizen is real, and no reply was written by any government department. They exist to show what the product would display against real volume.`,
+  numDisposalLabel: 'Disposal rate · simulated',
+  numDisposalBody: (disposed, total) =>
+    `${disposed} of ${total} synthetic complaints marked finished by the department. This is the shape of the number that exists today.`,
+  numTrueResLabel: 'True resolution rate · simulated',
+  numTrueResBody: (asked) =>
+    `Of the ${asked} synthetic citizens asked, this many said the thing they complained about actually got fixed. Computed from their yes/no, never from a verdict. DARPG named this capability in August 2026 — validating whether a closure resolved anything, rather than counting that it happened. We have not found it in an engineering spec or a live portal. This is what it looks like built: the figure above is over cases we generated, and the method is the part that would carry over.`,
+  numNeverAskedHeading: 'The people nobody asks',
+  numNeverAskedBody: (neverAsked) =>
+    `${neverAsked} of these simulated closures were never followed up with the person who complained. The published national figures for May 2026 are about 2.6 lakh grievances closed against roughly 79,000 people reached by the feedback call centre — about seven in ten never asked. That comparison is the reason this project exists, and it is a figure we read rather than one we measured. And the appeal that would hold someone to account only unlocks if you rate the closure “Poor”, which is a question most people are never asked.`,
+  numCorpusDisagreeHeading: 'How much the corpus disagrees with itself',
+  numCorpusDisagreeBody: (tooHarsh, tooSoft, compared) =>
+    `In the synthetic corpus the seed assigned both the verdict and the citizen’s answer. Comparing the two tells you about the seed, not about the auditor, so it is reported here and nowhere else: too harsh ${tooHarsh}, too soft ${tooSoft}, across ${compared} synthetic cases. It is a plausible shape, deliberately not a flattering one, and it is evidence of nothing.`,
+  numByOfficeHeading: 'By office · simulated',
+  numByOfficeIntro:
+    'Every office name in this table is invented. Aggregated by office, never by named official — even in simulation, because we know what a reply said, not who is good at their job.',
+  numColOffice: 'Office (invented)',
+  numColClosed: 'Closed',
+  numColAsked: 'Asked',
+  numColFixed: 'Actually fixed',
+  numFooterLink: 'What is real, what is simulated, and what we got wrong',
   events: {
     grievance_filed: 'Complaint filed',
     assisted_filing_declared: 'Filed by someone on her behalf, with her consent',
@@ -704,6 +831,67 @@ const hi: Dict = {
     `${rank}. ${office} — पूछे गए हर 100 नागरिकों में से ${gap} ने कहा कि उनकी बंद की गई शिकायत का काम नहीं हुआ`,
   mapNotFixed: (gap) => `हर 100 में से ${gap} का काम नहीं हुआ`,
   mapAsked: (n) => `${n} नागरिकों से पूछा गया`,
+  numTitle: 'आँकड़े',
+  numLeadA: 'CPGRAMS शिकायत का निपटारा गिनता है।',
+  numLeadB: 'हम यह देखते हैं कि समस्या सुलझी या नहीं।',
+  numLeadSub:
+    'यह पन्ना दो हिस्सों में है, और क्रम जान-बूझकर ऐसा है। पहले वह जो हमने सचमुच मापा। फिर वह जो हमने नकली आँकड़ों से बनाया — साफ़-साफ़ कहकर, उसमें से कोई आँकड़ा दिखने से पहले।',
+  numPartOne: 'पहला हिस्सा',
+  numMeasuredHeading: 'हमने क्या मापा',
+  numMeasuredIntro:
+    'असली मॉडल कॉल, उन जवाबों पर जिन्हें हमने हाथ से लेबल किया था — प्रॉम्प्ट उनके हिसाब से लिखे जाने से पहले। इस साइट पर सिर्फ़ यही आँकड़े बताते हैं कि हमारी जाँच कितनी अच्छी चलती है।',
+  numEvalFalseAccusation: 'ग़लत आरोप की दर',
+  numEvalFalseAccusationWhy: (cases) =>
+    `किसी सचमुच अच्छे जवाब को ग़लत ठहरा देना। हाथ से लेबल किए गए ${cases} मामलों पर। यही वह आँकड़ा है जिसे कम रखना हमारे लिए सबसे ज़रूरी है।`,
+  numEvalDeflection: 'टालमटोल और घिसे-पिटे जवाब पकड़े गए',
+  numEvalDeflectionWhy: 'उन जवाबों में से जिन्हें हमने टालमटोल या घिसा-पिटा लेबल किया था।',
+  numEvalCitationGuard: 'हवाला जाँच में पास होने की दर',
+  numEvalCitationGuardWhy: 'हर उद्धृत हिस्सा जवाब में हूबहू मौजूद था, अक्षर दर अक्षर।',
+  numEvalAdversarial: 'हमें हराने के लिए लिखे गए जवाब पकड़े गए',
+  numEvalAdversarialWhy: (n) =>
+    `उन ${n} जवाबों में से जो हमने ख़ास अपनी ही जाँच को हराने के लिए लिखे थे।`,
+  numEvalUndetermined: 'अस्पष्ट मामले अनिर्णीत छोड़े गए',
+  numEvalUndeterminedWhy:
+    'यह एक गेट है जिसमें हम फ़ेल हैं, 60% की सीमा पर। इसे हरा होने तक लेबल बदलने के बजाय फ़ेल ही रहने दिया गया है।',
+  numEvalExactMatch: 'पूरा फ़ैसला मेल खाया',
+  numEvalExactMatchWhy: 'सातों फ़ैसला-श्रेणियों पर, उन्हें मिलाकर जिन्हें कोई मोटा स्कोर छिपा लेता।',
+  numEvalFootnote: (cases, adversarial, date) =>
+    `${cases} मामले, जिनमें ${adversarial} हमें हराने के लिए लिखे गए, ${date} को चलाए गए। ऊपर का हर आँकड़ा पन्ना बनते समय evals/results.json से पढ़ा जाता है, इसलिए यह तालिका जाँच से अलग नहीं हो सकती। तरीक़ा और मामलों की पूरी सूची evals/README.md में है, जो कोड के साथ ही आती है।`,
+  numEvalMissing:
+    'इस कोड पर जाँच अभी चलाई नहीं गई है, इसलिए दिखाने को कोई मापा हुआ आँकड़ा नहीं है। जो आँकड़ा हमने ख़ुद न निकाला हो, उसे दिखाने से बेहतर हम यहाँ कुछ भी न दिखाना समझते हैं।',
+  numDisagreeHeading: 'जहाँ असली जाँच असली नागरिक से अलग निकली',
+  numDisagreeBody: (compared, tooHarsh, tooSoft) =>
+    `उन ${compared} मामलों में, जहाँ मॉडल का फ़ैसला और नागरिक का अपना हाँ/ना — दोनों मौजूद हैं: हम ${tooHarsh} बार ज़रूरत से ज़्यादा सख़्त रहे और ${tooSoft} बार ज़रूरत से ज़्यादा नरम।`,
+  numDisagreeSmallN:
+    'यह बहुत छोटा नमूना है, और हम इसे जितना है उतना ही छापते हैं, बढ़ा-चढ़ाकर नहीं।',
+  numDisagreeEmpty:
+    'अभी बताने को कुछ नहीं — n = 0। इसमें सिर्फ़ वे मामले गिने जाते हैं जहाँ असली मॉडल का चलना और असली नागरिक का जवाब, दोनों मौजूद हों। इस प्रोटोटाइप में ऐसी कोई जोड़ी बनी ही नहीं है, इसलिए छापने को कोई दर है ही नहीं। इस पन्ने के एक पुराने रूप ने यह जगह नीचे वाले नकली संग्रह पर की गई गिनती से भर दी थी और उसे “हम कितनी बार ग़लत होते हैं” कहा था। उसने कुछ भी मापा नहीं था, और अब वह हटा दिया गया है।',
+  numAuditNotMetric:
+    'वैसे भी इससे नीचे की समाधान दर बदल नहीं सकती। हमारा फ़ैसला सिर्फ़ छाँटना और समझाना है; आँकड़ा नागरिक का अपना जवाब है। कोई विभाग बेहद अच्छा जवाब लिखकर भी शून्य पा सकता है, अगर पेंशन आई ही नहीं।',
+  numPartTwo: 'दूसरा हिस्सा — नकली आँकड़े',
+  numSimHeading: 'हमने क्या नकली बनाया',
+  numSimIntro: (corpus, file) =>
+    `इस रेखा के नीचे सब कुछ ${file} से बनाए गए लगभग ${corpus} मामलों के नकली संग्रह से आता है, जिसे देश की छपी हुई तस्वीर से मिलती-जुलती शक्ल दी गई है — निपटारा नब्बे प्रतिशत के आसपास, समाधान उससे कहीं नीचे। ये माप नहीं हैं। यहाँ जिस कार्यालय का नाम है वह असली नहीं, कोई नागरिक असली नहीं, और कोई जवाब किसी सरकारी विभाग ने नहीं लिखा। ये सिर्फ़ यह दिखाने के लिए हैं कि असली संख्या पर यह चीज़ क्या दिखाती।`,
+  numDisposalLabel: 'निपटारा दर · नकली',
+  numDisposalBody: (disposed, total) =>
+    `${total} नकली शिकायतों में से ${disposed} को विभाग ने पूरा हुआ मान लिया। आज जो आँकड़ा मौजूद है उसकी शक्ल यही है।`,
+  numTrueResLabel: 'असली समाधान दर · नकली',
+  numTrueResBody: (asked) =>
+    `जिन ${asked} नकली नागरिकों से पूछा गया, उनमें से इतनों ने कहा कि जिस बात की शिकायत की थी वह सचमुच ठीक हुई। यह उनके अपने हाँ/ना से निकला है, किसी फ़ैसले से कभी नहीं। DARPG ने अगस्त 2026 में इस काम का नाम लिया था — यह जाँचना कि शिकायत बंद करने से कुछ हल हुआ या नहीं, न कि सिर्फ़ यह गिनना कि वह बंद हो गई। हमें यह किसी इंजीनियरिंग दस्तावेज़ या चालू पोर्टल पर नहीं मिला। बना हुआ यह ऐसा दिखता है: ऊपर का आँकड़ा हमारे बनाए मामलों पर है, और आगे जो काम आएगा वह तरीक़ा है।`,
+  numNeverAskedHeading: 'जिनसे कोई नहीं पूछता',
+  numNeverAskedBody: (neverAsked) =>
+    `इन नकली बंद शिकायतों में से ${neverAsked} में शिकायत करने वाले से बाद में कुछ पूछा ही नहीं गया। मई 2026 के छपे हुए देशव्यापी आँकड़ों में करीब 2.6 लाख शिकायतें बंद हुईं, जबकि फ़ीडबैक कॉल सेंटर लगभग 79,000 लोगों तक ही पहुँचा — यानी दस में से करीब सात से कभी पूछा ही नहीं गया। यही तुलना इस परियोजना के होने की वजह है, और यह आँकड़ा हमने पढ़ा है, मापा नहीं। और जो अपील किसी को जवाबदेह ठहरा सकती है, वह तभी खुलती है जब आप बंद करने को “ख़राब” कहें — और यह सवाल ज़्यादातर लोगों से कभी पूछा ही नहीं जाता।`,
+  numCorpusDisagreeHeading: 'यह नकली संग्रह ख़ुद से कितना उलझता है',
+  numCorpusDisagreeBody: (tooHarsh, tooSoft, compared) =>
+    `नकली संग्रह में फ़ैसला और नागरिक का जवाब, दोनों बीज-कार्यक्रम ने ही तय किए थे। दोनों की तुलना उस कार्यक्रम के बारे में बताती है, हमारी जाँच के बारे में नहीं — इसलिए यह यहीं बताया गया है और कहीं नहीं: ${compared} नकली मामलों में ज़रूरत से ज़्यादा सख़्त ${tooHarsh}, ज़रूरत से ज़्यादा नरम ${tooSoft}। यह एक मानी जा सकने वाली शक्ल है, जान-बूझकर चापलूस नहीं, और यह किसी बात का सबूत नहीं है।`,
+  numByOfficeHeading: 'कार्यालय के हिसाब से · नकली',
+  numByOfficeIntro:
+    'इस तालिका में हर कार्यालय का नाम बनाया हुआ है। जोड़ कार्यालय के हिसाब से है, किसी नामी अधिकारी के हिसाब से कभी नहीं — नकली आँकड़ों में भी, क्योंकि हमें यह पता है कि जवाब में क्या लिखा था, यह नहीं कि अपना काम कौन अच्छा करता है।',
+  numColOffice: 'कार्यालय (बनाया हुआ)',
+  numColClosed: 'बंद कीं',
+  numColAsked: 'पूछा गया',
+  numColFixed: 'सचमुच ठीक हुईं',
+  numFooterLink: 'क्या असली है, क्या नकली, और हमसे क्या ग़लत हुआ',
   events: {
     grievance_filed: 'शिकायत दर्ज हुई',
     assisted_filing_declared: 'किसी और ने उनकी ओर से, उनकी सहमति से दर्ज की',
@@ -938,6 +1126,67 @@ const mr: Dict = {
     `${rank}. ${office} — विचारलेल्या दर 100 नागरिकांपैकी ${gap} जणांनी सांगितलं की त्यांच्या बंद केलेल्या तक्रारीचं काम झालं नाही`,
   mapNotFixed: (gap) => `दर 100 पैकी ${gap} चं काम झालं नाही`,
   mapAsked: (n) => `${n} नागरिकांना विचारलं`,
+  numTitle: 'आकडे',
+  numLeadA: 'CPGRAMS तक्रारींचा निपटारा मोजते.',
+  numLeadB: 'आम्ही अडचण सुटली का ते बघतो.',
+  numLeadSub:
+    'हे पान दोन भागांत आहे, आणि क्रम मुद्दाम असा आहे. आधी आम्ही खरोखर काय मोजलं. मग आम्ही काय बनावट तयार केलं — स्पष्ट सांगून, त्यातला कोणताही आकडा दिसण्याआधी.',
+  numPartOne: 'पहिला भाग',
+  numMeasuredHeading: 'आम्ही काय मोजलं',
+  numMeasuredIntro:
+    'खऱ्या मॉडेल कॉल, अशा उत्तरांवर जी आम्ही हाताने लेबल केली होती — प्रॉम्प्ट त्यांच्यासाठी लिहिला जाण्याआधी. या साइटवरचे फक्त हेच आकडे आमची तपासणी किती चांगली चालते हे सांगतात.',
+  numEvalFalseAccusation: 'चुकीच्या आरोपाचं प्रमाण',
+  numEvalFalseAccusationWhy: (cases) =>
+    `खरोखर चांगल्या उत्तराला चुकीचं ठरवणं. हाताने लेबल केलेल्या ${cases} प्रकरणांवर. हाच आकडा कमी ठेवणं आमच्यासाठी सर्वात महत्त्वाचं आहे.`,
+  numEvalDeflection: 'टाळाटाळ आणि साचेबंद उत्तरं पकडली',
+  numEvalDeflectionWhy: 'ज्या उत्तरांना आम्ही टाळाटाळ किंवा साचेबंद असं लेबल दिलं होतं त्यांपैकी.',
+  numEvalCitationGuard: 'अवतरण तपासणी उत्तीर्ण होण्याचं प्रमाण',
+  numEvalCitationGuardWhy: 'उद्धृत केलेला प्रत्येक भाग उत्तरात जसाच्या तसा होता, अक्षरशः.',
+  numEvalAdversarial: 'आम्हाला हरवण्यासाठी लिहिलेली उत्तरं पकडली',
+  numEvalAdversarialWhy: (n) =>
+    `आम्हीच खास आमची तपासणी हरवण्यासाठी लिहिलेल्या ${n} उत्तरांपैकी.`,
+  numEvalUndetermined: 'संदिग्ध प्रकरणं अनिर्णित ठेवली',
+  numEvalUndeterminedWhy:
+    'हा एक गेट आहे ज्यात आम्ही नापास आहोत, 60% च्या मर्यादेवर. तो हिरवा होईपर्यंत लेबलं बदलण्याऐवजी नापासच ठेवला आहे.',
+  numEvalExactMatch: 'संपूर्ण निकाल जुळला',
+  numEvalExactMatchWhy: 'सातही निकाल-प्रकारांवर, ज्यांना ढोबळ गुण लपवून टाकेल त्यांच्यासह.',
+  numEvalFootnote: (cases, adversarial, date) =>
+    `${cases} प्रकरणं, त्यांपैकी ${adversarial} आम्हाला हरवण्यासाठी लिहिलेली, ${date} रोजी चालवली. वरचा प्रत्येक आकडा पान तयार होताना evals/results.json मधून वाचला जातो, त्यामुळे हा तक्ता तपासणीपासून वेगळा होऊ शकत नाही. पद्धत आणि प्रकरणांची संपूर्ण यादी evals/README.md मध्ये आहे, जी कोडसोबतच येते.`,
+  numEvalMissing:
+    'या कोडवर तपासणी अजून चालवलेली नाही, त्यामुळे दाखवण्यासारखा मोजलेला आकडा नाही. आम्ही स्वतः न काढलेला आकडा दाखवण्यापेक्षा इथे काहीच न दाखवणं आम्ही बरं समजतो.',
+  numDisagreeHeading: 'जिथे खरी तपासणी खऱ्या नागरिकाशी जुळली नाही',
+  numDisagreeBody: (compared, tooHarsh, tooSoft) =>
+    `ज्या ${compared} प्रकरणांत मॉडेलचा निकाल आणि नागरिकाचं स्वतःचं हो/नाही — दोन्ही आहेत: आम्ही ${tooHarsh} वेळा गरजेपेक्षा कठोर होतो आणि ${tooSoft} वेळा गरजेपेक्षा मवाळ.`,
+  numDisagreeSmallN:
+    'हा फार लहान नमुना आहे, आणि तो जेवढा आहे तेवढाच आम्ही प्रसिद्ध करतो, फुगवून नाही.',
+  numDisagreeEmpty:
+    'अजून सांगण्यासारखं काही नाही — n = 0. यात फक्त तीच प्रकरणं मोजली जातात जिथे खरी मॉडेल तपासणी आणि खऱ्या नागरिकाचं उत्तर, दोन्ही असतात. या प्रोटोटाइपमध्ये अशी जोडी तयारच झालेली नाही, त्यामुळे प्रसिद्ध करण्यासारखं प्रमाणच नाही. या पानाच्या जुन्या आवृत्तीने ती जागा खालच्या बनावट संग्रहावरच्या हिशेबाने भरली होती आणि त्याला “आम्ही किती वेळा चुकतो” असं म्हटलं होतं. त्याने काहीच मोजलं नव्हतं, आणि आता ते काढून टाकलं आहे.',
+  numAuditNotMetric:
+    'तरीही यामुळे खालचं समाधानाचं प्रमाण बदलू शकत नाही. आमचा निकाल म्हणजे वर्गवारी आणि स्पष्टीकरण; आकडा हा नागरिकाचं स्वतःचं उत्तर आहे. एखादा विभाग निर्दोष उत्तर लिहूनही शून्य मिळवू शकतो, जर पेन्शन आलीच नसेल तर.',
+  numPartTwo: 'दुसरा भाग — बनावट',
+  numSimHeading: 'आम्ही काय बनावट तयार केलं',
+  numSimIntro: (corpus, file) =>
+    `या रेषेखालचं सगळं ${file} ने तयार केलेल्या सुमारे ${corpus} प्रकरणांच्या बनावट संग्रहातून येतं, जो देशाच्या प्रसिद्ध चित्राशी जुळेल असा घडवला आहे — निपटारा नव्वदच्या घरात, समाधान त्याहून खूप खाली. ही मोजमापं नाहीत. इथे नाव असलेलं कोणतंही कार्यालय खरं नाही, कोणताही नागरिक खरा नाही, आणि कोणतंही उत्तर कोणत्याही सरकारी विभागाने लिहिलेलं नाही. खऱ्या आकारमानावर हे उत्पादन काय दाखवेल एवढं दाखवण्यासाठीच ती आहेत.`,
+  numDisposalLabel: 'निपटाऱ्याचं प्रमाण · बनावट',
+  numDisposalBody: (disposed, total) =>
+    `${total} बनावट तक्रारींपैकी ${disposed} विभागाने पूर्ण झाल्याचं ठरवलं. आज अस्तित्वात असलेल्या आकड्याचा आकार हाच आहे.`,
+  numTrueResLabel: 'खऱ्या समाधानाचं प्रमाण · बनावट',
+  numTrueResBody: (asked) =>
+    `ज्या ${asked} बनावट नागरिकांना विचारलं, त्यांपैकी इतक्यांनी सांगितलं की ज्याबद्दल तक्रार केली होती ते खरंच दुरुस्त झालं. हे त्यांच्या स्वतःच्या हो/नाही मधून काढलं आहे, कोणत्याही निकालातून कधीच नाही. DARPG ने ऑगस्ट 2026 मध्ये या क्षमतेचं नाव घेतलं होतं — तक्रार बंद केल्याने काही सुटलं का हे तपासणं, ती बंद झाली एवढं मोजणं नव्हे. आम्हाला ते कोणत्याही अभियांत्रिकी दस्तऐवजात किंवा चालू पोर्टलवर सापडलं नाही. प्रत्यक्ष बांधलं तर ते असं दिसतं: वरचा आकडा आम्ही तयार केलेल्या प्रकरणांवरचा आहे, आणि पुढे उपयोगी पडेल ती पद्धत आहे.`,
+  numNeverAskedHeading: 'ज्यांना कुणीच विचारत नाही',
+  numNeverAskedBody: (neverAsked) =>
+    `या बनावट बंद तक्रारींपैकी ${neverAsked} मध्ये तक्रार करणाऱ्याला नंतर काहीच विचारलं गेलं नाही. मे 2026 च्या प्रसिद्ध देशव्यापी आकड्यांनुसार सुमारे 2.6 लाख तक्रारी बंद झाल्या, तर फीडबॅक कॉल सेंटर जवळपास 79,000 लोकांपर्यंतच पोहोचलं — म्हणजे दहांपैकी सुमारे सात जणांना कधी विचारलंच गेलं नाही. हीच तुलना हा प्रकल्प असण्याचं कारण आहे, आणि हा आकडा आम्ही वाचला आहे, मोजलेला नाही. आणि जे अपील कुणालातरी जबाबदार धरू शकतं, ते तेव्हाच उघडतं जेव्हा तुम्ही बंद करण्याला “खराब” म्हणता — आणि हा प्रश्न बहुतेकांना कधी विचारलाच जात नाही.`,
+  numCorpusDisagreeHeading: 'हा बनावट संग्रह स्वतःशीच किती विसंगत आहे',
+  numCorpusDisagreeBody: (tooHarsh, tooSoft, compared) =>
+    `बनावट संग्रहात निकाल आणि नागरिकाचं उत्तर, दोन्ही बीज-कार्यक्रमानेच ठरवले होते. दोघांची तुलना त्या कार्यक्रमाबद्दल सांगते, आमच्या तपासणीबद्दल नाही — म्हणून ती इथेच नोंदवली आहे, इतरत्र कुठेही नाही: ${compared} बनावट प्रकरणांत गरजेपेक्षा कठोर ${tooHarsh}, गरजेपेक्षा मवाळ ${tooSoft}. हा एक शक्य वाटणारा आकार आहे, मुद्दाम खुशामत करणारा नाही, आणि तो कशाचाच पुरावा नाही.`,
+  numByOfficeHeading: 'कार्यालयानुसार · बनावट',
+  numByOfficeIntro:
+    'या तक्त्यातलं प्रत्येक कार्यालयाचं नाव काल्पनिक आहे. बेरीज कार्यालयानुसार आहे, कधीही नाव घेतलेल्या अधिकाऱ्यानुसार नाही — बनावट आकड्यांतसुद्धा, कारण उत्तरात काय लिहिलं होतं हे आम्हाला माहीत आहे, कोण आपलं काम चांगलं करतो हे नाही.',
+  numColOffice: 'कार्यालय (काल्पनिक)',
+  numColClosed: 'बंद केल्या',
+  numColAsked: 'विचारलं',
+  numColFixed: 'खरंच दुरुस्त',
+  numFooterLink: 'काय खरं आहे, काय बनावट, आणि आमचं काय चुकलं',
   events: {
     grievance_filed: 'तक्रार दाखल झाली',
     assisted_filing_declared: 'दुसऱ्या कुणीतरी त्यांच्या वतीने, त्यांच्या संमतीने दाखल केली',
