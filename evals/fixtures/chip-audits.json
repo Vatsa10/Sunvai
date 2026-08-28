@@ -1,0 +1,198 @@
+{
+  "epfo-ok-ok": {
+    "complaint": "I applied to withdraw my PF after leaving my job in June. The claim was rejected and the reason printed on the status page is just \"OK/OK\". I have read it twenty times and I still do not know what is wrong with my claim or what I am supposed to fix. Please tell me what the defect is and what document you need from me.",
+    "reply": "Claim Rejected OK/OK",
+    "computedAt": "2026-08-28T17:04:32.787Z",
+    "result": {
+      "verdict": "non_responsive",
+      "confidence": 0.9,
+      "reasoning": "The department only repeated the same cryptic status and did not explain the defect or what to submit. It gave no reason, instructions, or next steps. This does not answer the citizen’s questions.",
+      "citations": [
+        {
+          "quote": "Claim Rejected OK/OK"
+        }
+      ],
+      "unaddressed": [
+        "does not state the specific reason for rejection beyond the code",
+        "does not specify which document(s) are required to cure the defect",
+        "does not explain how to correct the issue and resubmit the claim",
+        "does not provide a contact point or reference number for follow-up"
+      ],
+      "injection_suspected": false
+    },
+    "spans": [
+      {
+        "quote": "Claim Rejected OK/OK",
+        "start": 0,
+        "end": 20
+      }
+    ],
+    "citationsVerified": true,
+    "guardFailures": 0,
+    "model": "gpt-5",
+    "promptVersion": "closure-auditor.v2"
+  },
+  "epfo-warning-520461": {
+    "complaint": "My PF transfer request has been stuck for eleven weeks. The only thing shown against it is \"WARNING-520461 there is a mismatch between summary and details transactions in member ledger\". I did not create any ledger and I cannot edit one. Which year of contributions does not match, and who corrects it — me, or my former employer?",
+    "reply": "WARNING-520461 there is a mismatch between summary and details transactions in member ledger",
+    "computedAt": "2026-08-28T17:04:43.289Z",
+    "result": {
+      "verdict": "boilerplate",
+      "confidence": 0.9,
+      "reasoning": "The reply only repeats the error message and gives no action, reason, status, or guidance. It does not say which year mismatched or who must correct it. This is generic text with no case-specific resolution details.",
+      "citations": [
+        {
+          "quote": "WARNING-520461 there is a mismatch between summary and details transactions in member ledger"
+        }
+      ],
+      "unaddressed": [
+        "does not say which year or transactions are mismatched",
+        "does not say who must correct the ledger (member or former employer) or how to do it",
+        "does not state the status of the PF transfer request or any action taken",
+        "does not provide a timeline or next steps for resolution",
+        "does not address why the request has been stuck for eleven weeks"
+      ],
+      "injection_suspected": false
+    },
+    "spans": [
+      {
+        "quote": "WARNING-520461 there is a mismatch between summary and details transactions in member ledger",
+        "start": 0,
+        "end": 92
+      }
+    ],
+    "citationsVerified": true,
+    "guardFailures": 0,
+    "model": "gpt-5",
+    "promptVersion": "closure-auditor.v2"
+  },
+  "itd-refund-others": {
+    "complaint": "My income tax refund for AY 2025-26 has failed twice. The refund status on the e-filing portal gives the failure reason as \"Others\". My bank account is pre-validated and the name matches my PAN. Tell me what actually failed so I can correct it, and when the refund will be re-issued.",
+    "reply": "Refund failure reason: Others",
+    "computedAt": "2026-08-28T17:04:57.091Z",
+    "result": {
+      "verdict": "boilerplate",
+      "confidence": 0.83,
+      "reasoning": "The department only repeats the generic portal message and adds no case-specific details. It does not explain the actual failure or next steps, and gives no re-issue timeline. This is boilerplate, not a substantive answer.",
+      "citations": [
+        {
+          "quote": "Refund failure reason: Others"
+        }
+      ],
+      "unaddressed": [
+        "does not specify the actual cause of refund failure beyond saying \"Others\"",
+        "does not state what the citizen must correct or how to fix the issue",
+        "does not say when or whether the refund will be re-issued, or provide any timeline/next step"
+      ],
+      "injection_suspected": false
+    },
+    "spans": [
+      {
+        "quote": "Refund failure reason: Others",
+        "start": 0,
+        "end": 29
+      }
+    ],
+    "citationsVerified": true,
+    "guardFailures": 0,
+    "model": "gpt-5",
+    "promptVersion": "closure-auditor.v2"
+  },
+  "gst-cancellation-others": {
+    "complaint": "My GST registration was cancelled last week and the reason recorded in the order is \"Others\". I have filed every return on time and I have the acknowledgements. I run a two-person business and I cannot raise an invoice until this is sorted. What is the actual ground for cancellation, and what do I file to have it revoked?",
+    "reply": "Cancellation reason: Others",
+    "computedAt": "2026-08-28T17:05:21.510Z",
+    "result": {
+      "verdict": "non_responsive",
+      "confidence": 0.77,
+      "reasoning": "The department only repeats the generic reason and gives no explanation. It does not state the actual ground for cancellation or how to revoke it. It provides no next steps or contact/reference to act on.",
+      "citations": [
+        {
+          "quote": "Cancellation reason: Others"
+        }
+      ],
+      "unaddressed": [
+        "does not state the specific ground for cancellation beyond the generic code",
+        "does not explain what to file for revocation or where/how to submit it",
+        "does not provide any reference number, order details, contact, or next steps for appeal/revocation"
+      ],
+      "injection_suspected": false
+    },
+    "spans": [
+      {
+        "quote": "Cancellation reason: Others",
+        "start": 0,
+        "end": 27
+      }
+    ],
+    "citationsVerified": true,
+    "guardFailures": 0,
+    "model": "gpt-5",
+    "promptVersion": "closure-auditor.v2"
+  },
+  "uidai-technical-reasons": {
+    "complaint": "I applied to correct the spelling of my name on my Aadhaar and submitted my passport as proof. The update status now says \"rejected due to technical reasons\". I paid the fee and travelled to the centre twice. Was the document not accepted, or did something fail at your end? Tell me whether I need to apply again and whether I pay again.",
+    "reply": "Your update request has been rejected due to technical reasons.",
+    "computedAt": "2026-08-28T17:05:48.103Z",
+    "result": {
+      "verdict": "non_responsive",
+      "confidence": 0.72,
+      "reasoning": "The department only repeats the status and provides no actionable detail. It does not explain the cause or next steps. It ignores the citizen’s questions about reapplying and fees.",
+      "citations": [
+        {
+          "quote": "Your update request has been rejected due to technical reasons."
+        }
+      ],
+      "unaddressed": [
+        "does not say whether the passport document was accepted or if the failure was on the department’s side",
+        "does not say whether the citizen needs to apply again",
+        "does not say whether the citizen must pay the fee again or about any refund",
+        "does not provide any specific reason beyond “technical reasons” or corrective steps/timeline"
+      ],
+      "injection_suspected": false
+    },
+    "spans": [
+      {
+        "quote": "Your update request has been rejected due to technical reasons.",
+        "start": 0,
+        "end": 63
+      }
+    ],
+    "citationsVerified": true,
+    "guardFailures": 0,
+    "model": "gpt-5",
+    "promptVersion": "closure-auditor.v2"
+  },
+  "forwarded-to-concerned-office": {
+    "complaint": "My old-age pension has not been credited since May. I filed a grievance in July asking two things: why the payment stopped, and when the arrears will be paid. It has now been marked closed. Nobody has answered either question and no money has arrived.",
+    "reply": "The matter has been forwarded to the concerned office.",
+    "computedAt": "2026-08-28T17:05:55.401Z",
+    "result": {
+      "verdict": "deflected",
+      "confidence": 0.86,
+      "reasoning": "The department only says \"The matter has been forwarded to the concerned office.\" It does not say why payments stopped or when arrears will be paid. It names no receiving office or reference, while closing the case here.",
+      "citations": [
+        {
+          "quote": "The matter has been forwarded to the concerned office."
+        }
+      ],
+      "unaddressed": [
+        "does not explain why the pension payments stopped",
+        "does not state when the arrears will be paid (date or timeline)",
+        "does not provide the name of the receiving office or a transfer/reference number or contact point"
+      ],
+      "injection_suspected": false
+    },
+    "spans": [
+      {
+        "quote": "The matter has been forwarded to the concerned office.",
+        "start": 0,
+        "end": 54
+      }
+    ],
+    "citationsVerified": true,
+    "guardFailures": 0,
+    "model": "gpt-5",
+    "promptVersion": "closure-auditor.v2"
+  }
+}

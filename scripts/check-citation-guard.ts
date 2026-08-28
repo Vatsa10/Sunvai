@@ -8,6 +8,8 @@
 import assert from 'node:assert/strict';
 import { checkCitations, requiresCitation } from '../src/lib/agents/citation-guard';
 import { DEMO_CASES } from '../supabase/seed/demo-cases';
+import { TRY_EXAMPLES, matchExample } from '../src/lib/try-examples';
+import { chipAudit } from '../src/lib/chip-audits';
 
 const reply = DEMO_CASES[0]!.reply.body;
 
@@ -38,4 +40,37 @@ assert.equal(requiresCitation('deflected'), true);
 assert.equal(requiresCitation('resolved'), true);
 assert.equal(requiresCitation('undetermined'), false);
 
+// ---------------------------------------------------------------------------------------
+// The paste box's committed chip audits, held to the same rule as a live one.
+//
+// Those six verdicts are served without a model call, so nothing at request time re-checks
+// their quotes. That check has to live somewhere, and it lives here: if a chip's text is ever
+// edited without re-running `scripts/precompute-chip-audits.ts`, this fails rather than the
+// landing page quietly showing a reader a quote that is not in the text in front of them.
+
+for (const e of TRY_EXAMPLES) {
+  const cached = chipAudit(e.id);
+  // A missing entry is allowed — `auditText` falls through to the live model for it. What is
+  // not allowed is an entry that no longer describes the chip.
+  if (!cached) continue;
+
+  assert.equal(cached.complaint, e.complaint, `chip ${e.id}: committed complaint has drifted from the chip`);
+  assert.equal(cached.reply, e.reply, `chip ${e.id}: committed reply has drifted from the chip`);
+
+  if (cached.result.citations.length > 0) {
+    const guard = checkCitations(e.reply, cached.result.citations);
+    assert.ok(guard.ok, `chip ${e.id}: a committed quote is not a verbatim substring of the chip`);
+  }
+  if (requiresCitation(cached.result.verdict)) {
+    assert.ok(cached.citationsVerified, `chip ${e.id}: committed a verdict whose citations were never verified`);
+  }
+
+  // And the fixture is only reachable through an exact match on both fields, so prove that the
+  // lookup the server does actually finds it.
+  assert.equal(matchExample(e.complaint, e.reply), e.id);
+  assert.equal(matchExample(e.complaint, e.reply + '.'), null);
+  assert.equal(matchExample(e.complaint.slice(0, -1), e.reply), null);
+}
+
 console.log('citation guard OK');
+console.log(`   plus ${TRY_EXAMPLES.filter((e) => chipAudit(e.id)).length} committed chip audit(s) still quoting their own text`);

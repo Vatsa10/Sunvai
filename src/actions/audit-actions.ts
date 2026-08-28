@@ -1,11 +1,15 @@
 'use server';
 
 /**
- * Running the audit for real, on a reply that just arrived.
+ * Running the audit on a reply that just arrived.
  *
  * The seeded demo cases carry pre-computed audits so the headline path survives an OpenAI
- * outage during the review window. This is the other path: a reply lands, the auditor reads it
- * live, and a reviewer can watch that happen on text they wrote themselves.
+ * outage during the review window. This is the other path: a reply lands, the auditor reads it,
+ * and a reviewer can watch that happen on text they wrote themselves.
+ *
+ * One exception, added deliberately and labelled everywhere it shows: the paste box's six
+ * example chips are fixed strings, so their audits were run once and committed. Anything that
+ * is not one of those six, character for character, goes to the model. See `auditText`.
  */
 
 import { revalidatePath } from 'next/cache';
@@ -15,6 +19,8 @@ import { audit, type AuditInput } from '@/lib/agents/closure-auditor';
 import { adapter } from '@/lib/adapters';
 import type { AuditResult, Lang } from '@/lib/agents/schemas';
 import { checkRateLimit } from '@/lib/rate-limit';
+import { matchExample } from '@/lib/try-examples';
+import { chipAudit } from '@/lib/chip-audits';
 
 /**
  * Why a refusal is a return value and not a throw.
@@ -35,6 +41,15 @@ export type AuditPreview = {
   guardFailures: number;
   model: string;
   promptVersion: string;
+  /**
+   * True when this verdict came out of `evals/fixtures/chip-audits.json` — a real audit of this
+   * exact text, run earlier and committed — rather than a model call made just now. The box
+   * prints this on the verdict itself. It is the whole reason the shortcut below is allowed to
+   * exist, so it is not optional and it has no default.
+   */
+  precomputed: boolean;
+  /** When the committed audit was produced. Null on the live path. */
+  computedAt: string | null;
 };
 
 /**
@@ -50,6 +65,42 @@ export async function auditText(args: {
 }): Promise<AuditOutcome> {
   // Who is asking, as well as we can tell behind a proxy. Not identity — a throttling key. It
   // is never stored, never logged, and never written to the ledger.
+  // The six example chips are fixed inputs, so their audits were produced once by
+  // `scripts/precompute-chip-audits.ts` and committed. Serving those here turns a chip click
+  // from eight-to-thirteen seconds into nothing, which matters because a reviewer working
+  // through a queue does not wait, and a cold serverless instance is worse than our numbers.
+  //
+  // Three things make this honest rather than a canned demo of a canned demo:
+  //
+  //   - The match is exact on both fields after trimming. Change one character of a chip and
+  //     `matchExample` returns null, the model runs, and the reader sees a live verdict about
+  //     the text actually on screen. There is no fuzzy match and no normalisation.
+  //   - The fixture came from the real auditor at the published configuration, and its
+  //     citations were re-verified against the chip text before being written.
+  //   - `precomputed: true` travels to the screen and the box says so on the verdict.
+  //
+  // It is checked before the rate limiter on purpose: a click that costs us no model call
+  // should not spend a reader's share of the key.
+  const chip = matchExample(args.complaint, args.reply);
+  if (chip) {
+    const cached = chipAudit(chip);
+    if (cached) {
+      return {
+        ok: true,
+        result: cached.result,
+        spans: cached.spans,
+        citationsVerified: cached.citationsVerified,
+        guardFailures: cached.guardFailures,
+        model: cached.model,
+        promptVersion: cached.promptVersion,
+        precomputed: true,
+        computedAt: cached.computedAt,
+      };
+    }
+    // No committed audit for this chip. Fall through and run the model rather than show
+    // nothing or invent something.
+  }
+
   const h = await headers();
   const ip =
     h.get('x-forwarded-for')?.split(',')[0]?.trim() ||
@@ -94,6 +145,8 @@ export async function auditText(args: {
     guardFailures: outcome.guardFailures,
     model: outcome.model,
     promptVersion: outcome.promptVersion,
+    precomputed: false,
+    computedAt: null,
   };
 }
 

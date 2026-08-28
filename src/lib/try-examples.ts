@@ -10,7 +10,7 @@
  *   3. `auditText`, which serves those committed verdicts when the submitted text is one of
  *      these pairs exactly, and calls the model when it is not.
  *
- * That last one is why `chipKey` exists and why it hashes nothing and normalises nothing. A
+ * That last one is why `matchExample` exists and why it hashes nothing and normalises nothing. A
  * fixture is served only on an exact match of both fields after trimming. Change one character
  * of a chip's complaint or reply in the box and the match fails, which is the correct outcome:
  * the reader gets a live audit of the text they actually submitted, never a stale verdict about
@@ -81,7 +81,7 @@ export const TRY_EXAMPLES: TryExample[] = [
     reply: 'Your update request has been rejected due to technical reasons.',
   },
   {
-    id: 'cpgrams-forwarded',
+    id: 'forwarded-to-concerned-office',
     system: 'CPGRAMS',
     string: 'Forwarded to the concerned office.',
     attribution: 'pgportal.gov.in closure remarks',

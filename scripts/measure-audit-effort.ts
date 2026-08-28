@@ -10,6 +10,14 @@
  * decision recorded in the commit message has a number under it, and so the next person can
  * re-measure instead of trusting ours.
  *
+ * What it told us, over three matched pairs on 28 Aug 2026: default 17.2 / 8.5 / 8.4s, low
+ * 7.0 / 4.7 / 5.0s. Roughly half the wait. We did not take it. The verdict was the same every
+ * time, but `low` returned lower confidence (0.71–0.80 against 0.86–0.90), so the paste box
+ * would have shown numbers the configuration behind `evals/results.json` does not produce. The
+ * box exists to prove the published auditor is not canned; running a different one inside it,
+ * however well captioned, gives that away to save six seconds we had already saved on the
+ * chips by committing their audits.
+ *
  *   pnpm tsx scripts/measure-audit-effort.ts
  */
 
@@ -17,7 +25,7 @@ import 'dotenv/config';
 import { audit, type AuditOptions } from '../src/lib/agents/closure-auditor';
 import { TRY_EXAMPLES } from '../src/lib/try-examples';
 
-const example = TRY_EXAMPLES.find((e) => e.id === 'cpgrams-forwarded')!;
+const example = TRY_EXAMPLES.find((e) => e.id === 'forwarded-to-concerned-office')!;
 const now = Date.now();
 
 async function once(label: string, options: AuditOptions) {

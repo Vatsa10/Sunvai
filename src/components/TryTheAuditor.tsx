@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { auditText, type AuditPreview } from '@/actions/audit-actions';
 import { verdictCopy } from '@/lib/verdicts';
 import { t, type ShippedLang } from '@/lib/i18n/strings';
+import { TRY_EXAMPLES, matchExample, type TryExample } from '@/lib/try-examples';
 
 /**
  * Audit a reply we did not choose.
@@ -12,11 +13,21 @@ import { t, type ShippedLang } from '@/lib/i18n/strings';
  * takes any closure reply — a real one somebody received, or one written specifically to fool
  * us — and judges it on the spot, quoting from the text the reader supplied rather than ours.
  *
- * The six chips below answer a second, unspoken objection: does this only work on CPGRAMS?
- * They carry terminal strings observed on six different Indian public-service systems — an EPFO
- * claim rejected `OK/OK`, an Income Tax refund that failed for `Others`, a UIDAI update
- * `rejected due to technical reasons`. One engine reads all of them, and we integrated with
- * none of them: the strings are text we typed into this file, nothing more.
+ * The six chips answer a second, unspoken objection: does this only work on CPGRAMS? They carry
+ * terminal strings observed on six different Indian public-service systems — an EPFO claim
+ * rejected `OK/OK`, an Income Tax refund that failed for `Others`, a UIDAI update `rejected due
+ * to technical reasons`. One engine reads all of them, and we integrated with none of them: the
+ * strings are text we typed into `src/lib/try-examples.ts`, nothing more.
+ *
+ * Those six are fixed inputs, so their audits were run once by
+ * `scripts/precompute-chip-audits.ts` and committed, and a chip click now returns at once
+ * instead of after ten-odd seconds. The cost of that shortcut is that the reader has to be able
+ * to tell which kind of result they are looking at, in the moment, without going hunting — so
+ * `precomputed` is printed on the verdict itself, the note above the button changes while a
+ * chip is loaded verbatim, and the elapsed-time line says why it was fast. Edit one character
+ * and every one of those reverts, because the server-side match is exact. A hidden
+ * pre-computation on the one feature whose purpose is proving the auditor is not canned would
+ * be the worst thing on this page.
  *
  * Nothing here is stored. It is not a case; it is the auditor with its hands open.
  *
@@ -28,69 +39,6 @@ import { t, type ShippedLang } from '@/lib/i18n/strings';
  * would be inventing one.
  */
 
-type Example = {
-  /** The system the string was observed on. Shown on the chip. */
-  system: string;
-  /** The terminal string itself, verbatim. Shown on the chip. */
-  string: string;
-  /** Where it was observed. Shown under the chips when that chip is loaded. */
-  attribution: string;
-  complaint: string;
-  reply: string;
-};
-
-const EXAMPLES: Example[] = [
-  {
-    system: 'EPFO',
-    string: 'Claim Rejected OK/OK',
-    attribution: 'reported by members on hrcabin.com’s rejection threads, 2019–2025',
-    complaint:
-      'I applied to withdraw my PF after leaving my job in June. The claim was rejected and the reason printed on the status page is just "OK/OK". I have read it twenty times and I still do not know what is wrong with my claim or what I am supposed to fix. Please tell me what the defect is and what document you need from me.',
-    reply: 'Claim Rejected OK/OK',
-  },
-  {
-    system: 'EPFO',
-    string: 'WARNING-520461 mismatch in member ledger',
-    attribution: 'member reports, hrcabin.com / CiteHR',
-    complaint:
-      'My PF transfer request has been stuck for eleven weeks. The only thing shown against it is "WARNING-520461 there is a mismatch between summary and details transactions in member ledger". I did not create any ledger and I cannot edit one. Which year of contributions does not match, and who corrects it — me, or my former employer?',
-    reply:
-      'WARNING-520461 there is a mismatch between summary and details transactions in member ledger',
-  },
-  {
-    system: 'Income Tax',
-    string: 'Refund failure reason: Others',
-    attribution: 'e-filing refund status, widely reported',
-    complaint:
-      'My income tax refund for AY 2025-26 has failed twice. The refund status on the e-filing portal gives the failure reason as "Others". My bank account is pre-validated and the name matches my PAN. Tell me what actually failed so I can correct it, and when the refund will be re-issued.',
-    reply: 'Refund failure reason: Others',
-  },
-  {
-    system: 'GST',
-    string: 'Cancellation reason: Others',
-    attribution: 'GST portal cancellation notices',
-    complaint:
-      'My GST registration was cancelled last week and the reason recorded in the order is "Others". I have filed every return on time and I have the acknowledgements. I run a two-person business and I cannot raise an invoice until this is sorted. What is the actual ground for cancellation, and what do I file to have it revoked?',
-    reply: 'Cancellation reason: Others',
-  },
-  {
-    system: 'UIDAI',
-    string: 'rejected due to technical reasons',
-    attribution: 'Aadhaar update status',
-    complaint:
-      'I applied to correct the spelling of my name on my Aadhaar and submitted my passport as proof. The update status now says "rejected due to technical reasons". I paid the fee and travelled to the centre twice. Was the document not accepted, or did something fail at your end? Tell me whether I need to apply again and whether I pay again.',
-    reply: 'Your update request has been rejected due to technical reasons.',
-  },
-  {
-    system: 'CPGRAMS',
-    string: 'Forwarded to the concerned office.',
-    attribution: 'pgportal.gov.in closure remarks',
-    complaint:
-      'My old-age pension has not been credited since May. I filed a grievance in July asking two things: why the payment stopped, and when the arrears will be paid. It has now been marked closed. Nobody has answered either question and no money has arrived.',
-    reply: 'The matter has been forwarded to the concerned office.',
-  },
-];
-
 export function TryTheAuditor({ lang, compact = false }: { lang: ShippedLang; compact?: boolean }) {
   const s = t(lang);
   const [complaint, setComplaint] = useState('');
@@ -98,7 +46,7 @@ export function TryTheAuditor({ lang, compact = false }: { lang: ShippedLang; co
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AuditPreview | null>(null);
-  const [loaded, setLoaded] = useState<Example | null>(null);
+  const [loaded, setLoaded] = useState<TryExample | null>(null);
   // Real elapsed seconds since the click, and the real total once it lands. The only thing that
   // moves during the wait is this counter, and it counts actual time — there is no progress bar,
   // because we cannot see inside the model call and a bar that advanced on a timer would be a
@@ -139,6 +87,9 @@ export function TryTheAuditor({ lang, compact = false }: { lang: ShippedLang; co
   }
 
   const v = result ? verdictCopy(result.result.verdict, lang) : null;
+  // Exactly the test the server will apply, so the note above the button never promises
+  // "instant" for text that is about to take the live path. One edited character flips it back.
+  const isChip = matchExample(complaint, reply) !== null;
 
   return (
     <div className="space-y-4">
@@ -164,7 +115,7 @@ export function TryTheAuditor({ lang, compact = false }: { lang: ShippedLang; co
         </div>
 
         <ul className="flex flex-wrap gap-2">
-          {EXAMPLES.map((e) => {
+          {TRY_EXAMPLES.map((e) => {
             const isLoaded = loaded?.string === e.string;
             return (
               <li key={e.system + e.string}>
@@ -244,7 +195,7 @@ export function TryTheAuditor({ lang, compact = false }: { lang: ShippedLang; co
           reading this text.
         */}
         {!busy && (
-          <p className="text-ink">{s.tryTimeNote}</p>
+          <p className="text-ink">{isChip ? s.tryTimeNoteChip : s.tryTimeNote}</p>
         )}
       </div>
 
@@ -275,7 +226,7 @@ export function TryTheAuditor({ lang, compact = false }: { lang: ShippedLang; co
 
       {took !== null && !busy && (result || error) && (
         <p role="status" aria-live="polite" className="text-ink">
-          {s.tryTook(took.toFixed(1))}
+          {result?.precomputed ? s.tryTookPrecomputed(took.toFixed(1)) : s.tryTook(took.toFixed(1))}
         </p>
       )}
 
@@ -287,6 +238,17 @@ export function TryTheAuditor({ lang, compact = false }: { lang: ShippedLang; co
 
       {result && v && (
         <div className={`space-y-3 rounded border-2 p-5 ${v.className}`}>
+          {/*
+            Above the verdict, not under it, and inside the same box so it cannot be read as
+            chrome belonging to something else. It is announced too: the result box appears
+            after a wait, and a screen-reader user who is told the verdict but not that it was
+            committed earlier has been told less than a sighted one.
+          */}
+          {result.precomputed && (
+            <p role="status" aria-live="polite" className="rounded border-2 border-current/50 p-3 text-ink">
+              {s.tryPrecomputed}
+            </p>
+          )}
           <p className="flex items-center gap-3">
             <span aria-hidden className="text-2xl">{v.icon}</span>
             <span className="text-lg font-semibold uppercase tracking-wide">{v.label}</span>

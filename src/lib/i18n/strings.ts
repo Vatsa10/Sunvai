@@ -176,9 +176,15 @@ type Dict = {
   tryJudge: string;
   tryReadingButton: string;
   tryTimeNote: string;
+  /** Shown instead of tryTimeNote when the box holds an example chip verbatim. */
+  tryTimeNoteChip: string;
   tryBusyStatus: string;
   tryBusyDetail: string;
   tryTook: (seconds: string) => string;
+  /** The took-line for a committed verdict. It must not read as the auditor being fast. */
+  tryTookPrecomputed: (seconds: string) => string;
+  /** Printed on the verdict itself whenever it came from the committed fixture. */
+  tryPrecomputed: string;
   tryFailed: string;
   tryQuoted: string;
   tryCheckedLine: (verified: boolean, retries: number) => string;
@@ -342,11 +348,17 @@ const en: Dict = {
   tryJudge: 'Judge this reply',
   tryReadingButton: 'Reading it…',
   tryTimeNote:
-    'This takes about eight to thirteen seconds. Nothing is looked up and nothing is canned — a reasoning model reads the reply against the complaint, and then every quote it wants to show you is checked character-by-character against your text before you see a verdict.',
-  tryBusyStatus: 'Reading it. This usually takes eight to thirteen seconds.',
+    'Pasting your own text runs the auditor live, and that takes time: of the runs we have timed, the fastest took eight seconds and the slowest eighteen. Nothing is looked up — a reasoning model reads the reply against the complaint, and then every quote it wants to show you is checked character-by-character against your text before you see a verdict.',
+  tryTimeNoteChip:
+    'This example was audited earlier and its verdict is committed to our repository, so it appears at once rather than being worked out now. Change a single character of it, or paste a reply of your own, and the auditor runs live instead — eight to eighteen seconds, in the runs we have timed.',
+  tryBusyStatus: 'Reading it. Of the runs we have timed, the fastest took eight seconds and the slowest eighteen.',
   tryBusyDetail:
     'In that time, two things happen and we cannot see which one is running: the model reads the reply against the complaint, and then the citation guard checks every quote it produced against your text — sending it back to try again if a quote is not exactly there.',
   tryTook: (seconds) => `That took ${seconds} seconds, measured from your click.`,
+  tryTookPrecomputed: (seconds) =>
+    `That took ${seconds} seconds because the answer was already in our repository — not because the auditor is that fast.`,
+  tryPrecomputed:
+    'This verdict was not worked out just now. It is a real audit of this exact text, run earlier and committed to our repository — same model, same prompt, and the quotes below were checked against this text character-by-character when it was run. Change anything in either box, or paste a reply of your own, and the auditor runs live.',
   tryFailed:
     'That did not work. We kept no copy of what you pasted — but it had already been sent to OpenAI to be read, and we cannot unsend it.',
   tryQuoted: 'Quoted from what you pasted',
@@ -528,11 +540,17 @@ const hi: Dict = {
   tryJudge: 'इस जवाब को जाँचिए',
   tryReadingButton: 'पढ़ा जा रहा है…',
   tryTimeNote:
-    'इसमें करीब आठ से तेरह सेकंड लगते हैं। कुछ भी पहले से रखा हुआ नहीं है और कुछ ढूँढ़कर नहीं लाया जाता — एक मॉडल शिकायत के सामने रखकर जवाब पढ़ता है, और फिर वह जो भी उद्धरण दिखाना चाहता है, नतीजा दिखाने से पहले उसे आपके लिखे से अक्षर दर अक्षर मिलाया जाता है।',
-  tryBusyStatus: 'पढ़ा जा रहा है। आमतौर पर आठ से तेरह सेकंड लगते हैं।',
+    'अपना लिखा चिपकाने पर जाँच उसी वक़्त चलती है, और उसमें समय लगता है: हमने जितनी बार नापा, सबसे कम आठ सेकंड और सबसे ज़्यादा अठारह सेकंड लगे। कुछ ढूँढ़कर नहीं लाया जाता — एक मॉडल शिकायत के सामने रखकर जवाब पढ़ता है, और फिर वह जो भी उद्धरण दिखाना चाहता है, नतीजा दिखाने से पहले उसे आपके लिखे से अक्षर दर अक्षर मिलाया जाता है।',
+  tryTimeNoteChip:
+    'यह उदाहरण पहले जाँचा जा चुका है और उसका नतीजा हमारी कोड-फ़ाइलों में दर्ज है, इसलिए वह अभी बनाया नहीं जाता — तुरंत दिख जाता है। इसमें एक अक्षर भी बदलिए, या अपना कोई जवाब चिपकाइए, तो जाँच उसी वक़्त चलेगी — हमने जितनी बार नापा, उसमें आठ से अठारह सेकंड लगे।',
+  tryBusyStatus: 'पढ़ा जा रहा है। हमने जितनी बार नापा, सबसे कम आठ और सबसे ज़्यादा अठारह सेकंड लगे।',
   tryBusyDetail:
     'इस बीच दो काम होते हैं और हमें दिखता नहीं कि अभी कौन-सा चल रहा है: मॉडल शिकायत के सामने रखकर जवाब पढ़ता है, और फिर उद्धरण-पहरा उसके हर उद्धरण को आपके लिखे से मिलाता है — कोई उद्धरण हूबहू न मिले तो उसे दोबारा करने के लिए वापस भेज देता है।',
   tryTook: (seconds) => `आपके दबाने से गिनकर इसमें ${seconds} सेकंड लगे।`,
+  tryTookPrecomputed: (seconds) =>
+    `इसमें ${seconds} सेकंड लगे क्योंकि जवाब पहले से हमारी फ़ाइलों में दर्ज था — इसलिए नहीं कि जाँच इतनी तेज़ है।`,
+  tryPrecomputed:
+    'यह नतीजा अभी नहीं बनाया गया। यह इसी लिखे की असली जाँच है, जो पहले चलाई गई और हमारी कोड-फ़ाइलों में दर्ज कर दी गई — वही मॉडल, वही निर्देश, और नीचे के उद्धरण उसी वक़्त इसी लिखे से अक्षर दर अक्षर मिलाए गए थे। दोनों में से कुछ भी बदलिए, या अपना जवाब चिपकाइए, तो जाँच उसी वक़्त चलेगी।',
   tryFailed:
     'यह नहीं हो पाया। आपने जो चिपकाया उसकी कोई नकल हमने नहीं रखी — पर वह पढ़े जाने के लिए OpenAI तक पहुँच चुका था, और उसे वापस नहीं लिया जा सकता।',
   tryQuoted: 'आपने जो चिपकाया, उसमें से उद्धृत',
@@ -714,11 +732,17 @@ const mr: Dict = {
   tryJudge: 'हे उत्तर तपासा',
   tryReadingButton: 'वाचलं जात आहे…',
   tryTimeNote:
-    'याला साधारण आठ ते तेरा सेकंद लागतात. काहीही आधीच तयार ठेवलेलं नाही आणि काहीही शोधून आणलं जात नाही — एक मॉडेल तक्रारीसमोर ठेवून उत्तर वाचतं, आणि मग ते जे अवतरण दाखवू पाहतं ते निकाल दिसण्याआधी तुमच्या मजकुराशी अक्षर न् अक्षर पडताळलं जातं.',
-  tryBusyStatus: 'वाचलं जात आहे. यास सहसा आठ ते तेरा सेकंद लागतात.',
+    'स्वतःचा मजकूर चिकटवला की तपासणी त्याच क्षणी चालते, आणि त्याला वेळ लागतो: आम्ही जितक्या वेळा मोजलं, त्यात सर्वात कमी आठ सेकंद आणि सर्वात जास्त अठरा सेकंद लागले. काहीही शोधून आणलं जात नाही — एक मॉडेल तक्रारीसमोर ठेवून उत्तर वाचतं, आणि मग ते जे अवतरण दाखवू पाहतं ते निकाल दिसण्याआधी तुमच्या मजकुराशी अक्षर न् अक्षर पडताळलं जातं.',
+  tryTimeNoteChip:
+    'हे उदाहरण आधीच तपासलं गेलं आहे आणि त्याचा निकाल आमच्या कोड-फायलींमध्ये नोंदवलेला आहे, त्यामुळे तो आत्ता काढला जात नाही — लगेच दिसतो. यात एक अक्षर जरी बदललं, किंवा स्वतःचं उत्तर चिकटवलं, तर तपासणी त्याच क्षणी चालेल — आम्ही मोजलेल्या वेळांत त्याला आठ ते अठरा सेकंद लागले.',
+  tryBusyStatus: 'वाचलं जात आहे. आम्ही मोजलेल्या वेळांत सर्वात कमी आठ आणि सर्वात जास्त अठरा सेकंद लागले.',
   tryBusyDetail:
     'या वेळात दोन गोष्टी होतात आणि आत्ता कोणती चालू आहे हे आम्हाला दिसत नाही: मॉडेल तक्रारीसमोर ठेवून उत्तर वाचतं, आणि मग अवतरण-पहारा त्याचं प्रत्येक अवतरण तुमच्या मजकुराशी पडताळतो — अवतरण तंतोतंत नसेल तर त्याला पुन्हा करायला परत पाठवतो.',
   tryTook: (seconds) => `तुम्ही दाबल्यापासून मोजून यास ${seconds} सेकंद लागले.`,
+  tryTookPrecomputed: (seconds) =>
+    `यास ${seconds} सेकंद लागले कारण उत्तर आधीपासून आमच्या फायलींमध्ये नोंदवलेलं होतं — तपासणी इतकी वेगवान आहे म्हणून नाही.`,
+  tryPrecomputed:
+    'हा निकाल आत्ता काढलेला नाही. ही याच मजकुराची खरी तपासणी आहे, जी आधी चालवली गेली आणि आमच्या कोड-फायलींमध्ये नोंदवली गेली — तेच मॉडेल, तेच निर्देश, आणि खालची अवतरणं त्याच वेळी याच मजकुराशी अक्षर न् अक्षर पडताळली गेली होती. दोन्हींपैकी काहीही बदला, किंवा स्वतःचं उत्तर चिकटवा, तपासणी त्याच क्षणी चालेल.',
   tryFailed:
     'हे झालं नाही. तुम्ही जे चिकटवलं त्याची प्रत आम्ही ठेवलेली नाही — पण ते वाचण्यासाठी OpenAI कडे पोहोचलं होतं, आणि ते परत घेता येत नाही.',
   tryQuoted: 'तुम्ही चिकटवलेल्या मजकुरातून उद्धृत',
