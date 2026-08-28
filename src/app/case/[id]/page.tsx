@@ -177,6 +177,19 @@ export default async function CasePage({
       {/* The status, said in words rather than in a status word. */}
       <section className="rounded border border-rule p-5">
         <h2 className="text-lg font-semibold">{s.whereThisStands}</h2>
+
+        {/* The wait, given its own line. Nineteen days ending in a sentence that answers
+            nothing is the most concrete fact on this page, and it used to be a subordinate
+            clause inside the closing date. Both numbers come from the case's own dates. */}
+        {closed && (
+          <p className="mt-3 flex flex-wrap items-baseline gap-x-3">
+            <span className="text-3xl font-semibold tabular-nums">
+              {s.elapsedDays(daysBetween(c.filedAt, c.closedAt!))}
+            </span>
+            <span className="text-muted">{s.elapsedCaption}</span>
+          </p>
+        )}
+
         <dl className="mt-3 space-y-2">
           <div className="flex flex-wrap gap-x-2">
             <dt className="text-muted">{s.theirWordFor}</dt>
