@@ -35,7 +35,17 @@ export type DemoCase = {
    */
   appealNotAdvisedBefore?: string;
   expected: {
-    verdict: 'resolved' | 'partial' | 'deflected' | 'boilerplate' | 'non_responsive';
+    // All seven members of the audit_verdict enum, not the five these three cases happen to
+    // use. A union that silently omits `transferred_lawfully` and `undetermined` would make
+    // adding a demo case for either one a type error rather than a decision.
+    verdict:
+      | 'resolved'
+      | 'partial'
+      | 'deflected'
+      | 'transferred_lawfully'
+      | 'boilerplate'
+      | 'non_responsive'
+      | 'undetermined';
     citizenSaysResolved: boolean;
     note: string;
   };

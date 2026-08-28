@@ -8,6 +8,7 @@
  * ledger, it did not happen.
  */
 
+import { randomUUID } from 'node:crypto';
 import { revalidatePath } from 'next/cache';
 import { transaction, appendEvent, one } from '@/lib/db';
 import { getCase } from '@/lib/cases';
@@ -36,21 +37,36 @@ export async function confirmResolution(formData: FormData) {
       [c.id],
     );
 
+    // The id of the answer about to be written. Generated here rather than by the database
+    // because the old row has to name it before it exists: a partial unique index allows only
+    // one confirmation per grievance with a null supersedes_id, so the old row must stop being
+    // the live one in the same breath as the new one becomes it.
+    const nextId = randomUUID();
+
     if (prior.rows[0]) {
       // Supersede rather than overwrite. The earlier answer stays, and so does its event.
-      await client.query(`update confirmations set supersedes_id = $1 where id = $1`, [prior.rows[0].id]);
+      //
+      // This used to read `set supersedes_id = $1 where id = $1`, which pointed the superseded
+      // row at itself. It cleared the partial index and so the published rate was never wrong,
+      // but the provenance was: a chain of changed answers could not be walked, and a row that
+      // supersedes itself is not a fact about anything. It now names the answer that replaced
+      // it.
+      await client.query(`update confirmations set supersedes_id = $1 where id = $2`, [
+        nextId,
+        prior.rows[0].id,
+      ]);
       await appendEvent(client, {
         grievanceId: c.id,
         citizenId: c.citizen.id,
         type: 'confirmation_superseded',
-        payload: { previous_id: prior.rows[0].id },
+        payload: { previous_id: prior.rows[0].id, superseded_by: nextId },
       });
     }
 
     await client.query(
-      `insert into confirmations (grievance_id, citizen_id, resolved, asked_via, asked_at)
-       values ($1, $2, $3, 'web', now())`,
-      [c.id, c.citizen.id, resolved],
+      `insert into confirmations (id, grievance_id, citizen_id, resolved, asked_via, asked_at)
+       values ($1, $2, $3, $4, 'web', now())`,
+      [nextId, c.id, c.citizen.id, resolved],
     );
 
     await appendEvent(client, {

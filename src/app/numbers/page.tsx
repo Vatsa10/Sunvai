@@ -203,9 +203,12 @@ export default async function NumbersPage() {
           <h3 className="text-lg font-semibold">The people nobody asks</h3>
           <p className="mt-2">
             <strong className="tabular-nums">{neverAsked.toLocaleString('en-IN')}</strong> of these simulated
-            closures were never followed up with the person who complained. In the real system that share is far
-            larger — and the appeal that would hold someone to account only unlocks if you rate the closure
-            &ldquo;Poor&rdquo;, which is a question most people are never asked.
+            closures were never followed up with the person who complained. The published national figures for
+            May 2026 are about 2.6 lakh grievances closed against roughly 79,000 people reached by the feedback
+            call centre — about seven in ten never asked. That comparison is the reason this project exists, and
+            it is a figure we read rather than one we measured. And the appeal that would hold someone to
+            account only unlocks if you rate the closure &ldquo;Poor&rdquo;, which is a question most people are
+            never asked.
           </p>
         </div>
 
