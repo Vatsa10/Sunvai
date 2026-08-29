@@ -3,6 +3,7 @@ import { query, one } from '@/lib/db';
 import { evalResults, pct } from '@/lib/eval-results';
 import { GapMap } from '@/components/GapMap';
 import { t, SHIPPED_LANGS, type ShippedLang , DEFAULT_LANG} from '@/lib/i18n/strings';
+import { GuidedTour } from '@/components/GuidedTour';
 
 export const dynamic = 'force-dynamic';
 
@@ -87,7 +88,7 @@ export default async function NumbersPage({
       </header>
 
       {/* ------------------------------------------------------------ measured */}
-      <section className="space-y-6 rounded border-2 border-ink p-6">
+      <section data-tour="rates" className="space-y-6 rounded border-2 border-ink p-6">
         <header className="space-y-2">
           <p className="text-sm font-semibold uppercase tracking-wide text-ink">{s.numPartOne}</p>
           <h2 className="text-2xl font-semibold">{s.numMeasuredHeading}</h2>
@@ -237,6 +238,8 @@ export default async function NumbersPage({
           {s.numFooterLink}
         </Link>
       </p>
+
+      <GuidedTour lang={lang} />
     </div>
   );
 }

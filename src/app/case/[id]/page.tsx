@@ -14,6 +14,7 @@ import { confirmResolution, prepareAppeal, sendAppeal } from '@/actions/case-act
 import { t, SHIPPED_LANGS, type ShippedLang , DEFAULT_LANG} from '@/lib/i18n/strings';
 import { appealWindow, hasAppealGrounds, mayDraftAppeal } from '@/lib/agents/appeal';
 import { readTranslated } from '@/lib/translated-text';
+import { GuidedTour } from '@/components/GuidedTour';
 
 export const dynamic = 'force-dynamic';
 
@@ -227,7 +228,7 @@ export default async function CasePage({
 
       {/* Their words first, unedited. Trust is built by showing the thing, not by summarising it. */}
       {c.reply && (
-        <section className="space-y-3">
+        <section data-tour="reply" className="space-y-3">
           <h2 className="text-lg font-semibold">{s.theyWrote}</h2>
           <blockquote className="border-l-4 border-rule bg-black/[0.02] p-4">
             {c.audit ? (
@@ -243,7 +244,7 @@ export default async function CasePage({
 
       {/* ★ The audit. */}
       {c.audit && v && (
-        <section id="audit" className={`space-y-4 rounded border-2 p-5 ${v.className}`}>
+        <section id="audit" data-tour="audit" className={`space-y-4 rounded border-2 p-5 ${v.className}`}>
           <div className="flex flex-wrap items-center gap-3">
             <span aria-hidden className="text-2xl">{v.icon}</span>
             <span className="text-lg font-semibold uppercase tracking-wide">{v.label}</span>
@@ -312,7 +313,7 @@ export default async function CasePage({
 
       {/* ★★ The metric. */}
       {closed && (
-        <section className="space-y-3 rounded border-2 border-ink p-5">
+        <section data-tour="confirm" className="space-y-3 rounded border-2 border-ink p-5">
           <h2 className="text-xl font-semibold">{s.didItWork}</h2>
           <p className="text-muted">{s.didItWorkSub}</p>
           <ReadAloud text={`${s.didItWork} ${s.didItWorkSub}`} lang={lang} label={s.readAloud} />
@@ -567,6 +568,7 @@ export default async function CasePage({
       )}
 
       <MockNote>{s.mockNote}</MockNote>
+      <GuidedTour lang={lang} />
     </div>
   );
 }

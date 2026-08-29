@@ -10,6 +10,8 @@ import { evalResults, pct } from '@/lib/eval-results';
 import { isDbUnavailable } from '@/lib/db';
 import { fixtureCase } from '@/lib/fixture-cases';
 import { looksLikeLiveRef } from '@/lib/ref';
+import { GuidedTour, StartTourButton } from '@/components/GuidedTour';
+import { TOUR_UI } from '@/lib/tour';
 
 export const dynamic = 'force-dynamic';
 
@@ -98,15 +100,19 @@ export default async function Home({
       {/* Who is hurt, and by what, before anything asks the reader for input. The figure is
           the published national one and is labelled as read rather than measured — the two
           kinds of number are never allowed to sit unlabelled on the same screen. */}
-      <section className="space-y-2">
+      <section data-tour="problem" className="space-y-2">
         <p className="text-lg leading-relaxed sm:text-xl">{s.problemLead}</p>
         <p className="text-sm text-muted">{s.problemSource}</p>
       </section>
 
       {/* The three demo cases, promoted above the form. A judge who has no registration
           number must not meet a box asking for one as the first thing they can act on. */}
-      <section className="space-y-3">
-        <h2 className="text-lg font-semibold">{s.tryOne}</h2>
+      <section data-tour="cases" className="space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold">{s.tryOne}</h2>
+          <StartTourButton lang={lang} />
+        </div>
+        <p className="text-sm text-muted">{TOUR_UI[lang].startHint}</p>
         <ul className="space-y-3">
           {DEMO_REFS.map((ref, i) => (
             <li key={ref}>
@@ -207,6 +213,8 @@ export default async function Home({
         {s.homeMockNote}{' '}
         <Link href="/how-this-works" className="underline">{s.homeMockNoteLink}</Link>.
       </MockNote>
+
+      <GuidedTour lang={lang} />
     </div>
   );
 }
