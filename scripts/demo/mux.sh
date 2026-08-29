@@ -35,20 +35,38 @@ d.durations.forEach((sec, i) => {
 writeFileSync(".demo/parts.txt", lines.join("\n") + "\n");
 '
 
-ffmpeg -y -f concat -safe 0 -i "$OUT/parts.txt" -c:a libmp3lame "$OUT/narration.mp3"
+ffmpeg -y -f concat -safe 0 -i "$OUT/parts.txt" -c:a libmp3lame "$OUT/narration.mp3" 2>/dev/null
+
+# Burn the captions in rather than shipping a sidecar file: an embedded player will not load
+# a .srt, and the words have to survive the video being watched muted.
+#
+# Styled explicitly because ffmpeg's default is small, yellow, and hard to read over a light
+# page: white text on a solid black band, bottom-aligned, with a margin clear of the taskbar.
+SUBS=""
+if [ -f "$OUT/subs.srt" ]; then
+  STYLE="FontName=Segoe UI,Fontsize=17,PrimaryColour=&H00FFFFFF,BackColour=&HC0000000,BorderStyle=4,Outline=0,Shadow=0,MarginV=34,Alignment=2"
+  # The subtitles filter parses its argument, so the path is given relative and kept simple.
+  SUBS="subtitles=subs.srt:force_style='${STYLE}'"
+fi
+
+cd "$OUT"
+VIDEO_REL="${VIDEO#"$OUT/"}"
 
 if [ "$SPEED" = "1.0" ]; then
-  ffmpeg -y -i "$VIDEO" -i "$OUT/narration.mp3" \
+  ffmpeg -y -i "$VIDEO_REL" -i narration.mp3 \
+    ${SUBS:+-vf "$SUBS"} \
     -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p \
-    -c:a aac -b:a 192k -shortest "$OUT/demo.mp4"
+    -c:a aac -b:a 192k -shortest demo.mp4
 else
-  # setpts slows/speeds the picture; atempo keeps the voice at its natural pitch.
-  ffmpeg -y -i "$VIDEO" -i "$OUT/narration.mp3" \
-    -filter_complex "[0:v]setpts=PTS/${SPEED}[v];[1:a]atempo=${SPEED}[a]" \
+  # setpts speeds the picture; atempo keeps the voice at its natural pitch. Captions are burned
+  # before the speed change so their timings ride along with the frames.
+  ffmpeg -y -i "$VIDEO_REL" -i narration.mp3 \
+    -filter_complex "[0:v]${SUBS:+$SUBS,}setpts=PTS/${SPEED}[v];[1:a]atempo=${SPEED}[a]" \
     -map "[v]" -map "[a]" \
     -c:v libx264 -preset slow -crf 20 -pix_fmt yuv420p \
-    -c:a aac -b:a 192k -shortest "$OUT/demo.mp4"
+    -c:a aac -b:a 192k -shortest demo.mp4
 fi
+cd - >/dev/null
 
 echo
 ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "$OUT/demo.mp4" |
