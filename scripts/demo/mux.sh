@@ -47,9 +47,7 @@ d.durations.forEach((sec, i) => {
   }
   if (existsSync(mp3)) { lines.push(`file beat-${n}.mp3`); cursor += sec; }
 });
-writeFileSync(".demo/parts.txt", lines.join("
-") + "
-");
+writeFileSync(".demo/parts.txt", lines.join(String.fromCharCode(10)) + String.fromCharCode(10));
 console.log("audio timeline:", cursor.toFixed(1) + "s");
 '
 
