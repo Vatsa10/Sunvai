@@ -40,6 +40,65 @@ async function openEvidence(page: Page) {
   await page.waitForTimeout(400);
 }
 
+/**
+ * A cursor the viewer can actually follow.
+ *
+ * A headless recording has no pointer, so a scroll-only video reads as a page turning by
+ * itself. This injects a dot that glides to whatever the narration is talking about and
+ * pulses when it clicks, which is the difference between a screen recording and a demo.
+ * Installed via addInitScript so it survives every navigation.
+ */
+export const CURSOR_SCRIPT = `
+  (() => {
+    if (window.__demoCursorInstalled) return;
+    window.__demoCursorInstalled = true;
+    const add = () => {
+      const c = document.createElement('div');
+      c.id = '__demo-cursor';
+      c.style.cssText = [
+        'position:fixed','z-index:2147483647','width:22px','height:22px',
+        'border-radius:50%','background:rgba(17,17,17,0.85)',
+        'border:2px solid #fff','box-shadow:0 2px 10px rgba(0,0,0,0.45)',
+        'left:-100px','top:-100px','pointer-events:none',
+        'transition:left .55s cubic-bezier(.4,0,.2,1),top .55s cubic-bezier(.4,0,.2,1)',
+      ].join(';');
+      document.body.appendChild(c);
+      window.__moveCursor = (x, y) => { c.style.left = (x - 11) + 'px'; c.style.top = (y - 11) + 'px'; };
+      window.__pulseCursor = () => {
+        const r = document.createElement('div');
+        const rect = c.getBoundingClientRect();
+        r.style.cssText = [
+          'position:fixed','z-index:2147483646','left:' + rect.left + 'px','top:' + rect.top + 'px',
+          'width:22px','height:22px','border-radius:50%','border:3px solid rgba(17,17,17,0.9)',
+          'pointer-events:none','transition:transform .5s ease-out,opacity .5s ease-out',
+        ].join(';');
+        document.body.appendChild(r);
+        requestAnimationFrame(() => { r.style.transform = 'scale(3)'; r.style.opacity = '0'; });
+        setTimeout(() => r.remove(), 550);
+      };
+    };
+    if (document.body) add(); else document.addEventListener('DOMContentLoaded', add);
+  })();
+`;
+
+/** Glide the cursor onto an element, and optionally pulse as if clicking it. */
+async function pointAt(page: Page, selector: string, click = false) {
+  const el = page.locator(selector).first();
+  if ((await el.count()) === 0) return;
+  await el.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(500);
+  const box = await el.boundingBox();
+  if (!box) return;
+  const x = box.x + Math.min(box.width / 2, 220);
+  const y = box.y + Math.min(box.height / 2, 60);
+  await page.evaluate(([x, y]) => (window as any).__moveCursor?.(x, y), [x, y] as const);
+  await page.waitForTimeout(650);
+  if (click) {
+    await page.evaluate(() => (window as any).__pulseCursor?.());
+    await page.waitForTimeout(350);
+  }
+}
+
 export const BEATS: Beat[] = [
   {
     say: 'In May, two point six lakh grievances were closed on India’s national portal. The feedback call centre reached seventy nine thousand people. Nearly everyone else was never asked whether anything changed.',
@@ -50,11 +109,11 @@ export const BEATS: Beat[] = [
   },
   {
     say: 'This is Sunvai. It starts the moment an office says your case is closed.',
-    act: async (page) => focus(page, '[data-tour="problem"]'),
+    act: async (page) => { await focus(page, '[data-tour="problem"]'); await pointAt(page, '[data-tour="problem"] p'); },
   },
   {
     say: 'You do not need a login, or a reference number.',
-    act: async (page) => focus(page, '[data-tour="cases"]'),
+    act: async (page) => { await focus(page, '[data-tour="cases"]'); await pointAt(page, '[data-tour="cases"] a', true); },
   },
   {
     say: 'Kamla Devi’s pension. Filed, and closed nineteen days later.',
@@ -78,12 +137,22 @@ export const BEATS: Beat[] = [
     // section claims evidence the frame never shows, so open it and let the spans be read.
     act: async (page) => {
       await focus(page, '[data-tour="audit"]');
+      await pointAt(page, '[data-tour="audit"] summary', true);
       await openEvidence(page);
+      await pointAt(page, '[data-tour="audit"] blockquote');
     },
   },
   {
     say: 'Then the question that decides everything: did your problem actually get fixed?',
-    act: async (page) => focus(page, '[data-tour="confirm"]'),
+    act: async (page) => { await focus(page, '[data-tour="confirm"]'); await pointAt(page, '[data-tour="confirm"] h2', true); },
+  },
+  {
+    say: 'She said no. The appeal is already written — and she reads all of it before anything is recorded.',
+    // Targeted by its heading rather than a data-tour anchor so this beat needs no rebuild.
+    act: async (page) => {
+      await page.getByText('What to do next', { exact: false }).first().scrollIntoViewIfNeeded();
+      await page.waitForTimeout(700);
+    },
   },
   {
     say: 'Three choices shaped this build. One. The auditor may never paraphrase. Every claim has to quote the reply word for word, and if it cannot, it says it is unsure. That is a guard in code — a hundred per cent citation pass rate across seventy four labelled replies.',
@@ -94,13 +163,21 @@ export const BEATS: Beat[] = [
     act: async (page, base) => {
       await page.goto(`${base}/numbers?lang=en`, { waitUntil: 'networkidle' });
       await focus(page, '[data-tour="ratecards"]');
+      await pointAt(page, '[data-tour="ratecards"] > div:last-child');
     },
   },
   {
     say: 'Three. Seventy four replies, labelled before the prompt existed. Zero false accusations. And one gate still failing — published as failing, not quietly relabelled.',
     // Anchored rather than scrolled by a guessed distance: an earlier version wheeled 900px
     // and landed past the table, narrating gate results over a section about something else.
-    act: async (page) => focus(page, '[data-tour="evals"]'),
+    act: async (page) => { await focus(page, '[data-tour="evals"]'); await pointAt(page, '[data-tour="evals"] > div:nth-child(5)'); },
+  },
+  {
+    say: 'Every step lands in a record you can download and check in your own browser. Change one character in it, and this page goes red.',
+    act: async (page, base) => {
+      await page.goto(`${base}/verify`, { waitUntil: 'networkidle' });
+      await page.waitForTimeout(800);
+    },
   },
   {
     say: 'Samadhan Didi files grievances in twenty two languages, and does it well. Sunvai begins where it stops.',

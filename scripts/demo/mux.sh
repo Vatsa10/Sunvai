@@ -19,20 +19,38 @@ SPEED="${SPEED:-1.0}"
 VIDEO=$(find "$OUT/video" -name '*.webm' | head -1)
 [ -n "$VIDEO" ] || { echo "no recording found — run scripts/demo/record.ts"; exit 1; }
 
-# Build the audio timeline: each beat's mp3, or silence of its hold length when it has no words.
-rm -f "$OUT/parts.txt"
+# Build the audio timeline at the offsets the recorder actually measured.
+#
+# Acts cost real seconds — a navigation, a scroll, a click — and they fall between one beat's
+# narration and the next. Laying the mp3s end to end assumes they cost nothing, so the voice
+# drifts further behind the picture at every beat. Each clip is padded with real silence to
+# start exactly where its beat started on screen.
 node -e '
 const {readFileSync, existsSync, writeFileSync} = require("fs");
 const {execFileSync} = require("child_process");
 const d = JSON.parse(readFileSync(".demo/durations.json","utf8"));
+const tl = existsSync(".demo/timeline.json")
+  ? JSON.parse(readFileSync(".demo/timeline.json","utf8")).offsets : null;
 const lines = [];
+let cursor = 0;
 d.durations.forEach((sec, i) => {
   const n = String(i).padStart(2,"0");
   const mp3 = `.demo/beat-${n}.mp3`;
-  // Paths in a concat list resolve relative to the list file, which lives in .demo/ too.
-  if (existsSync(mp3)) lines.push(`file beat-${n}.mp3`);
+  const want = tl ? tl[i] : cursor;
+  const gap = Math.max(0, want - cursor);
+  if (gap > 0.05) {
+    const pad = `.demo/gap-${n}.mp3`;
+    execFileSync("ffmpeg", ["-y","-f","lavfi","-i","anullsrc=r=44100:cl=mono",
+      "-t", gap.toFixed(3), "-c:a","libmp3lame", pad], {stdio:"ignore"});
+    lines.push(`file gap-${n}.mp3`);
+    cursor += gap;
+  }
+  if (existsSync(mp3)) { lines.push(`file beat-${n}.mp3`); cursor += sec; }
 });
-writeFileSync(".demo/parts.txt", lines.join("\n") + "\n");
+writeFileSync(".demo/parts.txt", lines.join("
+") + "
+");
+console.log("audio timeline:", cursor.toFixed(1) + "s");
 '
 
 ffmpeg -y -f concat -safe 0 -i "$OUT/parts.txt" -c:a libmp3lame "$OUT/narration.mp3" 2>/dev/null

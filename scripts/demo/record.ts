@@ -17,7 +17,7 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
-import { BEATS } from './beats';
+import { BEATS, CURSOR_SCRIPT } from './beats';
 
 const BASE = (process.env.DEMO_BASE ?? 'http://localhost:3000').replace(/\/$/, '');
 const OUT = join(process.cwd(), '.demo');
@@ -42,6 +42,7 @@ async function main() {
     deviceScaleFactor: 2,
     reducedMotion: 'no-preference',
   });
+  await context.addInitScript(CURSOR_SCRIPT);
   const page = await context.newPage();
 
   console.log(`recording against ${BASE}`);
