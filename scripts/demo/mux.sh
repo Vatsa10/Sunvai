@@ -44,7 +44,9 @@ ffmpeg -y -f concat -safe 0 -i "$OUT/parts.txt" -c:a libmp3lame "$OUT/narration.
 # page: white text on a solid black band, bottom-aligned, with a margin clear of the taskbar.
 SUBS=""
 if [ -f "$OUT/subs.srt" ]; then
-  STYLE="FontName=Segoe UI,Fontsize=17,PrimaryColour=&H00FFFFFF,BackColour=&HC0000000,BorderStyle=4,Outline=0,Shadow=0,MarginV=34,Alignment=2"
+  # ASS colours are &HAABBGGRR — alpha 00 is opaque, so the band is solid black rather than a
+  # grey wash that lets page text show through the words.
+  STYLE="FontName=Segoe UI,Fontsize=18,PrimaryColour=&H00FFFFFF,BackColour=&H00000000,BorderStyle=4,Outline=2,Shadow=0,MarginV=18,Alignment=2"
   # The subtitles filter parses its argument, so the path is given relative and kept simple.
   SUBS="subtitles=subs.srt:force_style='${STYLE}'"
 fi

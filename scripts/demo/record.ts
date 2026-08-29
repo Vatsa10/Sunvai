@@ -14,7 +14,7 @@
  * player, and text that is comfortable at 1280 is legible there.
  */
 
-import { existsSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { chromium } from 'playwright';
 import { BEATS } from './beats';
@@ -45,14 +45,37 @@ async function main() {
   const page = await context.newPage();
 
   console.log(`recording against ${BASE}`);
+
+  // When each beat's narration should actually begin, in video time.
+  //
+  // The acts are not free: a navigation, a smooth scroll and a disclosure click cost real
+  // seconds, and they happen between one beat's narration ending and the next one's starting.
+  // An audio track laid out as if they cost nothing drifts a little further behind the picture
+  // at every beat — by the end of this script, far enough that the closing line lands over the
+  // wrong section. So the real offsets are measured here and the audio is padded to match.
+  const t0 = Date.now();
+  const offsets: number[] = [];
+
   for (const [i, beat] of BEATS.entries()) {
     const spoken = durations[i] ?? 0;
     const hold = beat.hold ?? 0;
     if (beat.act) await beat.act(page, BASE);
+
+    const offset = (Date.now() - t0) / 1000;
+    offsets.push(offset);
+
     const ms = Math.round((spoken + hold) * 1000);
-    console.log(`${i}: holding ${(ms / 1000).toFixed(1)}s  ${beat.say.slice(0, 48) || '(silence)'}`);
+    console.log(
+      `${i}: @${offset.toFixed(1)}s holding ${(ms / 1000).toFixed(1)}s  ` +
+        `${beat.say.slice(0, 44) || '(silence)'}`,
+    );
     await page.waitForTimeout(ms);
   }
+
+  writeFileSync(
+    join(OUT, 'timeline.json'),
+    JSON.stringify({ offsets, recorded: (Date.now() - t0) / 1000 }, null, 2),
+  );
 
   // The video is only flushed to disk when the context closes.
   await context.close();
