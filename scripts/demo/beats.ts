@@ -29,6 +29,17 @@ async function focus(page: Page, selector: string) {
   await page.waitForTimeout(700);
 }
 
+/** Open the "see how we judged this" disclosure, if it is not already open. */
+async function openEvidence(page: Page) {
+  const details = page.locator('[data-tour="audit"] details').first();
+  if ((await details.count()) === 0) return;
+  const open = await details.evaluate((el) => (el as HTMLDetailsElement).open);
+  if (!open) await details.locator('summary').first().click();
+  await page.waitForTimeout(600);
+  await details.scrollIntoViewIfNeeded();
+  await page.waitForTimeout(400);
+}
+
 export const BEATS: Beat[] = [
   {
     say: 'In May, two point six lakh grievances were closed on India’s national portal. The feedback call centre reached seventy nine thousand people. Nearly everyone else was never asked whether anything changed.',
@@ -46,7 +57,7 @@ export const BEATS: Beat[] = [
     act: async (page) => focus(page, '[data-tour="cases"]'),
   },
   {
-    say: 'Kamla Devi’s pension. Nineteen days. Then: disposed.',
+    say: 'Kamla Devi’s pension. Filed, and closed nineteen days later.',
     act: async (page, base) => {
       await page.goto(caseUrl(base), { waitUntil: 'networkidle' });
       await page.waitForTimeout(600);
@@ -63,7 +74,12 @@ export const BEATS: Beat[] = [
   },
   {
     say: 'Sunvai reads it against what she actually asked. Passed on, not answered — and every word of that is anchored to a quote from their own text.',
-    act: async (page) => focus(page, '[data-tour="audit"]'),
+    // The quotes live behind a disclosure. Narrating "anchored to a quote" over a collapsed
+    // section claims evidence the frame never shows, so open it and let the spans be read.
+    act: async (page) => {
+      await focus(page, '[data-tour="audit"]');
+      await openEvidence(page);
+    },
   },
   {
     say: 'Then the question that decides everything: did your problem actually get fixed?',
@@ -77,16 +93,14 @@ export const BEATS: Beat[] = [
     say: 'Two. The published resolution rate comes only from citizens’ own answers. Never from our verdict. Audit and metric stay separate, so departments cannot write for our model, and we cannot grade our own homework.',
     act: async (page, base) => {
       await page.goto(`${base}/numbers?lang=en`, { waitUntil: 'networkidle' });
-      await focus(page, '[data-tour="rates"]');
+      await focus(page, '[data-tour="ratecards"]');
     },
   },
   {
     say: 'Three. Seventy four replies, labelled before the prompt existed. Zero false accusations. And one gate still failing — published as failing, not quietly relabelled.',
-    act: async (page) => {
-      // The eval table sits below the measured half.
-      await page.mouse.wheel(0, 900);
-      await page.waitForTimeout(800);
-    },
+    // Anchored rather than scrolled by a guessed distance: an earlier version wheeled 900px
+    // and landed past the table, narrating gate results over a section about something else.
+    act: async (page) => focus(page, '[data-tour="evals"]'),
   },
   {
     say: 'Samadhan Didi files grievances in twenty two languages, and does it well. Sunvai begins where it stops.',

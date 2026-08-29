@@ -97,7 +97,7 @@ export default async function NumbersPage({
 
         {evals ? (
           <>
-            <dl className="divide-y divide-rule border-y border-rule">
+            <dl data-tour="evals" className="divide-y divide-rule border-y border-rule">
               {[
                 [s.numEvalFalseAccusation, pct(evals.falseAccusation),
                   s.numEvalFalseAccusationWhy(evals.cases)],
@@ -151,7 +151,7 @@ export default async function NumbersPage({
           <p className="text-ink">{s.numSimIntro('2,800', 'supabase/seed/run.ts')}</p>
         </header>
 
-        <div className="grid gap-5 sm:grid-cols-2">
+        <div data-tour="ratecards" className="grid gap-5 sm:grid-cols-2">
           <div className="rounded border border-rule p-6">
             <p className="text-sm font-semibold uppercase tracking-wide text-muted">
               {s.numDisposalLabel}
