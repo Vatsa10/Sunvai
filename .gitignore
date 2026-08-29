@@ -38,3 +38,6 @@ Thumbs.db
 # Never committed, never copied from, never deployed.
 Nirantar/
 CPGRAMS/
+
+# Demo video build artifacts (audio, recordings, the cut itself)
+.demo/
